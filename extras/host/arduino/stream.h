@@ -1,5 +1,5 @@
-#ifndef ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_STREAM_H_
-#define ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_STREAM_H_
+#ifndef MCUCORE_EXTRAS_HOST_ARDUINO_STREAM_H_
+#define MCUCORE_EXTRAS_HOST_ARDUINO_STREAM_H_
 
 // Declares the subset of Arduino's Stream needed for Tiny Alpaca Server.
 
@@ -14,4 +14,4 @@ class Stream : public Print {
   // Many other methods omitted that are in Arduino's Stream.
 };
 
-#endif  // ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_STREAM_H_
+#endif  // MCUCORE_EXTRAS_HOST_ARDUINO_STREAM_H_

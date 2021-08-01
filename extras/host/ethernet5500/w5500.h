@@ -1,5 +1,5 @@
-#ifndef ARDUINO_MCUCORE_EXTRAS_HOST_ETHERNET5500_W5500_H_
-#define ARDUINO_MCUCORE_EXTRAS_HOST_ETHERNET5500_W5500_H_
+#ifndef MCUCORE_EXTRAS_HOST_ETHERNET5500_W5500_H_
+#define MCUCORE_EXTRAS_HOST_ETHERNET5500_W5500_H_
 
 // Some portions of Ethernet5500/src/utility/w5500.h for the purpose of faking
 // the interface exposed by the Wiznet 5500 network chip.
@@ -71,4 +71,4 @@ class IPPROTO {
   static const uint8_t ND = 77;    // NOLINT
   static const uint8_t RAW = 255;  // NOLINT
 };
-#endif  // ARDUINO_MCUCORE_EXTRAS_HOST_ETHERNET5500_W5500_H_
+#endif  // MCUCORE_EXTRAS_HOST_ETHERNET5500_W5500_H_

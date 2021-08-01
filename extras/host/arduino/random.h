@@ -1,5 +1,5 @@
-#ifndef ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_RANDOM_H_
-#define ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_RANDOM_H_
+#ifndef MCUCORE_EXTRAS_HOST_ARDUINO_RANDOM_H_
+#define MCUCORE_EXTRAS_HOST_ARDUINO_RANDOM_H_
 
 #include <stdint.h>
 
@@ -11,4 +11,4 @@ int32_t random(int32_t howbig);
 // Returns a random number in the range [howsmall, howbig-1].
 int32_t random(int32_t howsmall, int32_t howbig);
 
-#endif  // ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_RANDOM_H_
+#endif  // MCUCORE_EXTRAS_HOST_ARDUINO_RANDOM_H_

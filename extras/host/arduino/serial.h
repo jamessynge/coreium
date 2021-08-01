@@ -1,5 +1,5 @@
-#ifndef ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_SERIAL_H_
-#define ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_SERIAL_H_
+#ifndef MCUCORE_EXTRAS_HOST_ARDUINO_SERIAL_H_
+#define MCUCORE_EXTRAS_HOST_ARDUINO_SERIAL_H_
 
 // Provides a fake version of the Serial instance that is used in some of these
 // demo sketches. There is no attempt to support input; it just outputs to
@@ -35,4 +35,4 @@ class FakeSerial : public Print {
 extern FakeSerial Serial;    // NOLINT
 extern FakeSerial ToStdErr;  // NOLINT
 
-#endif  // ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_SERIAL_H_
+#endif  // MCUCORE_EXTRAS_HOST_ARDUINO_SERIAL_H_

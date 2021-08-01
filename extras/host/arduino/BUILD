@@ -95,7 +95,7 @@ cc_library(
         ":wstring",
         "//absl/strings",
         "//absl/strings:str_format",
-        "//core:logging",
+        "//glog:logging",
     ],
 )
 

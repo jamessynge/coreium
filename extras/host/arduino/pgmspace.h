@@ -1,5 +1,5 @@
-#ifndef ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_PGMSPACE_H_
-#define ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_PGMSPACE_H_
+#ifndef MCUCORE_EXTRAS_HOST_ARDUINO_PGMSPACE_H_
+#define MCUCORE_EXTRAS_HOST_ARDUINO_PGMSPACE_H_
 
 // This is a minimal implementation of avr-libc's Program Space Utilities, for
 // the sake limiting the number of #ifdef's in the code of Tiny Alpaca Server.
@@ -33,4 +33,4 @@ int strncasecmp_P(const char* s1, const char* s2, size_t n);
 void* memcpy_P(void* dest, const void* src, size_t n);
 const char* strrchr_P(const char* s, int val);
 
-#endif  // ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_PGMSPACE_H_
+#endif  // MCUCORE_EXTRAS_HOST_ARDUINO_PGMSPACE_H_

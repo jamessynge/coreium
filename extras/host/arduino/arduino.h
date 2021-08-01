@@ -1,5 +1,5 @@
-#ifndef ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_ARDUINO_H_
-#define ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_ARDUINO_H_
+#ifndef MCUCORE_EXTRAS_HOST_ARDUINO_ARDUINO_H_
+#define MCUCORE_EXTRAS_HOST_ARDUINO_ARDUINO_H_
 
 // This provides just (?) enough of Arduino.h for my needs when testing on host.
 //
@@ -81,4 +81,4 @@ inline void detachInterrupt(uint8_t interruptNum) {}
 
 #define F_CPU 16000000
 
-#endif  // ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_ARDUINO_H_
+#endif  // MCUCORE_EXTRAS_HOST_ARDUINO_ARDUINO_H_

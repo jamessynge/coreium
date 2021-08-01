@@ -1,5 +1,5 @@
-#ifndef ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_CLIENT_H_
-#define ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_CLIENT_H_
+#ifndef MCUCORE_EXTRAS_HOST_ARDUINO_CLIENT_H_
+#define MCUCORE_EXTRAS_HOST_ARDUINO_CLIENT_H_
 
 // Represents a stream connected to a server.
 
@@ -17,4 +17,4 @@ class Client : public Stream {
   virtual operator bool() = 0;  // NOLINT
 };
 
-#endif  // ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_CLIENT_H_
+#endif  // MCUCORE_EXTRAS_HOST_ARDUINO_CLIENT_H_

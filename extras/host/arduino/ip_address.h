@@ -1,5 +1,5 @@
-#ifndef ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_IP_ADDRESS_H_
-#define ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_IP_ADDRESS_H_
+#ifndef MCUCORE_EXTRAS_HOST_ARDUINO_IP_ADDRESS_H_
+#define MCUCORE_EXTRAS_HOST_ARDUINO_IP_ADDRESS_H_
 
 // IPAddress holds and can print an IPv4 address. The Arduino version has more
 // features that I've not yet needed for Tiny Alpaca Server.
@@ -45,4 +45,4 @@ class IPAddress : public Printable {
   uint8_t octets_[4];
 };
 
-#endif  // ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_IP_ADDRESS_H_
+#endif  // MCUCORE_EXTRAS_HOST_ARDUINO_IP_ADDRESS_H_

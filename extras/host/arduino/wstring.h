@@ -1,5 +1,5 @@
-#ifndef ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_WSTRING_H_
-#define ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_WSTRING_H_
+#ifndef MCUCORE_EXTRAS_HOST_ARDUINO_WSTRING_H_
+#define MCUCORE_EXTRAS_HOST_ARDUINO_WSTRING_H_
 
 // This provides just enough of WString.h (from Arduino) for my needs when
 // testing on host.
@@ -15,4 +15,4 @@ class __FlashStringHelper;
 // #define F(string_literal) \
 //   (reinterpret_cast<const __FlashStringHelper *>(PSTR(string_literal)))
 
-#endif  // ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_WSTRING_H_
+#endif  // MCUCORE_EXTRAS_HOST_ARDUINO_WSTRING_H_

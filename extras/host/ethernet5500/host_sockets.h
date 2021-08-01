@@ -1,5 +1,5 @@
-#ifndef ARDUINO_MCUCORE_EXTRAS_HOST_ETHERNET5500_HOST_SOCKETS_H_
-#define ARDUINO_MCUCORE_EXTRAS_HOST_ETHERNET5500_HOST_SOCKETS_H_
+#ifndef MCUCORE_EXTRAS_HOST_ETHERNET5500_HOST_SOCKETS_H_
+#define MCUCORE_EXTRAS_HOST_ETHERNET5500_HOST_SOCKETS_H_
 
 // Methods to hide the differences between the Berkley Socket API (on Linux) and
 // the API exposed by the various Ethernet libraries for Arduino.
@@ -56,4 +56,4 @@ struct HostSockets {
 };
 }  // namespace alpaca
 
-#endif  // ARDUINO_MCUCORE_EXTRAS_HOST_ETHERNET5500_HOST_SOCKETS_H_
+#endif  // MCUCORE_EXTRAS_HOST_ETHERNET5500_HOST_SOCKETS_H_

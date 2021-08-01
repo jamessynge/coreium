@@ -1,5 +1,5 @@
-#ifndef ARDUINO_MCUCORE_EXTRAS_TEST_TOOLS_PRINT_TO_STD_STRING_H_
-#define ARDUINO_MCUCORE_EXTRAS_TEST_TOOLS_PRINT_TO_STD_STRING_H_
+#ifndef MCUCORE_EXTRAS_TEST_TOOLS_PRINT_TO_STD_STRING_H_
+#define MCUCORE_EXTRAS_TEST_TOOLS_PRINT_TO_STD_STRING_H_
 
 // PrintToStdString helps with testing methods that accept a Print object and
 // print/write to it. And PrintValueToStdString helps with formatting values for
@@ -49,4 +49,4 @@ class PrintToStdString : public Print {
 }  // namespace test
 }  // namespace mcucore
 
-#endif  // ARDUINO_MCUCORE_EXTRAS_TEST_TOOLS_PRINT_TO_STD_STRING_H_
+#endif  // MCUCORE_EXTRAS_TEST_TOOLS_PRINT_TO_STD_STRING_H_

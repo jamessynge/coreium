@@ -1,5 +1,5 @@
-#ifndef ARDUINO_MCUCORE_EXTRAS_HOST_EEPROM_EEPROM_H_
-#define ARDUINO_MCUCORE_EXTRAS_HOST_EEPROM_EEPROM_H_
+#ifndef MCUCORE_EXTRAS_HOST_EEPROM_EEPROM_H_
+#define MCUCORE_EXTRAS_HOST_EEPROM_EEPROM_H_
 
 // A totally fake version of Arduino's EEPROM. Just stores in RAM, no
 // persistence. IFF we really wanted to, we could use mmap to read and write
@@ -45,4 +45,4 @@ class EEPROMClass {
 
 extern EEPROMClass EEPROM;
 
-#endif  // ARDUINO_MCUCORE_EXTRAS_HOST_EEPROM_EEPROM_H_
+#endif  // MCUCORE_EXTRAS_HOST_EEPROM_EEPROM_H_

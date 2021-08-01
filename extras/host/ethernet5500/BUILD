@@ -62,7 +62,7 @@ cc_library(
         ":host_sockets",
         ":w5500",
         "//absl/time",
-        "//core:logging",
+        "//glog:logging",
     ],
 )
 
@@ -85,7 +85,7 @@ cc_library(
     deps = [
         ":ethernet_config",
         ":w5500",
-        "//core:logging",
+        "//glog:logging",
     ],
 )
 

@@ -1,5 +1,5 @@
-#ifndef ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_INT_TYPES_H_
-#define ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_INT_TYPES_H_
+#ifndef MCUCORE_EXTRAS_HOST_ARDUINO_INT_TYPES_H_
+#define MCUCORE_EXTRAS_HOST_ARDUINO_INT_TYPES_H_
 
 // The basic integer types, and an alternate approach to the min and max macros
 // provided by Arduino.h.
@@ -9,4 +9,4 @@
 inline uint32_t min(uint32_t a, uint32_t b) { return (a <= b) ? a : b; }
 inline uint32_t max(uint32_t a, uint32_t b) { return (a >= b) ? a : b; }
 
-#endif  // ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_INT_TYPES_H_
+#endif  // MCUCORE_EXTRAS_HOST_ARDUINO_INT_TYPES_H_

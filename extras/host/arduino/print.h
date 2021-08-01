@@ -1,5 +1,5 @@
-#ifndef ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_PRINT_H_
-#define ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_PRINT_H_
+#ifndef MCUCORE_EXTRAS_HOST_ARDUINO_PRINT_H_
+#define MCUCORE_EXTRAS_HOST_ARDUINO_PRINT_H_
 
 // When compiled for the host, as opposed to for Arduino, we need our own
 // minimal implementation of the Print class, and the Printable interface.
@@ -97,4 +97,4 @@ class Print {
   int write_error_;
 };
 
-#endif  // ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_PRINT_H_
+#endif  // MCUCORE_EXTRAS_HOST_ARDUINO_PRINT_H_

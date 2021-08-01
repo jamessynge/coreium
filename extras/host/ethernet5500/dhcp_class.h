@@ -1,5 +1,5 @@
-#ifndef ARDUINO_MCUCORE_EXTRAS_HOST_ETHERNET5500_DHCP_CLASS_H_
-#define ARDUINO_MCUCORE_EXTRAS_HOST_ETHERNET5500_DHCP_CLASS_H_
+#ifndef MCUCORE_EXTRAS_HOST_ETHERNET5500_DHCP_CLASS_H_
+#define MCUCORE_EXTRAS_HOST_ETHERNET5500_DHCP_CLASS_H_
 
 // DhcpClass is used in embedded environment to lease an IP address for the
 // device, etc. On the host it does nothing.
@@ -12,4 +12,4 @@
 
 class DhcpClass {};
 
-#endif  // ARDUINO_MCUCORE_EXTRAS_HOST_ETHERNET5500_DHCP_CLASS_H_
+#endif  // MCUCORE_EXTRAS_HOST_ETHERNET5500_DHCP_CLASS_H_

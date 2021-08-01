@@ -1,5 +1,5 @@
-#ifndef ARDUINO_MCUCORE_EXTRAS_TEST_TOOLS_SAMPLE_PRINTABLE_H_
-#define ARDUINO_MCUCORE_EXTRAS_TEST_TOOLS_SAMPLE_PRINTABLE_H_
+#ifndef MCUCORE_EXTRAS_TEST_TOOLS_SAMPLE_PRINTABLE_H_
+#define MCUCORE_EXTRAS_TEST_TOOLS_SAMPLE_PRINTABLE_H_
 
 // SamplePrintable supports testing APIs that accept a Printable.
 //
@@ -28,4 +28,4 @@ struct SamplePrintable : public ::Printable {
 }  // namespace test
 }  // namespace mcucore
 
-#endif  // ARDUINO_MCUCORE_EXTRAS_TEST_TOOLS_SAMPLE_PRINTABLE_H_
+#endif  // MCUCORE_EXTRAS_TEST_TOOLS_SAMPLE_PRINTABLE_H_

@@ -1,5 +1,5 @@
-#ifndef ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_AVR_IO_H_
-#define ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_AVR_IO_H_
+#ifndef MCUCORE_EXTRAS_HOST_ARDUINO_AVR_IO_H_
+#define MCUCORE_EXTRAS_HOST_ARDUINO_AVR_IO_H_
 
 #include "extras/host/arduino/int_types.h"  // IWYU pragma: export
 
@@ -121,4 +121,4 @@ constexpr uint8_t PORF = 0;
 // From avr-libc's include/avr/sfr_defs.h
 #define _BV(bit) (1 << (bit))
 
-#endif  // ARDUINO_MCUCORE_EXTRAS_HOST_ARDUINO_AVR_IO_H_
+#endif  // MCUCORE_EXTRAS_HOST_ARDUINO_AVR_IO_H_
