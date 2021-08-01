@@ -1,0 +1,13 @@
+#ifndef ARDUINO_MCUCORE_EXTRAS_HOST_ETHERNET5500_ETHERNET_CONFIG_H_
+#define ARDUINO_MCUCORE_EXTRAS_HOST_ETHERNET5500_ETHERNET_CONFIG_H_
+
+#include <inttypes.h>
+
+namespace alpaca {
+
+typedef uint8_t SOCKET;
+#define MAX_SOCK_NUM 8
+
+}  // namespace alpaca
+
+#endif  // ARDUINO_MCUCORE_EXTRAS_HOST_ETHERNET5500_ETHERNET_CONFIG_H_
