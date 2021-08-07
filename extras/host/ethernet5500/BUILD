@@ -19,7 +19,7 @@ cc_library(
         ":ethernet_server",
         ":ethernet_udp",
         ":w5500",
-        "//extras/host/arduino:ip_address",
+        "//mcucore/extras/host/arduino:ip_address",
     ],
 )
 
@@ -30,7 +30,7 @@ cc_library(
     deps = [
         ":dhcp_class",
         ":ethernet_config",
-        "//extras/host/arduino:ip_address",
+        "//mcucore/extras/host/arduino:ip_address",
     ],
 )
 
@@ -42,7 +42,7 @@ cc_library(
         ":ethernet_config",
         ":host_sockets",
         ":w5500",
-        "//extras/host/arduino:client",
+        "//mcucore/extras/host/arduino:client",
     ],
 )
 
@@ -73,8 +73,8 @@ cc_library(
     deps = [
         ":ethernet_client",
         ":ethernet_config",
-        "//extras/host/arduino:ip_address",
-        "//extras/host/arduino:stream",
+        "//mcucore/extras/host/arduino:ip_address",
+        "//mcucore/extras/host/arduino:stream",
     ],
 )
 
@@ -92,5 +92,5 @@ cc_library(
 cc_library(
     name = "w5500",
     hdrs = ["w5500.h"],
-    deps = ["//extras/host/arduino:int_types"],
+    deps = ["//mcucore/extras/host/arduino:int_types"],
 )

@@ -2,11 +2,11 @@
 
 #include <string_view>
 
-#include "experimental/users/jamessynge/arduino/tas/src/utils/literal.h"
 #include "extras/test_tools/print_to_std_string.h"
 #include "gtest/gtest.h"
 #include "o_print_stream.h"
 #include "progmem_string_view.h"
+#include "utils/literal.h"
 
 namespace alpaca {
 namespace test {

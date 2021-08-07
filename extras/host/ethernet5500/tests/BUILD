@@ -4,8 +4,8 @@ cc_test(
     name = "ethernet_client_test",
     srcs = ["ethernet_client_test.cc"],
     deps = [
-        "//extras/host/ethernet5500:ethernet_client",
-        "//extras/test_tools:print_to_std_string",
         "//googletest:gunit_main",
+        "//mcucore/extras/host/ethernet5500:ethernet_client",
+        "//mcucore/extras/test_tools:print_to_std_string",
     ],
 )

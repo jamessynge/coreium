@@ -5,16 +5,16 @@
 #include <string>
 
 #include "absl/strings/string_view.h"
-#include "experimental/users/jamessynge/arduino/tas/extras/test_tools/progmem_string_view_utils.h"
-#include "experimental/users/jamessynge/arduino/tas/extras/test_tools/string_view_utils.h"
-#include "experimental/users/jamessynge/arduino/tas/src/utils/hex_escape.h"
-#include "experimental/users/jamessynge/arduino/tas/src/utils/string_compare.h"
-#include "experimental/users/jamessynge/arduino/tas/src/utils/string_view.h"
 #include "extras/test_tools/print_to_std_string.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "mcucore_platform.h"
 #include "o_print_stream.h"
+#include "test_tools/progmem_string_view_utils.h"
+#include "test_tools/string_view_utils.h"
+#include "utils/hex_escape.h"
+#include "utils/string_compare.h"
+#include "utils/string_view.h"
 
 namespace alpaca {
 namespace test {

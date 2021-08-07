@@ -24,8 +24,8 @@ cc_library(
         ":mcucore_platform",
         ":o_print_stream",
         "//base:logging_extensions",
-        "//extras/test_tools:print_to_std_string",
         "//glog:logging",
+        "//mcucore/extras/test_tools:print_to_std_string",
     ],
 )
 
@@ -68,11 +68,11 @@ cc_library(
     deps = [
         ":mcucore_config",
         "//absl/base:core_headers",
-        "//extras/host/arduino",
-        "//extras/host/arduino:pgmspace",
-        "//extras/host/arduino:print",
-        "//extras/host/arduino:stream",
-        "//extras/host/eeprom",
+        "//mcucore/extras/host/arduino",
+        "//mcucore/extras/host/arduino:pgmspace",
+        "//mcucore/extras/host/arduino:print",
+        "//mcucore/extras/host/arduino:stream",
+        "//mcucore/extras/host/eeprom",
     ],
 )
 

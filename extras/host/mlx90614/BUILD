@@ -3,5 +3,5 @@
 cc_library(
     name = "mlx90614",
     hdrs = ["mlx90614.h"],
-    deps = ["//extras/host/arduino"],
+    deps = ["//mcucore/extras/host/arduino"],
 )
