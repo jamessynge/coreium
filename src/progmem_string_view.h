@@ -23,7 +23,7 @@
 
 #include "mcucore_platform.h"
 
-namespace alpaca {
+namespace mcucore {
 
 class ProgmemStringView {
  public:
@@ -101,6 +101,6 @@ class ProgmemStringView {
   size_type size_;
 };
 
-}  // namespace alpaca
+}  // namespace mcucore
 
 #endif  // MCUCORE_SRC_PROGMEM_STRING_VIEW_H_

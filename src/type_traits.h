@@ -10,7 +10,7 @@
 
 #include "mcucore_platform.h"
 
-namespace alpaca {
+namespace mcucore {
 
 // Based on https://en.cppreference.com/w/cpp/types/void_t
 
@@ -172,6 +172,6 @@ struct is_pointer
 template <class>
 struct sfinae_true : true_type {};
 
-}  // namespace alpaca
+}  // namespace mcucore
 
 #endif  // MCUCORE_SRC_TYPE_TRAITS_H_

@@ -4,7 +4,7 @@
 #include "gtest/gtest.h"
 #include "inline_literal.h"
 
-namespace alpaca {
+namespace mcucore {
 
 namespace test {
 namespace {
@@ -47,4 +47,4 @@ TEST(TasBasenameTest, TrailingSlash) {
 
 }  // namespace
 }  // namespace test
-}  // namespace alpaca
+}  // namespace mcucore

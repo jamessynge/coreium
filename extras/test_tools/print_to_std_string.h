@@ -5,9 +5,9 @@
 // print/write to it. And PrintValueToStdString helps with formatting values for
 // which we have Arduino compatible formatters, but not std::ostream formatters.
 //
-// Note that these are not in namespace alpaca::test so that they can be used by
-// non-tests (i.e. for implementing operator<< for host use, but not necessarily
-// tests).
+// Note that these are not in namespace mcucore::test so that they can be used
+// by non-tests (i.e. for implementing operator<< for host use, but not
+// necessarily tests).
 //
 // Author: james.synge@gmail.com
 

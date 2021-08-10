@@ -7,11 +7,13 @@
 #include "extras/host/ethernet5500/w5500.h"
 #include "glog/logging.h"
 
+using ::mcunet_host::HostSockets;
+
 EthernetServer::EthernetServer(uint16_t port) : port_(port) {}
 
 void EthernetServer::begin() {
   VLOG(3) << "EthernetServer::begin entry";
-  auto sock_num = alpaca::HostSockets::InitializeTcpListenerSocket(port_);
+  auto sock_num = HostSockets::InitializeTcpListenerSocket(port_);
   if (sock_num >= 0) {
     EthernetClass::_server_port[sock_num] = port_;
   } else {

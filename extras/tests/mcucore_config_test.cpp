@@ -5,7 +5,7 @@
 #include "gtest/gtest.h"
 #include "mcucore_platform.h"
 
-namespace alpaca {
+namespace mcucore {
 namespace test {
 namespace {
 
@@ -38,4 +38,4 @@ TEST(ConfigTest, LogInfo) {
 
 }  // namespace
 }  // namespace test
-}  // namespace alpaca
+}  // namespace mcucore

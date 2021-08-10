@@ -18,7 +18,7 @@
 #include "inline_literal.h"
 #include "mcucore_platform.h"
 
-namespace alpaca {
+namespace mcucore {
 
 class ProgmemString {
  public:
@@ -54,6 +54,6 @@ class ProgmemString {
   const char* ptr_;
 };
 
-}  // namespace alpaca
+}  // namespace mcucore
 
 #endif  // MCUCORE_SRC_PROGMEM_STRING_H_

@@ -12,7 +12,7 @@
 #include "mcucore_platform.h"
 #include "type_traits.h"
 
-namespace alpaca {
+namespace mcucore {
 namespace print_to_trait_internal {
 
 // Matches a T that has a printTo(Print&) member function.
@@ -47,6 +47,6 @@ struct has_print_value_to<
     T, void_t<decltype(PrintValueTo(declval<T>(), declval<::Print&>()))>>
     : true_type {};
 
-}  // namespace alpaca
+}  // namespace mcucore
 
 #endif  // MCUCORE_SRC_PRINT_TO_TRAIT_H_

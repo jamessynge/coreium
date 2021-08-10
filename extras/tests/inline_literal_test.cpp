@@ -4,18 +4,18 @@
 
 #include "extras/test_tools/print_to_std_string.h"
 #include "gtest/gtest.h"
+#include "literal.h"
 #include "o_print_stream.h"
 #include "progmem_string_view.h"
-#include "utils/literal.h"
 
-namespace alpaca {
+namespace mcucore {
 namespace test {
 namespace {
-using ::alpaca::progmem_data::ProgmemStrData;
+using ::mcucore::progmem_data::ProgmemStrData;
 
 TEST(InlineLiteralTest, ExplicitProgmemStrData) {
   using Type = ProgmemStrData<'H', 'E', 'L', 'L', 'O'>;
-  auto printable = alpaca::progmem_data::MakeProgmemStringView<Type>();
+  auto printable = mcucore::progmem_data::MakeProgmemStringView<Type>();
   EXPECT_EQ(printable.size(), 5);
   mcucore::test::PrintToStdString out;
   EXPECT_EQ(printable.printTo(out), 5);
@@ -24,7 +24,7 @@ TEST(InlineLiteralTest, ExplicitProgmemStrData) {
 
 TEST(InlineLiteralTest, EmptyProgmemStrData) {
   using Type = ProgmemStrData<>;
-  auto printable = alpaca::progmem_data::MakeProgmemStringView<Type>();
+  auto printable = mcucore::progmem_data::MakeProgmemStringView<Type>();
   EXPECT_EQ(printable.size(), 0);
   mcucore::test::PrintToStdString out;
   EXPECT_EQ(printable.printTo(out), 0);
@@ -35,7 +35,7 @@ TEST(InlineLiteralTest, TasExpand16) {
   // When we don't search for the NUL at the end, the ProgmemStrData is padded
   // out to the size nnn, determined by the _TAS_EXPAND_nnn used.
   using Type = ProgmemStrData<_TAS_EXPAND_16(, "Hello!")>;
-  auto printable = alpaca::progmem_data::MakeProgmemStringView<Type>();
+  auto printable = mcucore::progmem_data::MakeProgmemStringView<Type>();
   EXPECT_EQ(printable.size(), 16);
   mcucore::test::PrintToStdString out;
   EXPECT_EQ(printable.printTo(out), 16);
@@ -207,4 +207,4 @@ OVERFLOWS_TEST(1025, 1024);
 #endif
 }  // namespace
 }  // namespace test
-}  // namespace alpaca
+}  // namespace mcucore

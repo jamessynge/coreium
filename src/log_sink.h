@@ -14,7 +14,7 @@
 #include "mcucore_platform.h"
 #include "o_print_stream.h"
 
-namespace alpaca {
+namespace mcucore {
 
 class MessageSinkBase : public OPrintStream {
  public:
@@ -78,6 +78,6 @@ class LogSinkVoidify {
   void operator&&(const VoidSink&) {}
 };
 
-}  // namespace alpaca
+}  // namespace mcucore
 
 #endif  // EXPERIMENTAL_USERS_JAMESSYNGE_ARDUINO_TAS_SRC_UTILS_LOG_SINK_H_

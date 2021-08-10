@@ -2,7 +2,7 @@
 
 #include "mcucore_platform.h"
 
-namespace alpaca {
+namespace mcucore {
 
 bool ProgmemString::operator==(const ProgmemString& other) const {
   auto ptr1 = ptr_;
@@ -35,4 +35,4 @@ bool ProgmemString::operator==(const ProgmemString& other) const {
   }
 }
 
-}  // namespace alpaca
+}  // namespace mcucore

@@ -6,17 +6,17 @@
 
 #include "absl/strings/string_view.h"
 #include "extras/test_tools/print_to_std_string.h"
+#include "extras/test_tools/progmem_string_view_utils.h"
+#include "extras/test_tools/string_view_utils.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "hex_escape.h"
 #include "mcucore_platform.h"
 #include "o_print_stream.h"
-#include "test_tools/progmem_string_view_utils.h"
-#include "test_tools/string_view_utils.h"
-#include "utils/hex_escape.h"
-#include "utils/string_compare.h"
-#include "utils/string_view.h"
+#include "string_compare.h"
+#include "string_view.h"
 
-namespace alpaca {
+namespace mcucore {
 namespace test {
 namespace {
 
@@ -251,4 +251,4 @@ TEST(ProgmemStringViewTest, Inequality) {
 
 }  // namespace
 }  // namespace test
-}  // namespace alpaca
+}  // namespace mcucore
