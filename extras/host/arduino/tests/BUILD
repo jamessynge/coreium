@@ -5,8 +5,8 @@ cc_test(
     srcs = ["pgmspace_test.cc"],
     deps = [
         "//absl/strings",
-        "//extras/host/arduino:pgmspace",
         "//googletest:gunit_main",
+        "//mcucore/extras/host/arduino:pgmspace",
     ],
 )
 
@@ -15,10 +15,10 @@ cc_test(
     srcs = ["print_test.cc"],
     deps = [
         "//absl/strings",
-        "//extras/host/arduino:print",
-        "//extras/host/arduino:wstring",
-        "//extras/test_tools:print_to_std_string",
-        "//extras/test_tools:sample_printable",
         "//googletest:gunit_main",
+        "//mcucore/extras/host/arduino:print",
+        "//mcucore/extras/host/arduino:wstring",
+        "//mcucore/extras/test_tools:print_to_std_string",
+        "//mcucore/extras/test_tools:sample_printable",
     ],
 )

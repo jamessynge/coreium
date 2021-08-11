@@ -110,17 +110,17 @@
 #endif  // TAS_ENABLE_DCHECK
 #endif  // TAS_DISABLE_DCHECK
 
-#define TAS_VOID_SINK ::alpaca::VoidSink()
+#define TAS_VOID_SINK ::mcucore::VoidSink()
 
 #if defined(TAS_ENABLED_VLOG_LEVEL) && TAS_ENABLED_VLOG_LEVEL > 0
 
-#define TAS_VLOG(level)                 \
-  switch (0)                            \
-  default:                              \
-    (TAS_ENABLED_VLOG_LEVEL < level)    \
-        ? (void)0                       \
-        : ::alpaca::LogSinkVoidify() && \
-              ::alpaca::LogSink(TAS_BASENAME(__FILE__), __LINE__)
+#define TAS_VLOG(level)                  \
+  switch (0)                             \
+  default:                               \
+    (TAS_ENABLED_VLOG_LEVEL < level)     \
+        ? (void)0                        \
+        : ::mcucore::LogSinkVoidify() && \
+              ::mcucore::LogSink(TAS_BASENAME(__FILE__), __LINE__)
 
 #define TAS_VLOG_IS_ON(level) (TAS_ENABLED_VLOG_LEVEL >= (level))
 
@@ -135,7 +135,7 @@
 #define TAS_VLOG(level) \
   switch (0)            \
   default:              \
-    (true) ? (void)0 : ::alpaca::LogSinkVoidify() && TAS_VOID_SINK
+    (true) ? (void)0 : ::mcucore::LogSinkVoidify() && TAS_VOID_SINK
 
 #define TAS_VLOG_IS_ON(level) (false)
 
@@ -148,13 +148,13 @@
 
 #ifdef TAS_ENABLE_CHECK
 
-#define TAS_CHECK_INTERNAL_(expression, message)                             \
-  switch (0)                                                                 \
-  default:                                                                   \
-    (expression) ? (void)0                                                   \
-                 : ::alpaca::LogSinkVoidify() &&                             \
-                       ::alpaca::CheckSink(TAS_BASENAME(__FILE__), __LINE__, \
-                                           TAS_FLASHSTR(message))
+#define TAS_CHECK_INTERNAL_(expression, message)                              \
+  switch (0)                                                                  \
+  default:                                                                    \
+    (expression) ? (void)0                                                    \
+                 : ::mcucore::LogSinkVoidify() &&                             \
+                       ::mcucore::CheckSink(TAS_BASENAME(__FILE__), __LINE__, \
+                                            TAS_FLASHSTR(message))
 
 #else  // !TAS_ENABLE_CHECK
 
@@ -162,7 +162,7 @@
   switch (0)                                     \
   default:                                       \
     ((expression) || true) ? (void)0             \
-                           : ::alpaca::LogSinkVoidify() && TAS_VOID_SINK
+                           : ::mcucore::LogSinkVoidify() && TAS_VOID_SINK
 
 #endif  // TAS_ENABLE_CHECK
 
@@ -180,13 +180,13 @@
 
 #if defined(TAS_ENABLE_CHECK) && defined(TAS_ENABLE_DCHECK)
 
-#define TAS_DCHECK_INTERNAL_(expression, message)                            \
-  switch (0)                                                                 \
-  default:                                                                   \
-    (expression) ? (void)0                                                   \
-                 : ::alpaca::LogSinkVoidify() &&                             \
-                       ::alpaca::CheckSink(TAS_BASENAME(__FILE__), __LINE__, \
-                                           TAS_FLASHSTR_128(message))
+#define TAS_DCHECK_INTERNAL_(expression, message)                             \
+  switch (0)                                                                  \
+  default:                                                                    \
+    (expression) ? (void)0                                                    \
+                 : ::mcucore::LogSinkVoidify() &&                             \
+                       ::mcucore::CheckSink(TAS_BASENAME(__FILE__), __LINE__, \
+                                            TAS_FLASHSTR_128(message))
 
 #else
 
@@ -198,7 +198,7 @@
   switch (0)                                      \
   default:                                        \
     (true || (expression)) ? (void)0              \
-                           : ::alpaca::LogSinkVoidify() && TAS_VOID_SINK
+                           : ::mcucore::LogSinkVoidify() && TAS_VOID_SINK
 
 #endif
 

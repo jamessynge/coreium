@@ -5,7 +5,7 @@
 #include "inline_literal.h"
 #include "o_print_stream.h"
 
-namespace alpaca {
+namespace mcucore {
 namespace test {
 namespace {
 
@@ -81,4 +81,4 @@ TEST(CheckSinkDeathTest, InsertIntoTemporary) {
 
 }  // namespace
 }  // namespace test
-}  // namespace alpaca
+}  // namespace mcucore

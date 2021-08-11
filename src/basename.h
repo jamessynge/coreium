@@ -33,7 +33,7 @@
 #include "inline_literal.h"
 #include "mcucore_platform.h"
 
-namespace alpaca {
+namespace mcucore {
 namespace progmem_data {
 
 // "Forward" declaration of an undefined type. If this appears in a compiler
@@ -149,19 +149,19 @@ auto ProvideStorage(BasenameStrPack<false, C...>) -> SourceFilePathIsTooLong;
 #define _TAS_EXPAND_BASENAME(n, x) _TAS_EXPAND_256(n, x)
 #endif
 
-#define _TAS_KEEP_BASENAME_ONLY(path_literal)                              \
-  decltype(::alpaca::progmem_data::ExpandPathKeepBasename(                 \
-      ::alpaca::progmem_data::BasenameStrPack<false, _TAS_EXPAND_BASENAME( \
-                                                         , path_literal)>()))
+#define _TAS_KEEP_BASENAME_ONLY(path_literal)                               \
+  decltype(::mcucore::progmem_data::ExpandPathKeepBasename(                 \
+      ::mcucore::progmem_data::BasenameStrPack<false, _TAS_EXPAND_BASENAME( \
+                                                          , path_literal)>()))
 
-#define _TAS_BASENAME_TYPE(path_literal)           \
-  decltype(::alpaca::progmem_data::ProvideStorage( \
+#define _TAS_BASENAME_TYPE(path_literal)            \
+  decltype(::mcucore::progmem_data::ProvideStorage( \
       _TAS_KEEP_BASENAME_ONLY(path_literal)()))
 
 #define TAS_BASENAME(x) \
   (reinterpret_cast<const __FlashStringHelper*>(_TAS_BASENAME_TYPE(x)::kData))
 
 }  // namespace progmem_data
-}  // namespace alpaca
+}  // namespace mcucore
 
 #endif  // EXPERIMENTAL_USERS_JAMESSYNGE_ARDUINO_TAS_SRC_UTILS_BASENAME_H_

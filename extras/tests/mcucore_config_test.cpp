@@ -1,11 +1,11 @@
 #include "mcucore_config.h"
 
-#include "experimental/users/jamessynge/arduino/tas/src/config.h"
+#include "config.h"
 #include "glog/logging.h"
 #include "gtest/gtest.h"
 #include "mcucore_platform.h"
 
-namespace alpaca {
+namespace mcucore {
 namespace test {
 namespace {
 
@@ -38,4 +38,4 @@ TEST(ConfigTest, LogInfo) {
 
 }  // namespace
 }  // namespace test
-}  // namespace alpaca
+}  // namespace mcucore

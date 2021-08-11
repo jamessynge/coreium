@@ -8,7 +8,7 @@
 #include "extras/test_tools/sample_printable.h"
 #include "gtest/gtest.h"
 
-namespace alpaca {
+namespace mcucore {
 namespace test {
 namespace {
 
@@ -103,4 +103,4 @@ TEST(OPrintStreamTest, ChangeBase) {
 
 }  // namespace
 }  // namespace test
-}  // namespace alpaca
+}  // namespace mcucore

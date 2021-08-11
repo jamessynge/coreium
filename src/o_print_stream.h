@@ -13,7 +13,7 @@
 #include <string>  // pragma: keep standard include
 #endif
 
-namespace alpaca {
+namespace mcucore {
 
 class OPrintStream {
  public:
@@ -151,6 +151,6 @@ inline void BaseDec(OPrintStream& strm) { strm.set_base(10); }
 // Will insert "Value: 0b1010, 0xA" into strm.
 inline void BaseTwo(OPrintStream& strm) { strm.set_base(2); }
 
-}  // namespace alpaca
+}  // namespace mcucore
 
 #endif  // EXPERIMENTAL_USERS_JAMESSYNGE_ARDUINO_TAS_SRC_UTILS_O_PRINT_STREAM_H_

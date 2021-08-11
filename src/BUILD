@@ -1,8 +1,105 @@
 cc_library(
+    name = "McuCore",
+    hdrs = ["McuCore.h"],
+    deps = [
+        ":any_printable",
+        ":array",
+        ":array_view",
+        ":basename",
+        ":counting_print",
+        ":eeprom_io",
+        ":hex_escape",
+        ":inline_literal",
+        ":json_encoder",
+        ":json_encoder_helpers",
+        ":literal",
+        ":log_sink",
+        ":logging",
+        ":mcucore_config",
+        ":mcucore_platform",
+        ":o_print_stream",
+        ":print_misc",
+        ":print_to_trait",
+        ":printable_cat",
+        ":progmem_string",
+        ":progmem_string_view",
+        ":status",
+        ":status_or",
+        ":stream_to_print",
+        ":string_compare",
+        ":string_view",
+        ":tiny_string",
+        ":type_traits",
+    ],
+)
+
+cc_library(
+    name = "any_printable",
+    srcs = ["any_printable.cc"],
+    hdrs = ["any_printable.h"],
+    deps = [
+        ":literal",
+        ":mcucore_platform",
+        ":progmem_string",
+        ":progmem_string_view",
+        ":string_view",
+    ],
+)
+
+cc_library(
+    name = "array",
+    hdrs = ["array.h"],
+    deps = [
+        ":array_view",
+        ":logging",
+        ":mcucore_platform",
+    ],
+)
+
+cc_library(
+    name = "array_view",
+    hdrs = ["array_view.h"],
+    deps = [
+        ":logging",
+        ":mcucore_platform",
+        ":type_traits",
+    ],
+)
+
+cc_library(
     name = "basename",
     hdrs = ["basename.h"],
     deps = [
         ":inline_literal",
+        ":mcucore_platform",
+    ],
+)
+
+cc_library(
+    name = "counting_print",
+    srcs = ["counting_print.cc"],
+    hdrs = ["counting_print.h"],
+    deps = [":mcucore_platform"],
+)
+
+cc_library(
+    name = "eeprom_io",
+    srcs = ["eeprom_io.cc"],
+    hdrs = ["eeprom_io.h"],
+    deps = [
+        ":hex_escape",
+        ":logging",
+        ":mcucore_platform",
+        ":o_print_stream",
+    ],
+)
+
+cc_library(
+    name = "hex_escape",
+    srcs = ["hex_escape.cc"],
+    hdrs = ["hex_escape.h"],
+    deps = [
+        ":logging",
         ":mcucore_platform",
     ],
 )
@@ -17,6 +114,47 @@ cc_library(
 )
 
 cc_library(
+    name = "json_encoder",
+    srcs = ["json_encoder.cc"],
+    hdrs = ["json_encoder.h"],
+    deps = [
+        ":any_printable",
+        ":array_view",
+        ":counting_print",
+        ":literal",
+        ":mcucore_platform",
+        ":o_print_stream",
+        ":progmem_string",
+        ":progmem_string_view",
+    ],
+)
+
+cc_library(
+    name = "json_encoder_helpers",
+    srcs = ["json_encoder_helpers.cc"],
+    hdrs = ["json_encoder_helpers.h"],
+    deps = [
+        ":counting_print",
+        ":json_encoder",
+        ":logging",
+        ":mcucore_platform",
+    ],
+)
+
+cc_library(
+    name = "literal",
+    srcs = ["literal.cc"],
+    hdrs = ["literal.h"],
+    deps = [
+        ":logging",
+        ":mcucore_platform",
+        ":print_to_trait",
+        ":progmem_string",
+        ":progmem_string_view",
+    ],
+)
+
+cc_library(
     name = "log_sink",
     srcs = ["log_sink.cc"],
     hdrs = ["log_sink.h"],
@@ -24,8 +162,8 @@ cc_library(
         ":mcucore_platform",
         ":o_print_stream",
         "//base:logging_extensions",
-        "//extras/test_tools:print_to_std_string",
         "//glog:logging",
+        "//mcucore/extras/test_tools:print_to_std_string",
     ],
 )
 
@@ -45,34 +183,16 @@ cc_library(
 )
 
 cc_library(
-    name = "McuCore",
-    hdrs = ["McuCore.h"],
-    deps = [
-        ":basename",
-        ":inline_literal",
-        ":log_sink",
-        ":logging",
-        ":mcucore_config",
-        ":mcucore_platform",
-        ":o_print_stream",
-        ":print_to_trait",
-        ":progmem_string",
-        ":progmem_string_view",
-        ":type_traits",
-    ],
-)
-
-cc_library(
     name = "mcucore_platform",
     hdrs = ["mcucore_platform.h"],
     deps = [
         ":mcucore_config",
         "//absl/base:core_headers",
-        "//extras/host/arduino",
-        "//extras/host/arduino:pgmspace",
-        "//extras/host/arduino:print",
-        "//extras/host/arduino:stream",
-        "//extras/host/eeprom",
+        "//mcucore/extras/host/arduino",
+        "//mcucore/extras/host/arduino:pgmspace",
+        "//mcucore/extras/host/arduino:print",
+        "//mcucore/extras/host/arduino:stream",
+        "//mcucore/extras/host/eeprom",
     ],
 )
 
@@ -87,11 +207,34 @@ cc_library(
 )
 
 cc_library(
+    name = "print_misc",
+    srcs = ["print_misc.cc"],
+    hdrs = ["print_misc.h"],
+    deps = [
+        ":counting_print",
+        ":inline_literal",
+        ":mcucore_platform",
+    ],
+)
+
+cc_library(
     name = "print_to_trait",
     hdrs = ["print_to_trait.h"],
     deps = [
         ":mcucore_platform",
         ":type_traits",
+    ],
+)
+
+cc_library(
+    name = "printable_cat",
+    srcs = ["printable_cat.cc"],
+    hdrs = ["printable_cat.h"],
+    deps = [
+        ":any_printable",
+        ":array",
+        ":array_view",
+        ":mcucore_platform",
     ],
 )
 
@@ -112,6 +255,74 @@ cc_library(
     deps = [
         ":mcucore_platform",
         ":print_to_trait",
+    ],
+)
+
+cc_library(
+    name = "status",
+    srcs = ["status.cc"],
+    hdrs = ["status.h"],
+    deps = [
+        ":counting_print",
+        ":hex_escape",
+        ":inline_literal",
+        ":literal",
+        ":mcucore_platform",
+        ":o_print_stream",
+    ],
+)
+
+cc_library(
+    name = "status_or",
+    hdrs = ["status_or.h"],
+    deps = [
+        ":logging",
+        ":mcucore_platform",
+        ":status",
+    ],
+)
+
+cc_library(
+    name = "stream_to_print",
+    hdrs = ["stream_to_print.h"],
+    deps = [
+        ":mcucore_platform",
+        ":o_print_stream",
+    ],
+)
+
+cc_library(
+    name = "string_compare",
+    srcs = ["string_compare.cc"],
+    hdrs = ["string_compare.h"],
+    deps = [
+        ":literal",
+        ":mcucore_platform",
+        ":progmem_string_view",
+        ":string_view",
+    ],
+)
+
+cc_library(
+    name = "string_view",
+    srcs = ["string_view.cc"],
+    hdrs = ["string_view.h"],
+    deps = [
+        ":hex_escape",
+        ":inline_literal",
+        ":logging",
+        ":mcucore_platform",
+        ":o_print_stream",
+        ":print_to_trait",
+    ],
+)
+
+cc_library(
+    name = "tiny_string",
+    hdrs = ["tiny_string.h"],
+    deps = [
+        ":logging",
+        ":mcucore_platform",
     ],
 )
 

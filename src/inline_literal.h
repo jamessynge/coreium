@@ -33,13 +33,14 @@
 #include "mcucore_platform.h"
 #include "progmem_string_view.h"  // IWYU pragma: export
 
-namespace alpaca {
+namespace mcucore {
 namespace progmem_data {
 
 // Instantiations of this template provide static, constexpr storage for string
-// literals. By placing them in the ::alpaca::progmem_data namespace, the linker
-// will combine multiple occurrences of the same TAS_FLASHSTR(string_literal)
-// across multiple files such that they share the storage.
+// literals. By placing them in the ::mcucore::progmem_data namespace, the
+// linker will combine multiple occurrences of the same
+// TAS_FLASHSTR(string_literal) across multiple files such that they share the
+// storage.
 template <char... C>
 struct ProgmemStrData final {
   // We add a trailing NUL here so that we can interpret kData as a
@@ -140,7 +141,7 @@ constexpr char GetNthCharOfM(char const (&c)[M]) {
 // characters of a hard coded length. If that length is longer than the string
 // literal's length, the trailing characters are all NULs.
 
-#define _TAS_GET_NTH_CHAR(n, x) ::alpaca::progmem_data::GetNthCharOfM<0x##n>(x)
+#define _TAS_GET_NTH_CHAR(n, x) ::mcucore::progmem_data::GetNthCharOfM<0x##n>(x)
 
 /* 2^4 = 16 */
 #define _TAS_EXPAND_16(n, x)                                  \
@@ -205,102 +206,102 @@ constexpr char GetNthCharOfM(char const (&c)[M]) {
 
 // Max length 31 (not including trailing NUL).
 
-#define _TAS_KEEP_LITERAL_BEFORE_NUL_32(x)                     \
-  decltype(::alpaca::progmem_data::ExpandLiteralKeepBeforeNUL( \
-      ::alpaca::progmem_data::LiteralStringPack<false,         \
-                                                _TAS_EXPAND_32(, x)>()))
+#define _TAS_KEEP_LITERAL_BEFORE_NUL_32(x)                      \
+  decltype(::mcucore::progmem_data::ExpandLiteralKeepBeforeNUL( \
+      ::mcucore::progmem_data::LiteralStringPack<false,         \
+                                                 _TAS_EXPAND_32(, x)>()))
 
-#define _TAS_PSD_TYPE_32(x)                        \
-  decltype(::alpaca::progmem_data::ProvideStorage( \
+#define _TAS_PSD_TYPE_32(x)                         \
+  decltype(::mcucore::progmem_data::ProvideStorage( \
       _TAS_KEEP_LITERAL_BEFORE_NUL_32(x)()))
 
 #define TAS_PSV_32(x) \
-  (::alpaca::progmem_data::MakeProgmemStringView<_TAS_PSD_TYPE_32(x)>())
+  (::mcucore::progmem_data::MakeProgmemStringView<_TAS_PSD_TYPE_32(x)>())
 
 #define TAS_FLASHSTR_32(x) \
   (reinterpret_cast<const __FlashStringHelper*>(_TAS_PSD_TYPE_32(x)::kData))
 
 // Max length 63 (not including trailing NUL).
 
-#define _TAS_KEEP_LITERAL_BEFORE_NUL_64(x)                     \
-  decltype(::alpaca::progmem_data::ExpandLiteralKeepBeforeNUL( \
-      ::alpaca::progmem_data::LiteralStringPack<false,         \
-                                                _TAS_EXPAND_64(, x)>()))
+#define _TAS_KEEP_LITERAL_BEFORE_NUL_64(x)                      \
+  decltype(::mcucore::progmem_data::ExpandLiteralKeepBeforeNUL( \
+      ::mcucore::progmem_data::LiteralStringPack<false,         \
+                                                 _TAS_EXPAND_64(, x)>()))
 
-#define _TAS_PSD_TYPE_64(x)                        \
-  decltype(::alpaca::progmem_data::ProvideStorage( \
+#define _TAS_PSD_TYPE_64(x)                         \
+  decltype(::mcucore::progmem_data::ProvideStorage( \
       _TAS_KEEP_LITERAL_BEFORE_NUL_64(x)()))
 
 #define TAS_PSV_64(x) \
-  (::alpaca::progmem_data::MakeProgmemStringView<_TAS_PSD_TYPE_64(x)>())
+  (::mcucore::progmem_data::MakeProgmemStringView<_TAS_PSD_TYPE_64(x)>())
 
 #define TAS_FLASHSTR_64(x) \
   (reinterpret_cast<const __FlashStringHelper*>(_TAS_PSD_TYPE_64(x)::kData))
 
 // Max length 127 (not including trailing NUL).
 
-#define _TAS_KEEP_LITERAL_BEFORE_NUL_128(x)                    \
-  decltype(::alpaca::progmem_data::ExpandLiteralKeepBeforeNUL( \
-      ::alpaca::progmem_data::LiteralStringPack<false,         \
-                                                _TAS_EXPAND_128(, x)>()))
+#define _TAS_KEEP_LITERAL_BEFORE_NUL_128(x)                     \
+  decltype(::mcucore::progmem_data::ExpandLiteralKeepBeforeNUL( \
+      ::mcucore::progmem_data::LiteralStringPack<false,         \
+                                                 _TAS_EXPAND_128(, x)>()))
 
-#define _TAS_PSD_TYPE_128(x)                       \
-  decltype(::alpaca::progmem_data::ProvideStorage( \
+#define _TAS_PSD_TYPE_128(x)                        \
+  decltype(::mcucore::progmem_data::ProvideStorage( \
       _TAS_KEEP_LITERAL_BEFORE_NUL_128(x)()))
 
 #define TAS_PSV_128(x) \
-  (::alpaca::progmem_data::MakeProgmemStringView<_TAS_PSD_TYPE_128(x)>())
+  (::mcucore::progmem_data::MakeProgmemStringView<_TAS_PSD_TYPE_128(x)>())
 
 #define TAS_FLASHSTR_128(x) \
   (reinterpret_cast<const __FlashStringHelper*>(_TAS_PSD_TYPE_128(x)::kData))
 
 // Max length 255 (not including trailing NUL).
 
-#define _TAS_KEEP_LITERAL_BEFORE_NUL_256(x)                    \
-  decltype(::alpaca::progmem_data::ExpandLiteralKeepBeforeNUL( \
-      ::alpaca::progmem_data::LiteralStringPack<false,         \
-                                                _TAS_EXPAND_256(, x)>()))
+#define _TAS_KEEP_LITERAL_BEFORE_NUL_256(x)                     \
+  decltype(::mcucore::progmem_data::ExpandLiteralKeepBeforeNUL( \
+      ::mcucore::progmem_data::LiteralStringPack<false,         \
+                                                 _TAS_EXPAND_256(, x)>()))
 
-#define _TAS_PSD_TYPE_256(x)                       \
-  decltype(::alpaca::progmem_data::ProvideStorage( \
+#define _TAS_PSD_TYPE_256(x)                        \
+  decltype(::mcucore::progmem_data::ProvideStorage( \
       _TAS_KEEP_LITERAL_BEFORE_NUL_256(x)()))
 
 #define TAS_PSV_256(x) \
-  (::alpaca::progmem_data::MakeProgmemStringView<_TAS_PSD_TYPE_256(x)>())
+  (::mcucore::progmem_data::MakeProgmemStringView<_TAS_PSD_TYPE_256(x)>())
 
 #define TAS_FLASHSTR_256(x) \
   (reinterpret_cast<const __FlashStringHelper*>(_TAS_PSD_TYPE_256(x)::kData))
 
 // Max length 511 (not including trailing NUL).
 
-#define _TAS_KEEP_LITERAL_BEFORE_NUL_512(x)                    \
-  decltype(::alpaca::progmem_data::ExpandLiteralKeepBeforeNUL( \
-      ::alpaca::progmem_data::LiteralStringPack<false,         \
-                                                _TAS_EXPAND_512(, x)>()))
+#define _TAS_KEEP_LITERAL_BEFORE_NUL_512(x)                     \
+  decltype(::mcucore::progmem_data::ExpandLiteralKeepBeforeNUL( \
+      ::mcucore::progmem_data::LiteralStringPack<false,         \
+                                                 _TAS_EXPAND_512(, x)>()))
 
-#define _TAS_PSD_TYPE_512(x)                       \
-  decltype(::alpaca::progmem_data::ProvideStorage( \
+#define _TAS_PSD_TYPE_512(x)                        \
+  decltype(::mcucore::progmem_data::ProvideStorage( \
       _TAS_KEEP_LITERAL_BEFORE_NUL_512(x)()))
 
 #define TAS_PSV_512(x) \
-  (::alpaca::progmem_data::MakeProgmemStringView<_TAS_PSD_TYPE_512(x)>())
+  (::mcucore::progmem_data::MakeProgmemStringView<_TAS_PSD_TYPE_512(x)>())
 
 #define TAS_FLASHSTR_512(x) \
   (reinterpret_cast<const __FlashStringHelper*>(_TAS_PSD_TYPE_512(x)::kData))
 
 // Max length 1023 (not including trailing NUL).
 
-#define _TAS_KEEP_LITERAL_BEFORE_NUL_1024(x)                   \
-  decltype(::alpaca::progmem_data::ExpandLiteralKeepBeforeNUL( \
-      ::alpaca::progmem_data::LiteralStringPack<false,         \
-                                                _TAS_EXPAND_1024(, x)>()))
+#define _TAS_KEEP_LITERAL_BEFORE_NUL_1024(x)                    \
+  decltype(::mcucore::progmem_data::ExpandLiteralKeepBeforeNUL( \
+      ::mcucore::progmem_data::LiteralStringPack<false,         \
+                                                 _TAS_EXPAND_1024(, x)>()))
 
-#define _TAS_PSD_TYPE_1024(x)                      \
-  decltype(::alpaca::progmem_data::ProvideStorage( \
+#define _TAS_PSD_TYPE_1024(x)                       \
+  decltype(::mcucore::progmem_data::ProvideStorage( \
       _TAS_KEEP_LITERAL_BEFORE_NUL_1024(x)()))
 
 #define TAS_PSV_1024(x) \
-  (::alpaca::progmem_data::MakeProgmemStringView<_TAS_PSD_TYPE_1024(x)>())
+  (::mcucore::progmem_data::MakeProgmemStringView<_TAS_PSD_TYPE_1024(x)>())
 
 #define TAS_FLASHSTR_1024(x) \
   (reinterpret_cast<const __FlashStringHelper*>(_TAS_PSD_TYPE_1024(x)::kData))
@@ -316,6 +317,6 @@ constexpr char GetNthCharOfM(char const (&c)[M]) {
 #define TASLIT(x) TAS_PSV_128(x)
 
 }  // namespace progmem_data
-}  // namespace alpaca
+}  // namespace mcucore
 
 #endif  // MCUCORE_SRC_INLINE_LITERAL_H_

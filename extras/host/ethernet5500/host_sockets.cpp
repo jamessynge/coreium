@@ -20,7 +20,7 @@
 #include "extras/host/ethernet5500/w5500.h"
 #include "glog/logging.h"
 
-namespace alpaca {
+namespace mcunet_host {
 
 namespace {
 
@@ -368,4 +368,4 @@ int HostSockets::AvailableBytes(int sock_num) {
   }
 }
 
-}  // namespace alpaca
+}  // namespace mcunet_host

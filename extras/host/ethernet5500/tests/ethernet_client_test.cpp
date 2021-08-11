@@ -4,7 +4,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-namespace alpaca {
+namespace mcunet_host {
 namespace test {
 namespace {
 
@@ -15,4 +15,4 @@ TEST(EthernetClientTest, NoFixtureTest) {
 
 }  // namespace
 }  // namespace test
-}  // namespace alpaca
+}  // namespace mcunet_host

@@ -14,7 +14,7 @@
 #define DEFAULT_SINK_OUT ::ToStdErr
 #endif
 
-namespace alpaca {
+namespace mcucore {
 namespace {
 // If file is provided, and has a '/' in it, return the location after the last
 // occurrence of '/'.
@@ -109,4 +109,4 @@ void CheckSink::Announce(Print& out) const {
   out.print(expression_message_);
 }
 
-}  // namespace alpaca
+}  // namespace mcucore

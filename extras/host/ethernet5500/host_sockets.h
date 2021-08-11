@@ -13,7 +13,8 @@
 
 #include "extras/host/ethernet5500/ethernet_config.h"
 
-namespace alpaca {
+namespace mcunet_host {
+
 struct HostSockets {
   // Set socket 'sock_num' to listen for new TCP connections on port 'tcp_port',
   // regardless of what that socket is doing now. Returns true if able to do so;
@@ -54,6 +55,7 @@ struct HostSockets {
   // error reading that info.
   static int AvailableBytes(int sock_num);
 };
-}  // namespace alpaca
+
+}  // namespace mcunet_host
 
 #endif  // MCUCORE_EXTRAS_HOST_ETHERNET5500_HOST_SOCKETS_H_

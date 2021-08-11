@@ -4,15 +4,15 @@
 #include "extras/host/ethernet5500/host_sockets.h"
 #include "extras/host/ethernet5500/w5500.h"
 
+using ::mcunet_host::HostSockets;
+
 EthernetClient::EthernetClient(uint8_t sock) : sock_(sock) {}
 
 int EthernetClient::connect(IPAddress ip, uint16_t port) { return 0; }
 int EthernetClient::connect(const char *host, uint16_t port) { return 0; }
 
 // Returns the status of the socket, from the Socket n Status Register.
-uint8_t EthernetClient::status() {
-  return alpaca::HostSockets::SocketStatus(sock_);
-}
+uint8_t EthernetClient::status() { return HostSockets::SocketStatus(sock_); }
 
 // Write a byte to the stream, returns the number written.
 size_t EthernetClient::write(uint8_t) { return 0; }
@@ -25,9 +25,7 @@ size_t EthernetClient::write(const uint8_t *buf, size_t size) { return 0; }
 
 // Returns the number of bytes available for reading. It may not be possible
 // to read that many bytes in one call to read.
-int EthernetClient::available() {
-  return alpaca::HostSockets::AvailableBytes(sock_);
-}
+int EthernetClient::available() { return HostSockets::AvailableBytes(sock_); }
 
 // Read one byte from the stream.
 int EthernetClient::read() { return 0; }
