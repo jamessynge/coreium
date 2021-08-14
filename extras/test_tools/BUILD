@@ -95,7 +95,7 @@ cc_library(
     deps = [
         "//googletest:gunit_headers",
         "//mcucore/extras/host/arduino:ip_address",
-        "//mcucore/extras/host/ethernet5500:ethernet_client",
+        "//mcunet/extras/host/ethernet5500:ethernet_client",
     ],
 )
 

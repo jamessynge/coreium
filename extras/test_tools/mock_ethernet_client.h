@@ -6,8 +6,8 @@
 #include <cstddef>
 
 #include "extras/host/arduino/ip_address.h"
-#include "extras/host/ethernet5500/ethernet_client.h"
 #include "gmock/gmock.h"
+#include "host/ethernet5500/ethernet_client.h"
 
 class MockEthernetClient : public EthernetClient {
  public:
