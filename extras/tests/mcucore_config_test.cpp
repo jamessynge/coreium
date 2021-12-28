@@ -1,6 +1,5 @@
 #include "mcucore_config.h"
 
-#include "config.h"
 #include "glog/logging.h"
 #include "gtest/gtest.h"
 #include "mcucore_platform.h"
@@ -15,9 +14,6 @@ TEST(ConfigTest, LogInfo) {
   LOG_MACRO(TAS_EMBEDDED_TARGET);
   LOG_MACRO(TAS_HOST_TARGET);
   LOG_MACRO(TAS_ENABLE_DEBUGGING);
-  LOG_MACRO(TAS_ENABLE_EXTRA_REQUEST_PARAMETERS);
-  LOG_MACRO(TAS_MAX_EXTRA_REQUEST_PARAMETERS);
-  LOG_MACRO(TAS_MAX_EXTRA_REQUEST_PARAMETER_LENGTH);
 
 #ifdef TAS_ENABLED_VLOG_LEVEL
   LOG_MACRO(TAS_ENABLED_VLOG_LEVEL);

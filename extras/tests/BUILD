@@ -135,7 +135,6 @@ cc_test(
         "//googletest:gunit_main",
         "//mcucore/src:mcucore_config",
         "//mcucore/src:mcucore_platform",
-        "//tas/src:config",
     ],
 )
 

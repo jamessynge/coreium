@@ -1,5 +1,5 @@
-#ifndef EXPERIMENTAL_USERS_JAMESSYNGE_ARDUINO_TAS_SRC_UTILS_BASENAME_H_
-#define EXPERIMENTAL_USERS_JAMESSYNGE_ARDUINO_TAS_SRC_UTILS_BASENAME_H_
+#ifndef MCUCORE_SRC_BASENAME_H_
+#define MCUCORE_SRC_BASENAME_H_
 
 // Provides macros for storing the basename of a file path in the program text,
 // i.e. the part after the final slash. For example, the __FILE__ macro has a
@@ -164,4 +164,4 @@ auto ProvideStorage(BasenameStrPack<false, C...>) -> SourceFilePathIsTooLong;
 }  // namespace progmem_data
 }  // namespace mcucore
 
-#endif  // EXPERIMENTAL_USERS_JAMESSYNGE_ARDUINO_TAS_SRC_UTILS_BASENAME_H_
+#endif  // MCUCORE_SRC_BASENAME_H_
