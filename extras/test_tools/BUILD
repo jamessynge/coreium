@@ -133,3 +133,9 @@ cc_library(
     hdrs = ["string_view_utils.h"],
     deps = ["//mcucore/src:string_view"],
 )
+
+cc_library(
+    name = "test_strings",
+    srcs = ["test_strings.cc"],
+    hdrs = ["test_strings.h"],
+)

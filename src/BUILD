@@ -114,6 +114,16 @@ cc_library(
 )
 
 cc_library(
+    name = "inline_literal4",
+    hdrs = ["inline_literal4.h"],
+    deps = [
+        ":mcucore_platform",
+        ":progmem_string_view",
+        ":type_traits",
+    ],
+)
+
+cc_library(
     name = "json_encoder",
     srcs = ["json_encoder.cc"],
     hdrs = ["json_encoder.h"],
