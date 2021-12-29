@@ -11,10 +11,10 @@
 namespace mcucore {
 namespace test {
 namespace {
-using ::mcucore::progmem_data::ProgmemStrData;
+using ::mcucore::progmem_data::ProgmemStringData;
 
 TEST(InlineLiteralTest, ExplicitProgmemStrData) {
-  using Type = ProgmemStrData<'H', 'E', 'L', 'L', 'O'>;
+  using Type = ProgmemStringData<'H', 'E', 'L', 'L', 'O'>;
   auto printable = mcucore::progmem_data::MakeProgmemStringView<Type>();
   EXPECT_EQ(printable.size(), 5);
   mcucore::test::PrintToStdString out;
@@ -23,7 +23,7 @@ TEST(InlineLiteralTest, ExplicitProgmemStrData) {
 }
 
 TEST(InlineLiteralTest, EmptyProgmemStrData) {
-  using Type = ProgmemStrData<>;
+  using Type = ProgmemStringData<>;
   auto printable = mcucore::progmem_data::MakeProgmemStringView<Type>();
   EXPECT_EQ(printable.size(), 0);
   mcucore::test::PrintToStdString out;
@@ -32,9 +32,9 @@ TEST(InlineLiteralTest, EmptyProgmemStrData) {
 }
 
 TEST(InlineLiteralTest, TasExpand16) {
-  // When we don't search for the NUL at the end, the ProgmemStrData is padded
-  // out to the size nnn, determined by the _TAS_EXPAND_nnn used.
-  using Type = ProgmemStrData<_TAS_EXPAND_16(, "Hello!")>;
+  // When we don't search for the NUL at the end, the ProgmemStringData is
+  // padded out to the size nnn, determined by the _TAS_EXPAND_nnn used.
+  using Type = ProgmemStringData<_TAS_EXPAND_16(, "Hello!")>;
   auto printable = mcucore::progmem_data::MakeProgmemStringView<Type>();
   EXPECT_EQ(printable.size(), 16);
   mcucore::test::PrintToStdString out;

@@ -25,7 +25,7 @@ class ProgmemString {
   ProgmemString(const __FlashStringHelper* str)  // NOLINT
       : ptr_(reinterpret_cast<const char*>(str)) {}
 
-  template <char... C, class PSS = progmem_data::ProgmemStrData<C...>>
+  template <char... C, class PSS = progmem_data::ProgmemStringData<C...>>
   explicit constexpr ProgmemString(PSS str) : ptr_(PSS::kData) {}
 
   // Returns true if other has the same value.

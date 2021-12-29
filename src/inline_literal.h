@@ -42,7 +42,7 @@ namespace progmem_data {
 // TAS_FLASHSTR(string_literal) across multiple files such that they share the
 // storage.
 template <char... C>
-struct ProgmemStrData final {
+struct ProgmemStringData final {
   // We add a trailing NUL here so that we can interpret kData as a
   // __FlashStringHelper instance (see TAS_FLASHSTR for how we do that);
   // Arduino's Print::print(const __FlashStringHelper*) needs the string to be
@@ -51,7 +51,8 @@ struct ProgmemStrData final {
 };
 
 template <char... C>
-constexpr char const ProgmemStrData<C...>::kData[sizeof...(C) + 1] AVR_PROGMEM;
+constexpr char const
+    ProgmemStringData<C...>::kData[sizeof...(C) + 1] AVR_PROGMEM;
 
 template <class PSS>
 ProgmemStringView MakeProgmemStringView() {
@@ -63,13 +64,13 @@ ProgmemStringView MakeProgmemStringView() {
 // means that the string literal is too long (>= nnn).
 class StringLiteralIsTooLong;
 
-// LiteralStringPack is used instead of ProgmemStrData when we're searching for
-// the terminating NUL so that we don't have to worry about the compiler
-// spending time examining the definition of ProgmemStrData, which is a slightly
-// more complex class template than is LiteralStringPack. Furthermore, the first
-// template parameter is a bool indicating whether the terminating NUL has been
-// located. This helps us generate a compile error if the string is longer than
-// the template parameter pack expansion allowed for.
+// LiteralStringPack is used instead of ProgmemStringData when we're searching
+// for the terminating NUL so that we don't have to worry about the compiler
+// spending time examining the definition of ProgmemStringData, which is a
+// slightly more complex class template than is LiteralStringPack. Furthermore,
+// the first template parameter is a bool indicating whether the terminating NUL
+// has been located. This helps us generate a compile error if the string is
+// longer than the template parameter pack expansion allowed for.
 template <bool T, char... C>
 struct LiteralStringPack final {};
 
@@ -117,7 +118,7 @@ auto ExpandLiteralKeepBeforeNUL(LiteralStringPack<false, '\0', C...>)
 // ProvideStorage will return a type that has a static array with the string in
 // it.
 template <char... C>
-auto ProvideStorage(LiteralStringPack<true, C...>) -> ProgmemStrData<C...>;
+auto ProvideStorage(LiteralStringPack<true, C...>) -> ProgmemStringData<C...>;
 
 // Else if the literal is too long for the expension macro used, ProvideStorage
 // will return a type that isn't useful for our purposes below, and whose name
@@ -202,7 +203,7 @@ constexpr char GetNthCharOfM(char const (&c)[M]) {
 // the problem.
 //
 // _TAS_PSD_TYPE_nnn expands a string literal whose length is less than nnn to a
-// ProgmemStrData instantiation for that string literal.
+// ProgmemStringData instantiation for that string literal.
 
 // Max length 31 (not including trailing NUL).
 

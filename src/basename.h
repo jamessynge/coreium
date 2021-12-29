@@ -41,13 +41,13 @@ namespace progmem_data {
 // that the string literal (usually __FILE__) is too long (>= nnn).
 class SourceFilePathIsTooLong;
 
-// BasenameStrPack is used instead of ProgmemStrData when we're searching for
+// BasenameStrPack is used instead of ProgmemStringData when we're searching for
 // slashes and the terminating NUL, so that we don't have to worry about the
-// compiler spending time examining the definition of ProgmemStrData, which is a
-// slightly more complex class template than is BasenameStrPack. Furthermore,
-// the first template parameter is a bool indicating whether the terminating NUL
-// has been found. This helps us generate a compile error if the string is
-// longer than the template parameter pack expansion allowed for.
+// compiler spending time examining the definition of ProgmemStringData, which
+// is a slightly more complex class template than is BasenameStrPack.
+// Furthermore, the first template parameter is a bool indicating whether the
+// terminating NUL has been found. This helps us generate a compile error if the
+// string is longer than the template parameter pack expansion allowed for.
 template <bool NulFound, char... C>
 struct BasenameStrPack final {};
 
@@ -120,7 +120,7 @@ auto ExpandPathKeepBasename(BasenameStrPack<false, '/', C...>)
 // ProvideStorage will return a type that has a static array with the string in
 // it.
 template <char... C>
-auto ProvideStorage(BasenameStrPack<true, C...>) -> ProgmemStrData<C...>;
+auto ProvideStorage(BasenameStrPack<true, C...>) -> ProgmemStringData<C...>;
 
 // Else if the literal is too long for the expension macro used, ProvideStorage
 // will return a type that isn't useful for our purposes below, and whose name

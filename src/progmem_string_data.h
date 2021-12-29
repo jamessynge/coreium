@@ -11,7 +11,7 @@
 // TASLIT(string_literal) expands to a ProgmemStringView instance with
 // string_literal as the value it views.
 //
-// TAS_FLASHSTR(string_literal) expands to a const __FlashStringHelper* pointer
+// PSD_FLASHSTR(string_literal) expands to a const __FlashStringHelper* pointer
 // value, just as F(string_literal) does, but without the wasted storage.
 //
 // This is inspired by https://github.com/irrequietus/typestring, by George
@@ -57,7 +57,7 @@ namespace progmem_data {
 // Get the Nth char from a string literal of length M, where that length
 // includes the trailing null character at index M-1. This is used to produce
 // the comma separated lists of chars that make up a literal string. If N is >
-// M, the trailing null character is returned; as a result, _TAS_EXPAND_16(,
+// M, the trailing null character is returned; as a result, _PSD_EXPAND_16(,
 // "Hello") becomes:
 //
 //   'H','e','l','l','o','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'
@@ -69,19 +69,20 @@ constexpr char GetNthCharOfM(char const (&c)[M]) {
 // Instantiations of this template provide static, constexpr storage for string
 // literals. By placing them in the ::mcucore::progmem_data namespace, the
 // linker will combine multiple occurrences of the same
-// TAS_FLASHSTR(string_literal) across multiple files such that they share the
+// PSD_FLASHSTR(string_literal) across multiple files such that they share the
 // storage.
 template <char... C>
-struct ProgmemStrData final {
+struct ProgmemStringData final {
   // We add a trailing null character here so that we can interpret kData as a
-  // __FlashStringHelper instance (see TAS_FLASHSTR for how we do that);
+  // __FlashStringHelper instance (see PSD_FLASHSTR for how we do that);
   // Arduino's Print::print(const __FlashStringHelper*) needs the string to be
   // NUL terminated so that it knows when it has found the end of the string.
   static constexpr char const kData[1 + sizeof...(C)] AVR_PROGMEM = {C..., 0};
 };
 
 template <char... C>
-constexpr char const ProgmemStrData<C...>::kData[1 + sizeof...(C)] AVR_PROGMEM;
+constexpr char const
+    ProgmemStringData<C...>::kData[1 + sizeof...(C)] AVR_PROGMEM;
 
 // TODO Generate a compile time error if sizeof PSS:kData is too large to be
 // represented by ProgmemStringView. E.g. create a declared but unimplemented
@@ -129,7 +130,7 @@ struct LengthCheck final {};
 class EmptyString;
 
 // "Forward" declaration of an undefined type. If this appears in a compiler
-// error message for the expansion of TAS_FLASHSTR_nnn, or a related macro, it
+// error message for the expansion of MCU_FLASHSTR_nnn, or a related macro, it
 // means that the string literal is too long (>= nnn).
 class StringLiteralIsTooLong;
 
@@ -290,12 +291,12 @@ template <char... X, char... Y>
 auto Concat(StringFragment<X...>, StringFragment<Y...>)
     -> StringFragment<X..., Y...>;
 
-// If the macro used (e.g. TAS_PSV_nnn) supports strings as long as that
+// If the macro used (e.g. PSV_nnn) supports strings as long as that
 // provided, then ProvideStorage's return type will have a static array with
 // the string in it.
 template <char... C>
 auto ProvideStorage(LengthCheck<true>, StringFragment<C...>)
-    -> ProgmemStrData<C...>;
+    -> ProgmemStringData<C...>;
 
 // Else if the literal is too long for the expension macro used, then
 // ProvideStorage's return type will be StringLiteralIsTooLong, an undefined
@@ -320,12 +321,12 @@ auto ProvideStorage(LengthCheck<false>, StringFragment<C...>)
 
 // Expands to the n-th character of x; if n is greater than the size of x, then
 // expands to the null character.
-#define _TAS_GET_NTH_CHAR(n, x) ::mcucore::progmem_data::GetNthCharOfM<0x##n>(x)
+#define _PSD_GET_NTH_CHAR(n, x) ::mcucore::progmem_data::GetNthCharOfM<0x##n>(x)
 
 // Value used to detect when the string literal is longer than is supported by
 // the macro used to decompose the string literal into characters. The value is
 // used to select the appropriate specialization of ProvideStorage.
-#define _TAS_LENGTH_CHECK(x, max_chars) \
+#define _PSD_LENGTH_CHECK(x, max_chars) \
   (::mcucore::progmem_data::LengthCheck<((sizeof x) - 1 <= max_chars)>())
 
 // Support for the working with individual string fragments of 16 characters.
@@ -334,173 +335,172 @@ auto ProvideStorage(LengthCheck<false>, StringFragment<C...>)
 // at offset 0x##n##0, where n is zero or more hexadecimal digits; there is no
 // leading 0x before the digits in |n|. Any character offset that is beyond the
 // last character of |x| is expanded to the null character.
-#define _TAS_PHASE1_TYPE(n, x)                                                \
+#define _PSD_PHASE1_TYPE(n, x)                                                \
   ::mcucore::progmem_data::Phase1StringFragment<                              \
       /* BeforeLastChar */ ((sizeof x) >= 16 && 0x##n##F < ((sizeof x) - 1)), \
       /* CharsToDiscard */ (16 - (((sizeof x) - 1) % 16)),                    \
       /* AfterLastChar */ (0x##n##0 >= ((sizeof x) - 1)),                     \
-      _TAS_GET_NTH_CHAR(n##0, x), _TAS_GET_NTH_CHAR(n##1, x),                 \
-      _TAS_GET_NTH_CHAR(n##2, x), _TAS_GET_NTH_CHAR(n##3, x),                 \
-      _TAS_GET_NTH_CHAR(n##4, x), _TAS_GET_NTH_CHAR(n##5, x),                 \
-      _TAS_GET_NTH_CHAR(n##6, x), _TAS_GET_NTH_CHAR(n##7, x),                 \
-      _TAS_GET_NTH_CHAR(n##8, x), _TAS_GET_NTH_CHAR(n##9, x),                 \
-      _TAS_GET_NTH_CHAR(n##A, x), _TAS_GET_NTH_CHAR(n##B, x),                 \
-      _TAS_GET_NTH_CHAR(n##C, x), _TAS_GET_NTH_CHAR(n##D, x),                 \
-      _TAS_GET_NTH_CHAR(n##E, x), _TAS_GET_NTH_CHAR(n##F, x)>
+      _PSD_GET_NTH_CHAR(n##0, x), _PSD_GET_NTH_CHAR(n##1, x),                 \
+      _PSD_GET_NTH_CHAR(n##2, x), _PSD_GET_NTH_CHAR(n##3, x),                 \
+      _PSD_GET_NTH_CHAR(n##4, x), _PSD_GET_NTH_CHAR(n##5, x),                 \
+      _PSD_GET_NTH_CHAR(n##6, x), _PSD_GET_NTH_CHAR(n##7, x),                 \
+      _PSD_GET_NTH_CHAR(n##8, x), _PSD_GET_NTH_CHAR(n##9, x),                 \
+      _PSD_GET_NTH_CHAR(n##A, x), _PSD_GET_NTH_CHAR(n##B, x),                 \
+      _PSD_GET_NTH_CHAR(n##C, x), _PSD_GET_NTH_CHAR(n##D, x),                 \
+      _PSD_GET_NTH_CHAR(n##E, x), _PSD_GET_NTH_CHAR(n##F, x)>
 
 // Expands to a string fragment without trailing nulls.
-#define _TAS_FRAGMENT_TYPE(n, x)                         \
+#define _PSD_FRAGMENT_TYPE(n, x)                         \
   decltype(::mcucore::progmem_data::DiscardAfterLiteral( \
-      _TAS_PHASE1_TYPE(n, x)()))
+      _PSD_PHASE1_TYPE(n, x)()))
 
 // Expands to the type of two (adjacent) string fragments, t1() and t2(), being
 // concatenated together.
-#define _TAS_CONCAT_TYPE(t1, t2) \
+#define _PSD_CONCAT_TYPE(t1, t2) \
   decltype(::mcucore::progmem_data::Concat(t1(), t2()))
 
 // Concatenates two preprocessor tokens together. This is used below to ensure
 // that two macro arguments are expanded before they are concatenated to produce
 // a new token.
-#define _TAS_CONCAT_TOKENS(token1, token2) token1##token2
+#define _PSD_CONCAT_TOKENS(token1, token2) token1##token2
 
 // Expands to the type from concatenating the types of two fragments of 16
 // characters starting at 0x##hex0##hex1##0 and at 0x##hex0##hex2##0.
-#define _TAS_CONCAT_FRAGMENTS_TYPE(hex0, hex1, hex2, x)                   \
-  _TAS_CONCAT_TYPE(_TAS_FRAGMENT_TYPE(_TAS_CONCAT_TOKENS(hex0, hex1), x), \
-                   _TAS_FRAGMENT_TYPE(_TAS_CONCAT_TOKENS(hex0, hex2), x))
+#define _PSD_CONCAT_FRAGMENTS_TYPE(hex0, hex1, hex2, x)                   \
+  _PSD_CONCAT_TYPE(_PSD_FRAGMENT_TYPE(_PSD_CONCAT_TOKENS(hex0, hex1), x), \
+                   _PSD_FRAGMENT_TYPE(_PSD_CONCAT_TOKENS(hex0, hex2), x))
 
 ////////////////////////////////////////////////////////////////////////////////
-// Macros for producing StringFragment types that support specific lengths of
-// string literals.
+// Macros for producing StringFragment and ProgmemStringData types that support
+// string literals whose size do not exceed the specified number of chars.
 
 /* 2^5 = 32 */
-#define _TAS_CONCAT_32_TYPE(n, x) _TAS_CONCAT_FRAGMENTS_TYPE(n, 0, 1, x)
+#define _PSD_CONCAT_32_TYPE(n, x) _PSD_CONCAT_FRAGMENTS_TYPE(n, 0, 1, x)
+
+#define _PSD_TYPE_32(x)                             \
+  decltype(::mcucore::progmem_data::ProvideStorage( \
+      _PSD_LENGTH_CHECK(x, 32), _PSD_CONCAT_32_TYPE(, x)()))
 
 /* 2^6 = 64 */
-#define _TAS_CONCAT_64_TYPE(n, x)                          \
-  _TAS_CONCAT_TYPE(_TAS_CONCAT_FRAGMENTS_TYPE(n, 0, 1, x), \
-                   _TAS_CONCAT_FRAGMENTS_TYPE(n, 2, 3, x))
+#define _PSD_CONCAT_64_TYPE(n, x)                          \
+  _PSD_CONCAT_TYPE(_PSD_CONCAT_FRAGMENTS_TYPE(n, 0, 1, x), \
+                   _PSD_CONCAT_FRAGMENTS_TYPE(n, 2, 3, x))
+
+#define _PSD_TYPE_64(x)                             \
+  decltype(::mcucore::progmem_data::ProvideStorage( \
+      _PSD_LENGTH_CHECK(x, 64), _PSD_CONCAT_64_TYPE(, x)()))
 
 /* 2^7 = 128 */
-#define _TAS_CONCAT_128_TYPE(n, x)                                           \
-  _TAS_CONCAT_TYPE(_TAS_CONCAT_TYPE(_TAS_CONCAT_FRAGMENTS_TYPE(n, 0, 1, x),  \
-                                    _TAS_CONCAT_FRAGMENTS_TYPE(n, 2, 3, x)), \
-                   _TAS_CONCAT_TYPE(_TAS_CONCAT_FRAGMENTS_TYPE(n, 4, 5, x),  \
-                                    _TAS_CONCAT_FRAGMENTS_TYPE(n, 6, 7, x)))
+#define _PSD_CONCAT_128_TYPE(n, x)                                           \
+  _PSD_CONCAT_TYPE(_PSD_CONCAT_TYPE(_PSD_CONCAT_FRAGMENTS_TYPE(n, 0, 1, x),  \
+                                    _PSD_CONCAT_FRAGMENTS_TYPE(n, 2, 3, x)), \
+                   _PSD_CONCAT_TYPE(_PSD_CONCAT_FRAGMENTS_TYPE(n, 4, 5, x),  \
+                                    _PSD_CONCAT_FRAGMENTS_TYPE(n, 6, 7, x)))
+
+#define _PSD_TYPE_128(x)                            \
+  decltype(::mcucore::progmem_data::ProvideStorage( \
+      _PSD_LENGTH_CHECK(x, 128), _PSD_CONCAT_128_TYPE(, x)()))
 
 /* 2^8 = 256 */
-#define _TAS_CONCAT_256_TYPE(n, x)                                   \
-  _TAS_CONCAT_TYPE(                                                  \
-      _TAS_CONCAT_TYPE(                                              \
-          _TAS_CONCAT_TYPE(_TAS_CONCAT_FRAGMENTS_TYPE(n, 0, 1, x),   \
-                           _TAS_CONCAT_FRAGMENTS_TYPE(n, 2, 3, x)),  \
-          _TAS_CONCAT_TYPE(_TAS_CONCAT_FRAGMENTS_TYPE(n, 4, 5, x),   \
-                           _TAS_CONCAT_FRAGMENTS_TYPE(n, 6, 7, x))), \
-      _TAS_CONCAT_TYPE(                                              \
-          _TAS_CONCAT_TYPE(_TAS_CONCAT_FRAGMENTS_TYPE(n, 8, 9, x),   \
-                           _TAS_CONCAT_FRAGMENTS_TYPE(n, A, B, x)),  \
-          _TAS_CONCAT_TYPE(_TAS_CONCAT_FRAGMENTS_TYPE(n, C, D, x),   \
-                           _TAS_CONCAT_FRAGMENTS_TYPE(n, E, F, x))))
+#define _PSD_CONCAT_256_TYPE(n, x)                                   \
+  _PSD_CONCAT_TYPE(                                                  \
+      _PSD_CONCAT_TYPE(                                              \
+          _PSD_CONCAT_TYPE(_PSD_CONCAT_FRAGMENTS_TYPE(n, 0, 1, x),   \
+                           _PSD_CONCAT_FRAGMENTS_TYPE(n, 2, 3, x)),  \
+          _PSD_CONCAT_TYPE(_PSD_CONCAT_FRAGMENTS_TYPE(n, 4, 5, x),   \
+                           _PSD_CONCAT_FRAGMENTS_TYPE(n, 6, 7, x))), \
+      _PSD_CONCAT_TYPE(                                              \
+          _PSD_CONCAT_TYPE(_PSD_CONCAT_FRAGMENTS_TYPE(n, 8, 9, x),   \
+                           _PSD_CONCAT_FRAGMENTS_TYPE(n, A, B, x)),  \
+          _PSD_CONCAT_TYPE(_PSD_CONCAT_FRAGMENTS_TYPE(n, C, D, x),   \
+                           _PSD_CONCAT_FRAGMENTS_TYPE(n, E, F, x))))
+
+#define _PSD_TYPE_256(x)                            \
+  decltype(::mcucore::progmem_data::ProvideStorage( \
+      _PSD_LENGTH_CHECK(x, 256), _PSD_CONCAT_256_TYPE(, x)()))
+
+// Special case: length 255, for those cases below where the string length must
+// be encoded in a uint8.
+#define _PSD_TYPE_255(x)                            \
+  decltype(::mcucore::progmem_data::ProvideStorage( \
+      _PSD_LENGTH_CHECK(x, 255), _PSD_CONCAT_256_TYPE(, x)()))
 
 /* 2^9 = 512 */
-#define _TAS_CONCAT_512_TYPE(n, x)                                    \
-  _TAS_CONCAT_TYPE(_TAS_CONCAT_256_TYPE(_TAS_CONCAT_TOKENS(n, 0), x), \
-                   _TAS_CONCAT_256_TYPE(_TAS_CONCAT_TOKENS(n, 1), x))
+#define _PSD_CONCAT_512_TYPE(n, x)                                    \
+  _PSD_CONCAT_TYPE(_PSD_CONCAT_256_TYPE(_PSD_CONCAT_TOKENS(n, 0), x), \
+                   _PSD_CONCAT_256_TYPE(_PSD_CONCAT_TOKENS(n, 1), x))
+
+#define _PSD_TYPE_512(x)                            \
+  decltype(::mcucore::progmem_data::ProvideStorage( \
+      _PSD_LENGTH_CHECK(x, 512), _PSD_CONCAT_512_TYPE(, x)()))
 
 /* 2^10 = 1024 */
-#define _TAS_CONCAT_1024_TYPE(n, x)                                        \
-  _TAS_CONCAT_TYPE(                                                        \
-      _TAS_CONCAT_TYPE(_TAS_CONCAT_256_TYPE(_TAS_CONCAT_TOKENS(n, 0), x),  \
-                       _TAS_CONCAT_256_TYPE(_TAS_CONCAT_TOKENS(n, 1), x)), \
-      _TAS_CONCAT_TYPE(_TAS_CONCAT_256_TYPE(_TAS_CONCAT_TOKENS(n, 2), x),  \
-                       _TAS_CONCAT_256_TYPE(_TAS_CONCAT_TOKENS(n, 3), x)))
+#define _PSD_CONCAT_1024_TYPE(n, x)                                        \
+  _PSD_CONCAT_TYPE(                                                        \
+      _PSD_CONCAT_TYPE(_PSD_CONCAT_256_TYPE(_PSD_CONCAT_TOKENS(n, 0), x),  \
+                       _PSD_CONCAT_256_TYPE(_PSD_CONCAT_TOKENS(n, 1), x)), \
+      _PSD_CONCAT_TYPE(_PSD_CONCAT_256_TYPE(_PSD_CONCAT_TOKENS(n, 2), x),  \
+                       _PSD_CONCAT_256_TYPE(_PSD_CONCAT_TOKENS(n, 3), x)))
+
+#define _PSD_TYPE_1024(x)                           \
+  decltype(::mcucore::progmem_data::ProvideStorage( \
+      _PSD_LENGTH_CHECK(x, 1024), _PSD_CONCAT_1024_TYPE(, x)()))
 
 ////////////////////////////////////////////////////////////////////////////////
-// We define below macros TAS_PSV_nnn (PSV==ProgmemStringView) and
-// TAS_FLASHSTR_nnn for various values of nnn, which represents the maximum
-// length of string literal (not including the terminating null character)
-// supported by the macro. These produce *values* that can be printed or
-// otherwise operated upon at runtime.
-//
-// These macros build on an internal use macro _TAS_PSD_TYPE_nnn
-// (PSD==ProgmemStrData), whose expansion is a concrete template type.
+// We define below macros PSV_nnn (PSV==ProgmemStringView) and
+// MCU_FLASHSTR_nnn (PSD=ProgmemStringData) for various values of nnn, which
+// represents the maximum length of string literal (not including the
+// terminating null character) supported by the macro. These produce *values*
+// that can be printed or otherwise operated upon at runtime.
 
 // Max length 32:
 
-#define _TAS_PSD_TYPE_32(x)                         \
-  decltype(::mcucore::progmem_data::ProvideStorage( \
-      _TAS_LENGTH_CHECK(x, 32), _TAS_CONCAT_32_TYPE(, x)()))
+#define PSV_32(x) \
+  (::mcucore::progmem_data::MakeProgmemStringView<_PSD_TYPE_32(x)>())
 
-#define TAS_PSV_32(x) \
-  (::mcucore::progmem_data::MakeProgmemStringView<_TAS_PSD_TYPE_32(x)>())
-
-#define TAS_FLASHSTR_32(x) \
-  (reinterpret_cast<const __FlashStringHelper*>(_TAS_PSD_TYPE_32(x)::kData))
+#define MCU_FLASHSTR_32(x) \
+  (reinterpret_cast<const __FlashStringHelper*>(_PSD_TYPE_32(x)::kData))
 
 // Max length 64 (not including trailing NUL).
 
-#define _TAS_PSD_TYPE_64(x)                         \
-  decltype(::mcucore::progmem_data::ProvideStorage( \
-      _TAS_LENGTH_CHECK(x, 64), _TAS_CONCAT_64_TYPE(, x)()))
+#define PSV_64(x) \
+  (::mcucore::progmem_data::MakeProgmemStringView<_PSD_TYPE_64(x)>())
 
-#define TAS_PSV_64(x) \
-  (::mcucore::progmem_data::MakeProgmemStringView<_TAS_PSD_TYPE_64(x)>())
-
-#define TAS_FLASHSTR_64(x) \
-  (reinterpret_cast<const __FlashStringHelper*>(_TAS_PSD_TYPE_64(x)::kData))
+#define MCU_FLASHSTR_64(x) \
+  (reinterpret_cast<const __FlashStringHelper*>(_PSD_TYPE_64(x)::kData))
 
 // Max length 128 (not including trailing NUL).
 
-#define _TAS_PSD_TYPE_128(x)                        \
-  decltype(::mcucore::progmem_data::ProvideStorage( \
-      _TAS_LENGTH_CHECK(x, 128), _TAS_CONCAT_128_TYPE(, x)()))
+#define PSV_128(x) \
+  (::mcucore::progmem_data::MakeProgmemStringView<_PSD_TYPE_128(x)>())
 
-#define TAS_PSV_128(x) \
-  (::mcucore::progmem_data::MakeProgmemStringView<_TAS_PSD_TYPE_128(x)>())
-
-#define TAS_FLASHSTR_128(x) \
-  (reinterpret_cast<const __FlashStringHelper*>(_TAS_PSD_TYPE_128(x)::kData))
+#define MCU_FLASHSTR_128(x) \
+  (reinterpret_cast<const __FlashStringHelper*>(_PSD_TYPE_128(x)::kData))
 
 // Max length 255 (not including trailing NUL). This is not a power of two
 // because ProgmemStringView uses a uint8 to record the size of the string, and
 // can't represent 256.
 
-#define _TAS_PSD_TYPE_255(x)                        \
-  decltype(::mcucore::progmem_data::ProvideStorage( \
-      _TAS_LENGTH_CHECK(x, 255), _TAS_CONCAT_256_TYPE(, x)()))
-
-#define TAS_PSV_255(x) \
-  (::mcucore::progmem_data::MakeProgmemStringView<_TAS_PSD_TYPE_255(x)>())
+#define PSV_255(x) \
+  (::mcucore::progmem_data::MakeProgmemStringView<_PSD_TYPE_255(x)>())
 
 // Max length 256 (not including trailing NUL). There is no support here for
 // ProgmemStringView because it can't support such a long string.
 
-#define _TAS_PSD_TYPE_256(x)                        \
-  decltype(::mcucore::progmem_data::ProvideStorage( \
-      _TAS_LENGTH_CHECK(x, 256), _TAS_CONCAT_256_TYPE(, x)()))
-
-#define TAS_FLASHSTR_256(x) \
-  (reinterpret_cast<const __FlashStringHelper*>(_TAS_PSD_TYPE_256(x)::kData))
+#define MCU_FLASHSTR_256(x) \
+  (reinterpret_cast<const __FlashStringHelper*>(_PSD_TYPE_256(x)::kData))
 
 // Max length 512 (not including trailing NUL). There is no support here for
 // ProgmemStringView because it can't support such a long string.
 
-#define _TAS_PSD_TYPE_512(x)                        \
-  decltype(::mcucore::progmem_data::ProvideStorage( \
-      _TAS_LENGTH_CHECK(x, 512), _TAS_CONCAT_512_TYPE(, x)()))
-
-#define TAS_FLASHSTR_512(x) \
-  (reinterpret_cast<const __FlashStringHelper*>(_TAS_PSD_TYPE_512(x)::kData))
+#define MCU_FLASHSTR_512(x) \
+  (reinterpret_cast<const __FlashStringHelper*>(_PSD_TYPE_512(x)::kData))
 
 // Max length 1024 (not including trailing NUL). There is no support here for
 // ProgmemStringView because it can't support such a long string.
 
-#define _TAS_PSD_TYPE_1024(x)                       \
-  decltype(::mcucore::progmem_data::ProvideStorage( \
-      _TAS_LENGTH_CHECK(x, 1024), _TAS_CONCAT_1024_TYPE(, x)()))
-
-#define TAS_FLASHSTR_1024(x) \
-  (reinterpret_cast<const __FlashStringHelper*>(_TAS_PSD_TYPE_1024(x)::kData))
+#define MCU_FLASHSTR_1024(x) \
+  (reinterpret_cast<const __FlashStringHelper*>(_PSD_TYPE_1024(x)::kData))
 
 ////////////////////////////////////////////////////////////////////////////////
 // Because we expect almost all string literals to be relatively short, we
@@ -509,8 +509,8 @@ auto ProvideStorage(LengthCheck<false>, StringFragment<C...>)
 // appropriate macro defined above whose name specifies the next larger size
 // limit.
 
-#define TAS_PSV(x) TAS_PSV_64(x)
-#define TAS_FLASHSTR(x) TAS_FLASHSTR_64(x)
-#define TASLIT(x) TAS_PSV_128(x)
+#define MCU_PSV(x) PSV_64(x)
+#define MCU_FLASHSTR(x) MCU_FLASHSTR_64(x)
+#define MCU_LIT(x) PSV_128(x)
 
 #endif  // MCUCORE_SRC_PROGMEM_STRING_DATA_H_
