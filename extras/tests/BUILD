@@ -82,22 +82,6 @@ cc_test(
 )
 
 cc_test(
-    name = "inline_literal4_test",
-    srcs = ["inline_literal4_test.cc"],
-    deps = [
-        "//googletest:gunit_main",
-        "//mcucore/extras/test_tools:print_to_std_string",
-        "//mcucore/extras/test_tools:print_value_to_std_string",
-        "//mcucore/extras/test_tools:test_strings",
-        "//mcucore/src:inline_literal4",
-        "//mcucore/src:literal",
-        "//mcucore/src:mcucore_platform",
-        "//mcucore/src:o_print_stream",
-        "//mcucore/src:progmem_string_view",
-    ],
-)
-
-cc_test(
     name = "json_encoder_test",
     srcs = ["json_encoder_test.cc"],
     deps = [
@@ -176,6 +160,22 @@ cc_test(
         "//mcucore/src:literal",
         "//mcucore/src:printable_cat",
         "//mcucore/src:string_view",
+    ],
+)
+
+cc_test(
+    name = "progmem_string_data_test",
+    srcs = ["progmem_string_data_test.cc"],
+    deps = [
+        "//googletest:gunit_main",
+        "//mcucore/extras/test_tools:print_to_std_string",
+        "//mcucore/extras/test_tools:print_value_to_std_string",
+        "//mcucore/extras/test_tools:test_strings",
+        "//mcucore/src:literal",
+        "//mcucore/src:mcucore_platform",
+        "//mcucore/src:o_print_stream",
+        "//mcucore/src:progmem_string_data",
+        "//mcucore/src:progmem_string_view",
     ],
 )
 

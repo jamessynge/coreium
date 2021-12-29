@@ -1,5 +1,5 @@
-#ifndef EXPERIMENTAL_USERS_JAMESSYNGE_ARDUINO_TAS_SRC_UTILS_LOG_SINK_H_
-#define EXPERIMENTAL_USERS_JAMESSYNGE_ARDUINO_TAS_SRC_UTILS_LOG_SINK_H_
+#ifndef MCUCORE_SRC_LOG_SINK_H_
+#define MCUCORE_SRC_LOG_SINK_H_
 
 // LogSink is used for printing a message to a Print instance.
 //
@@ -80,4 +80,4 @@ class LogSinkVoidify {
 
 }  // namespace mcucore
 
-#endif  // EXPERIMENTAL_USERS_JAMESSYNGE_ARDUINO_TAS_SRC_UTILS_LOG_SINK_H_
+#endif  // MCUCORE_SRC_LOG_SINK_H_

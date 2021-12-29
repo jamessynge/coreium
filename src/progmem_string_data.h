@@ -1,5 +1,5 @@
-#ifndef MCUCORE_SRC_INLINE_LITERAL4_H_
-#define MCUCORE_SRC_INLINE_LITERAL4_H_
+#ifndef MCUCORE_SRC_PROGMEM_STRING_DATA_H_
+#define MCUCORE_SRC_PROGMEM_STRING_DATA_H_
 
 // Provides macros for storing string literals in program memory (PROGMEM)
 // rather than RAM, when compiled with avr-gcc for the AVR line of processors.
@@ -513,4 +513,4 @@ auto ProvideStorage(LengthCheck<false>, StringFragment<C...>)
 #define TAS_FLASHSTR(x) TAS_FLASHSTR_64(x)
 #define TASLIT(x) TAS_PSV_128(x)
 
-#endif  // MCUCORE_SRC_INLINE_LITERAL4_H_
+#endif  // MCUCORE_SRC_PROGMEM_STRING_DATA_H_

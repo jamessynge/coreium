@@ -114,8 +114,8 @@ cc_library(
 )
 
 cc_library(
-    name = "inline_literal4",
-    hdrs = ["inline_literal4.h"],
+    name = "progmem_string_data",
+    hdrs = ["progmem_string_data.h"],
     deps = [
         ":mcucore_platform",
         ":progmem_string_view",

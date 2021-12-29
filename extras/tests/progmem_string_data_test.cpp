@@ -1,8 +1,8 @@
-// This contains tests of inline_literal4.h, and also non-tests which print info
-// about the types produced by the macros and function templates, thus aiding
-// development of those.
+// This contains tests of progmem_string_data.h, and also non-tests which print
+// info about the types produced by the macros and function templates, thus
+// aiding the development of those.
 
-#include "inline_literal4.h"
+#include "progmem_string_data.h"
 
 #include <cstddef>
 #include <ostream>
@@ -12,7 +12,7 @@
 
 #include "extras/test_tools/print_value_to_std_string.h"
 
-// Prevent inclusion of inline_literal.h when testing inline_literal4.h.
+// Prevent inclusion of inline_literal.h when testing progmem_string_data.h.
 #define MCUCORE_SRC_INLINE_LITERAL_H_
 
 #include "extras/test_tools/print_to_std_string.h"
