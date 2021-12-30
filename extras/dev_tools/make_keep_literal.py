@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Outputs KeepLiteral template functions for inline_literal.h."""
+"""Outputs KeepLiteral template functions for progmem_string_data.h."""
 
 
 def OutputOneSize(keep_count: int, discard_count: int) -> None:

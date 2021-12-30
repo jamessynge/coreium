@@ -10,12 +10,8 @@
 #include <string>
 #include <string_view>
 
-#include "extras/test_tools/print_value_to_std_string.h"
-
-// Prevent inclusion of inline_literal.h when testing progmem_string_data.h.
-#define MCUCORE_SRC_INLINE_LITERAL_H_
-
 #include "extras/test_tools/print_to_std_string.h"
+#include "extras/test_tools/print_value_to_std_string.h"
 #include "extras/test_tools/test_strings.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -25,10 +21,10 @@
 #include "progmem_string_view.h"
 
 namespace mcucore {
-namespace progmem_data {
+namespace progmem_string_data {
 namespace test {
 namespace {
-using ::testing::HasSubstr;
+using ::testing::StartsWith;
 
 TEST(GenerateTestStringsTest, DISABLED_GenerateThreeStrings) {
   for (size_t size2 : {32, 64, 128, 256, 512, 1024, 2048, 4096, 8192}) {
@@ -75,421 +71,11 @@ std::string PrettyTypeName() {
       0, without_prefix.size() - PrettyFunctionNameOffsets::kSuffixSize));
   static std::regex null_char_re("'\\\\x00'");  // NOLINT
   pretty_type_name = std::regex_replace(pretty_type_name, null_char_re, "NUL");
-  static std::regex ns_re("(::)?mcucore::progmem_data::");  // NOLINT
+  static std::regex ns_re("(::)?mcucore::progmem_string_data::");  // NOLINT
   return std::regex_replace(pretty_type_name, ns_re, "");
 }
 
-TEST(DiscardAfterLiteralTest, FirstFewFragments) {
-#undef MAKE_BLOCK
-#define MAKE_BLOCK(n, x)                                                 \
-  {                                                                      \
-    std::cout << "n=" #n ", len(x)=" << ((sizeof x) - 1) << ", x: " << x \
-              << std::endl;                                              \
-    using RAW = _PSD_PHASE1_TYPE(n, x);                                  \
-    std::cout << "R: " << PrettyTypeName<RAW>() << std::endl;            \
-    using DISCARDED = _PSD_FRAGMENT_TYPE(n, x);                          \
-    std::cout << "D: " << PrettyTypeName<DISCARDED>() << std::endl       \
-              << std::endl;                                              \
-  }
-
-  MAKE_BLOCK(0, "");
-  MAKE_BLOCK(1, "");
-
-  MAKE_BLOCK(0, "1");
-  MAKE_BLOCK(1, "1");
-
-  MAKE_BLOCK(0, "12");
-  MAKE_BLOCK(1, "12");
-
-  MAKE_BLOCK(0, TEST_STR_14);
-  MAKE_BLOCK(1, TEST_STR_14);
-
-  MAKE_BLOCK(0, TEST_STR_15);
-  MAKE_BLOCK(1, TEST_STR_15);
-
-  MAKE_BLOCK(0, TEST_STR_16);
-  MAKE_BLOCK(1, TEST_STR_16);
-
-  MAKE_BLOCK(0, TEST_STR_17);
-  MAKE_BLOCK(1, TEST_STR_17);
-
-  MAKE_BLOCK(0, TEST_STR_31);
-  MAKE_BLOCK(1, TEST_STR_31);
-  MAKE_BLOCK(2, TEST_STR_31);
-
-  MAKE_BLOCK(0, TEST_STR_32);
-  MAKE_BLOCK(1, TEST_STR_32);
-  MAKE_BLOCK(2, TEST_STR_32);
-
-  MAKE_BLOCK(0, TEST_STR_33);
-  MAKE_BLOCK(1, TEST_STR_33);
-  MAKE_BLOCK(2, TEST_STR_33);
-}
-
-TEST(ConcatTest, NonMacroCases) {
-  {
-    using T1 = StringFragment<'a'>;
-    std::cout << "T21: " << PrettyTypeName<T1>() << std::endl;
-
-    using T2 = StringFragment<'b'>;
-    std::cout << "T2: " << PrettyTypeName<T2>() << std::endl;
-
-    using C = decltype(Concat(T1(), T2()));
-    std::cout << "Concat: " << PrettyTypeName<C>() << std::endl << std::endl;
-    EXPECT_THAT(PrettyTypeName<C>(), HasSubstr("<'a', 'b'>"));
-  }
-  {
-    using T1 = StringFragment<'a', 'c'>;
-    std::cout << "T1: " << PrettyTypeName<T1>() << std::endl;
-
-    using T2 = StringFragment<>;
-    std::cout << "T2: " << PrettyTypeName<T2>() << std::endl;
-
-    using C = decltype(Concat(T1(), T2()));
-    std::cout << "Concat: " << PrettyTypeName<C>() << std::endl << std::endl;
-    EXPECT_THAT(PrettyTypeName<C>(), HasSubstr("<'a', 'c'>"));
-  }
-  {
-    using T1 = StringFragment<>;
-    std::cout << "T1: " << PrettyTypeName<T1>() << std::endl;
-
-    using T2 = StringFragment<>;
-    std::cout << "T2: " << PrettyTypeName<T2>() << std::endl;
-
-    using C = decltype(Concat(T1(), T2()));
-    std::cout << "Concat: " << PrettyTypeName<C>() << std::endl << std::endl;
-    EXPECT_THAT(PrettyTypeName<C>(), HasSubstr("<>"));
-  }
-  // Degenerate cases that shouldn't happen, but which we don't treat as
-  // invalid.
-  {
-    using T1 = StringFragment<>;
-    std::cout << "T1: " << PrettyTypeName<T1>() << std::endl;
-
-    using T2 = StringFragment<'B', 'C'>;
-    std::cout << "T2: " << PrettyTypeName<T2>() << std::endl;
-
-    using C = decltype(Concat(T1(), T2()));
-    std::cout << "Concat: " << PrettyTypeName<C>() << std::endl << std::endl;
-    EXPECT_THAT(PrettyTypeName<C>(), HasSubstr("<'B', 'C'>"));
-  }
-}
-
-TEST(ConcatTest, DecomposedMacro32Cases) {
-#undef MAKE_BLOCK
-#define MAKE_BLOCK(x)                                                        \
-  {                                                                          \
-    std::cout << "len(x)=" << ((sizeof x) - 1) << ", x: " << x << std::endl; \
-    using T0 = _PSD_FRAGMENT_TYPE(0, x);                                     \
-    std::cout << "T0: " << PrettyTypeName<T0>() << std::endl;                \
-    using T1 = _PSD_FRAGMENT_TYPE(1, x);                                     \
-    std::cout << "T1: " << PrettyTypeName<T1>() << std::endl;                \
-    using CT = _PSD_CONCAT_TYPE(T0, T1);                                     \
-    std::cout << "CT: " << PrettyTypeName<CT>() << std::endl;                \
-    using CFT = _PSD_CONCAT_FRAGMENTS_TYPE(, 0, 1, x);                       \
-    std::cout << "CFT: " << PrettyTypeName<CFT>() << std::endl << std::endl; \
-  }
-
-  MAKE_BLOCK("");
-  MAKE_BLOCK("1");
-  MAKE_BLOCK("12");
-  MAKE_BLOCK(TEST_STR_14);
-  MAKE_BLOCK(TEST_STR_15);
-  MAKE_BLOCK(TEST_STR_16);
-  MAKE_BLOCK(TEST_STR_17);
-  MAKE_BLOCK(TEST_STR_31);
-  MAKE_BLOCK(TEST_STR_32);
-  MAKE_BLOCK(TEST_STR_33);
-}
-
-TEST(ConcatTest, MacroCases) {
-  {
-#define S "a"
-    std::cout << "S: " << S << std::endl;
-
-    using T1 = _PSD_FRAGMENT_TYPE(0, S);
-    std::cout << "T1: " << PrettyTypeName<T1>() << std::endl;
-
-    using T2 = _PSD_FRAGMENT_TYPE(1, S);
-    std::cout << "T2: " << PrettyTypeName<T2>() << std::endl;
-
-    using C = _PSD_CONCAT_TYPE(T1, T2);
-    std::cout << "C: " << PrettyTypeName<C>() << std::endl << std::endl;
-#undef S
-  }
-  {
-#define S "a"
-    std::cout << "S: " << S << std::endl;
-
-    using T = _PSD_CONCAT_FRAGMENTS_TYPE(0, 0, 1, S);
-    std::cout << "T: " << PrettyTypeName<T>() << std::endl << std::endl;
-#undef S
-  }
-  {
-#define S "abcdefghijklmno"
-    std::cout << "S: " << S << std::endl;
-
-    using T = _PSD_CONCAT_FRAGMENTS_TYPE(0, 0, 1, S);
-    std::cout << "T: " << PrettyTypeName<T>() << std::endl << std::endl;
-#undef S
-  }
-  {
-#define S "abcdefghijklmnop"
-    std::cout << "S: " << S << std::endl;
-
-    using T = _PSD_CONCAT_FRAGMENTS_TYPE(0, 0, 1, S);
-    std::cout << "T: " << PrettyTypeName<T>() << std::endl << std::endl;
-#undef S
-  }
-  {
-#define S "abcdefghijklmnopq"
-    std::cout << "S: " << S << std::endl;
-
-    using T = _PSD_CONCAT_FRAGMENTS_TYPE(0, 0, 1, S);
-    std::cout << "T: " << PrettyTypeName<T>() << std::endl << std::endl;
-#undef S
-  }
-  {
-#define S "abcdefghijklmnopqrstuvwxyz01234"
-    std::cout << "S: " << S << std::endl;
-
-    using T = _PSD_CONCAT_FRAGMENTS_TYPE(0, 0, 1, S);
-    std::cout << "T: " << PrettyTypeName<T>() << std::endl << std::endl;
-#undef S
-  }
-  {
-#define S "abcdefghijklmnopqrstuvwxyz012345"
-    std::cout << "S: " << S << std::endl;
-
-    using T = _PSD_CONCAT_FRAGMENTS_TYPE(0, 0, 1, S);
-    std::cout << "T: " << PrettyTypeName<T>() << std::endl << std::endl;
-#undef S
-  }
-  {
-#define S "abcdefghijklmnopqrstuvwxyz0123456"
-    std::cout << "S: " << S << std::endl;
-
-    using T = _PSD_CONCAT_FRAGMENTS_TYPE(0, 0, 1, S);
-    std::cout << "T: " << PrettyTypeName<T>() << std::endl << std::endl;
-#undef S
-  }
-  {
-#define S "abcdefghijklmnopqrstuvwxyz0123456"
-    std::cout << "S: " << S << std::endl;
-
-#define A 0
-#define B 1
-
-    using T = _PSD_CONCAT_FRAGMENTS_TYPE(0, A, B, S);
-    std::cout << "T: " << PrettyTypeName<T>() << std::endl << std::endl;
-#undef S
-#undef A
-#undef B
-  }
-  {
-#define S "abcdefghijklmnopqrstuvwxyz0123456"
-    std::cout << "S: " << S << std::endl;
-
-#define A 1
-#define B 2
-
-    using T = _PSD_CONCAT_FRAGMENTS_TYPE(0, A, B, S);
-    std::cout << "T: " << PrettyTypeName<T>() << std::endl << std::endl;
-#undef S
-#undef A
-#undef B
-  }
-}
-
-TEST(ConcatTest, Concat32MacroCases) {
-#undef MAKE_BLOCK
-#define MAKE_BLOCK(n, x)                                                 \
-  {                                                                      \
-    std::cout << "n=" #n ", len(x)=" << ((sizeof x) - 1) << ", x: " << x \
-              << std::endl;                                              \
-    using C = _PSD_CONCAT_32_TYPE(n, x);                                 \
-    std::cout << "C: " << PrettyTypeName<C>() << std::endl << std::endl; \
-  }
-
-  MAKE_BLOCK(, "");
-  MAKE_BLOCK(0, "");
-
-  MAKE_BLOCK(0, "1");
-  MAKE_BLOCK(1, "1");
-
-  MAKE_BLOCK(0, "12");
-  MAKE_BLOCK(1, "12");
-
-  MAKE_BLOCK(0, TEST_STR_14);
-  MAKE_BLOCK(1, TEST_STR_14);
-
-  MAKE_BLOCK(0, TEST_STR_15);
-  MAKE_BLOCK(1, TEST_STR_15);
-
-  MAKE_BLOCK(0, TEST_STR_16);
-  MAKE_BLOCK(1, TEST_STR_16);
-
-  MAKE_BLOCK(0, TEST_STR_17);
-  MAKE_BLOCK(1, TEST_STR_17);
-
-  MAKE_BLOCK(0, "abcdefghijklmnop");
-  MAKE_BLOCK(1, "abcdefghijklmnopq");
-
-  MAKE_BLOCK(0, "abcdefghijklmnopqrstuvwxyz01234");
-  MAKE_BLOCK(1, "abcdefghijklmnopqrstuvwxyz01234");
-
-  MAKE_BLOCK(0, "abcdefghijklmnopqrstuvwxyz012345");
-  MAKE_BLOCK(1, "abcdefghijklmnopqrstuvwxyz012345");
-
-  MAKE_BLOCK(0, "abcdefghijklmnopqrstuvwxyz0123456");
-  MAKE_BLOCK(1, "abcdefghijklmnopqrstuvwxyz0123456");
-}
-
-TEST(ConcatTest, Concat64MacroCases) {
-#undef MAKE_BLOCK
-#define MAKE_BLOCK(n, x)                                                 \
-  {                                                                      \
-    std::cout << "n=" #n ", len(x)=" << ((sizeof x) - 1) << ", x: " << x \
-              << std::endl;                                              \
-    using C = _PSD_CONCAT_64_TYPE(n, x);                                 \
-    std::cout << "C: " << PrettyTypeName<C>() << std::endl << std::endl; \
-  }
-
-  MAKE_BLOCK(, "");
-  MAKE_BLOCK(, "a");
-
-  MAKE_BLOCK(0, TEST_STR_31);
-  MAKE_BLOCK(0, TEST_STR_32);
-  MAKE_BLOCK(0, TEST_STR_33);
-  MAKE_BLOCK(0, TEST_STR_63);
-  MAKE_BLOCK(0, TEST_STR_64);
-  MAKE_BLOCK(0, TEST_STR_65);
-  MAKE_BLOCK(0, TEST_STR_127);
-  MAKE_BLOCK(0, TEST_STR_128);
-  MAKE_BLOCK(0, TEST_STR_129);
-
-  MAKE_BLOCK(1, TEST_STR_129);
-  MAKE_BLOCK(1, TEST_STR_257);
-  MAKE_BLOCK(1, TEST_STR_511);
-}
-
-TEST(ConcatTest, Concat128MacroCases) {
-#undef MAKE_BLOCK
-#define MAKE_BLOCK(n, x)                                                 \
-  {                                                                      \
-    std::cout << "n=" #n ", len(x)=" << ((sizeof x) - 1) << ", x: " << x \
-              << std::endl;                                              \
-    using C = _PSD_CONCAT_128_TYPE(n, x);                                \
-    std::cout << "C: " << PrettyTypeName<C>() << std::endl << std::endl; \
-  }
-
-  MAKE_BLOCK(0, "");
-  MAKE_BLOCK(0, "a");
-  MAKE_BLOCK(0, TEST_STR_31);
-  MAKE_BLOCK(0, TEST_STR_32);
-  MAKE_BLOCK(0, TEST_STR_33);
-  MAKE_BLOCK(0, TEST_STR_63);
-  MAKE_BLOCK(0, TEST_STR_64);
-  MAKE_BLOCK(0, TEST_STR_65);
-  MAKE_BLOCK(0, TEST_STR_127);
-  MAKE_BLOCK(0, TEST_STR_128);
-  MAKE_BLOCK(0, TEST_STR_129);
-
-  MAKE_BLOCK(1, TEST_STR_129);
-  MAKE_BLOCK(1, TEST_STR_257);
-  MAKE_BLOCK(1, TEST_STR_511);
-}
-
-TEST(ConcatTest, Concat256MacroCases) {
-#undef MAKE_BLOCK
-#define MAKE_BLOCK(n, x)                                                 \
-  {                                                                      \
-    std::cout << "n=" #n ", len(x)=" << ((sizeof x) - 1) << ", x: " << x \
-              << std::endl;                                              \
-    using C = _PSD_CONCAT_256_TYPE(n, x);                                \
-    std::cout << "C: " << PrettyTypeName<C>() << std::endl << std::endl; \
-  }
-  MAKE_BLOCK(0, "");
-  MAKE_BLOCK(0, "a");
-  MAKE_BLOCK(0, TEST_STR_31);
-  MAKE_BLOCK(0, TEST_STR_33);
-  MAKE_BLOCK(0, TEST_STR_65);
-  MAKE_BLOCK(0, TEST_STR_129);
-  MAKE_BLOCK(0, TEST_STR_255);
-  MAKE_BLOCK(0, TEST_STR_256);
-  MAKE_BLOCK(0, TEST_STR_257);
-  MAKE_BLOCK(0, TEST_STR_513);
-  MAKE_BLOCK(0, TEST_STR_1025);
-  MAKE_BLOCK(0, TEST_STR_2049);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Tests of the upper limits of string literal length.
-
-TEST(ConcatTest, Concat512MacroCases) {
-#undef MAKE_BLOCK
-#define MAKE_BLOCK(n, x)                                                 \
-  {                                                                      \
-    std::cout << "n=" #n ", len(x)=" << ((sizeof x) - 1) << ", x: " << x \
-              << std::endl;                                              \
-    using C = _PSD_CONCAT_512_TYPE(n, x);                                \
-    std::cout << "C: " << PrettyTypeName<C>() << std::endl << std::endl; \
-  }
-  MAKE_BLOCK(, "");
-  MAKE_BLOCK(0, TEST_STR_257);
-  MAKE_BLOCK(0, TEST_STR_513);
-  MAKE_BLOCK(0, TEST_STR_1025);
-  MAKE_BLOCK(0, TEST_STR_2049);
-
-  MAKE_BLOCK(1, TEST_STR_4096);
-  MAKE_BLOCK(1, TEST_STR_4097);
-  MAKE_BLOCK(1, TEST_STR_8191);
-  MAKE_BLOCK(2, TEST_STR_8193);
-}
-
-TEST(ConcatTest, Concat1024MacroCases) {
-#undef MAKE_BLOCK
-#define MAKE_BLOCK(n, x)                                                 \
-  {                                                                      \
-    std::cout << "n=" #n ", len(x)=" << ((sizeof x) - 1) << ", x: " << x \
-              << std::endl;                                              \
-    using C = _PSD_CONCAT_1024_TYPE(n, x);                               \
-    std::cout << "C: " << PrettyTypeName<C>() << std::endl << std::endl; \
-  }
-  MAKE_BLOCK(, "");
-  MAKE_BLOCK(0, TEST_STR_257);
-  MAKE_BLOCK(0, TEST_STR_513);
-  MAKE_BLOCK(0, TEST_STR_1023);
-  MAKE_BLOCK(0, TEST_STR_1024);
-  MAKE_BLOCK(0, TEST_STR_1025);
-  MAKE_BLOCK(0, TEST_STR_2049);
-
-  MAKE_BLOCK(1, TEST_STR_1025);
-  MAKE_BLOCK(1, TEST_STR_2049);
-  MAKE_BLOCK(1, TEST_STR_4096);
-  MAKE_BLOCK(1, TEST_STR_4097);
-  MAKE_BLOCK(1, TEST_STR_8191);
-  MAKE_BLOCK(2, TEST_STR_8193);
-}
-
-// #define COMPILES_TEST(x, len)                                            \
-//   TEST(ConcatTest, LiteralOfLength##len##Compiles) {                     \
-//     std::cout << "n=" #n ", len(x)=" << ((sizeof x) - 1) << ", x: " << x \
-//               << std::endl;                                              \
-//     using Type = _PSD_TYPE_##max(x);                                 \
-//     EXPECT_EQ(len + 1, sizeof(Type::kData));                             \
-//     mcucore::test::PrintToStdString out;                                 \
-//     EXPECT_EQ(out.print(MCU_FLASHSTR_##max(x)), len);                    \
-//     EXPECT_EQ(out.str(), x);                                             \
-//   }
-
-// COMPILES_TEST(TEST_STR_31, 31, 32);
-// COMPILES_TEST(TEST_STR_63, 63, 64);
-// COMPILES_TEST(TEST_STR_127, 127, 128);
-// COMPILES_TEST(TEST_STR_255, 255, 256);
-// COMPILES_TEST(TEST_STR_511, 511, 512);
-
-TEST(InlineLiteralTest, ExplicitProgmemStrData) {
+TEST(ProgmemStringDataTest, ExplicitProgmemStrData) {
   using Type = ProgmemStringData<'H', 'E', 'L', 'L', 'O'>;
   auto printable = MakeProgmemStringView<Type>();
   EXPECT_EQ(printable.size(), 5);
@@ -498,7 +84,7 @@ TEST(InlineLiteralTest, ExplicitProgmemStrData) {
   EXPECT_EQ(out.str(), "HELLO");
 }
 
-TEST(InlineLiteralTest, EmptyProgmemStrData) {
+TEST(ProgmemStringDataTest, EmptyProgmemStrData) {
   using Type = ProgmemStringData<>;
   auto printable = MakeProgmemStringView<Type>();
   EXPECT_EQ(printable.size(), 0);
@@ -507,35 +93,42 @@ TEST(InlineLiteralTest, EmptyProgmemStrData) {
   EXPECT_EQ(out.str(), "");
 }
 
-TEST(InlineLiteralTest, Phase1StringFragmentHasNulls) {
+TEST(ProgmemStringDataTest, Phase1StringFragmentHasNulls) {
   // When we don't search for the null character at the end, the template
   // class's parameter pack is padded out to have 16 characters.
   using Type = _PSD_PHASE1_TYPE(, "Hello!");
-  EXPECT_THAT(PrettyTypeName<Type>(),
-              testing::HasSubstr("'H', 'e', 'l', 'l', 'o', '!', NUL, NUL, NUL, "
-                                 "NUL, NUL, NUL, NUL, NUL, NUL, NUL"));
+  using ExpectedType =
+      Phase1StringFragment<false, 10, false, 'H', 'e', 'l', 'l', 'o', '!', '\0',
+                           '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
+                           '\0'>;
+  // We add "extra" parentheses around the value passed to the EXPECT_TRUE macro
+  // because otherwise the preprocessor interprets the comma as separating two
+  // arguments to EXPECT_TRUE.
+  EXPECT_TRUE((std::is_same<Type, ExpectedType>::value))
+      << "\n         Type: " << PrettyTypeName<Type>()
+      << "\n ExpectedType: " << PrettyTypeName<ExpectedType>();
 }
 
 template <typename PSD>
 void ValidateProgmemStrData(std::string_view sv, std::string_view expected,
                             const int lineno) {
-  std::cout << "len(sv)=" << sv.size()
-            << (sv.size() > expected.size() ? " (truncated), sv: " : ", sv: ")
-            << sv << std::endl;
-  std::cout << "PSD: " << PrettyTypeName<PSD>() << std::endl;
+  VLOG(1) << "len(sv)=" << sv.size()
+          << (sv.size() > expected.size() ? " (truncated), sv: " : ", sv: ")
+          << sv << std::endl;
+  VLOG(1) << "PSD: " << PrettyTypeName<PSD>() << std::endl;
   EXPECT_EQ((sizeof PSD::kData) - 1, expected.size()) << "Lineno=" << lineno;
   EXPECT_EQ(PSD::kData[sizeof PSD::kData - 1], '\0') << "Lineno=" << lineno;
   auto actual = std::string_view(PSD::kData, sizeof PSD::kData - 1);
   EXPECT_EQ(actual, expected) << "Lineno=" << lineno;
 }
 
-TEST(InlineLiteralTest, ValidateProgmemStrData_32) {
+TEST(ProgmemStringDataTest, ValidateProgmemStrData_32) {
 #undef MAKE_BLOCK
-#define MAKE_BLOCK(x, y)                                          \
-  {                                                               \
-    using PSD = decltype(::mcucore::progmem_data::ProvideStorage( \
-        LengthCheck<true>(), _PSD_CONCAT_32_TYPE(, x)()));        \
-    ValidateProgmemStrData<PSD>(x, y, __LINE__);                  \
+#define MAKE_BLOCK(x, y)                                                       \
+  {                                                                            \
+    using PSD = decltype(ProvideStorage(                                       \
+        LengthCheck<true>(), _PSD_CONCAT_32_TYPE(_PSD_STRFRAG_TYPE, 0, x)())); \
+    ValidateProgmemStrData<PSD>(x, y, __LINE__);                               \
   }
 
   MAKE_BLOCK("", "");
@@ -552,13 +145,13 @@ TEST(InlineLiteralTest, ValidateProgmemStrData_32) {
   MAKE_BLOCK(TEST_STR_33, TEST_STR_32);  // Note: truncated.
 }
 
-TEST(InlineLiteralTest, ValidateProgmemStrData_64) {
+TEST(ProgmemStringDataTest, ValidateProgmemStrData_64) {
 #undef MAKE_BLOCK
-#define MAKE_BLOCK(x, y)                                          \
-  {                                                               \
-    using PSS = decltype(::mcucore::progmem_data::ProvideStorage( \
-        LengthCheck<true>(), _PSD_CONCAT_64_TYPE(, x)()));        \
-    ValidateProgmemStrData<PSS>(x, y, __LINE__);                  \
+#define MAKE_BLOCK(x, y)                                                       \
+  {                                                                            \
+    using PSS = decltype(ProvideStorage(                                       \
+        LengthCheck<true>(), _PSD_CONCAT_64_TYPE(_PSD_STRFRAG_TYPE, 0, x)())); \
+    ValidateProgmemStrData<PSS>(x, y, __LINE__);                               \
   }
 
   MAKE_BLOCK("", "");
@@ -571,13 +164,14 @@ TEST(InlineLiteralTest, ValidateProgmemStrData_64) {
   MAKE_BLOCK(TEST_STR_65, TEST_STR_64);  // Note: truncated.
 }
 
-TEST(InlineLiteralTest, ValidateProgmemStrData_128) {
+TEST(ProgmemStringDataTest, ValidateProgmemStrData_128) {
 #undef MAKE_BLOCK
-#define MAKE_BLOCK(x, y)                                          \
-  {                                                               \
-    using PSS = decltype(::mcucore::progmem_data::ProvideStorage( \
-        LengthCheck<true>(), _PSD_CONCAT_128_TYPE(, x)()));       \
-    ValidateProgmemStrData<PSS>(x, y, __LINE__);                  \
+#define MAKE_BLOCK(x, y)                                   \
+  {                                                        \
+    using PSS = decltype(ProvideStorage(                   \
+        LengthCheck<true>(),                               \
+        _PSD_CONCAT_128_TYPE(_PSD_STRFRAG_TYPE, 0, x)())); \
+    ValidateProgmemStrData<PSS>(x, y, __LINE__);           \
   }
 
   MAKE_BLOCK("", "");
@@ -593,13 +187,14 @@ TEST(InlineLiteralTest, ValidateProgmemStrData_128) {
   MAKE_BLOCK(TEST_STR_129, TEST_STR_128);
 }
 
-TEST(InlineLiteralTest, ValidateProgmemStrData_256) {
+TEST(ProgmemStringDataTest, ValidateProgmemStrData_256) {
 #undef MAKE_BLOCK
-#define MAKE_BLOCK(x, y)                                          \
-  {                                                               \
-    using PSS = decltype(::mcucore::progmem_data::ProvideStorage( \
-        LengthCheck<true>(), _PSD_CONCAT_256_TYPE(, x)()));       \
-    ValidateProgmemStrData<PSS>(x, y, __LINE__);                  \
+#define MAKE_BLOCK(x, y)                                   \
+  {                                                        \
+    using PSS = decltype(ProvideStorage(                   \
+        LengthCheck<true>(),                               \
+        _PSD_CONCAT_256_TYPE(_PSD_STRFRAG_TYPE, 0, x)())); \
+    ValidateProgmemStrData<PSS>(x, y, __LINE__);           \
   }
 
   MAKE_BLOCK("", "");
@@ -618,48 +213,48 @@ TEST(InlineLiteralTest, ValidateProgmemStrData_256) {
   MAKE_BLOCK(TEST_STR_257, TEST_STR_256);
 }
 
-TEST(InlineLiteralTest, PrintMcuFlashstr) {
+TEST(ProgmemStringDataTest, PrintMcuFlashstr) {
   mcucore::test::PrintToStdString out;
   EXPECT_EQ(out.print(MCU_FLASHSTR("Echo, echo, echo, echo, echo")), 28);
   EXPECT_EQ(out.str(), "Echo, echo, echo, echo, echo");
 }
 
-TEST(InlineLiteralTest, PrintEmptyMcuFlashstr) {
+TEST(ProgmemStringDataTest, PrintEmptyMcuFlashstr) {
   mcucore::test::PrintToStdString out;
   EXPECT_EQ(out.print(MCU_FLASHSTR("")), 0);
   EXPECT_EQ(out.str(), "");
 }
 
-TEST(InlineLiteralTest, StreamMcuFlashstr) {
+TEST(ProgmemStringDataTest, StreamMcuFlashstr) {
   mcucore::test::PrintToStdString out;
   OPrintStream strm(out);
   strm << MCU_FLASHSTR("foo, Bar, BAZ");
   EXPECT_EQ(out.str(), "foo, Bar, BAZ");
 }
 
-TEST(InlineLiteralTest, EmbeddedNullsAreIncludedInProgmem) {
-  using Type = _PSD_TYPE_128("\0abc\0");
+TEST(ProgmemStringDataTest, EmbeddedNullsAreIncludedInProgmem) {
+  using Type = _PSD_TYPE_128(_PSD_STRFRAG_TYPE, "\0abc\0");
   EXPECT_EQ(6, sizeof(Type::kData));
   mcucore::test::PrintToStdString out;
   EXPECT_EQ(out.print(MCU_FLASHSTR_128("\0abc\0")), 0);
   EXPECT_EQ(out.str(), "");
 }
 
-TEST(InlineLiteralTest, McuPsvPrintTo) {
+TEST(ProgmemStringDataTest, McuPsvPrintTo) {
   mcucore::test::PrintToStdString out;
   EXPECT_EQ(MCU_PSV("Hey There").printTo(out), 9);
   EXPECT_EQ(out.str(), "Hey There");
   EXPECT_EQ(MCU_PSV("Hey There").size(), 9);
 }
 
-TEST(InlineLiteralTest, StreamMcuPsv) {
+TEST(ProgmemStringDataTest, StreamMcuPsv) {
   mcucore::test::PrintToStdString out;
   OPrintStream strm(out);
   strm << MCU_PSV("Hey There");
   EXPECT_EQ(out.str(), "Hey There");
 }
 
-TEST(InlineLiteralTest, McuPsvToProgmemStringView) {
+TEST(ProgmemStringDataTest, McuPsvToProgmemStringView) {
   ProgmemStringView progmem_string_view = MCU_PSV("Hey There");
   EXPECT_EQ(progmem_string_view.size(), 9);
   mcucore::test::PrintToStdString out;
@@ -667,7 +262,7 @@ TEST(InlineLiteralTest, McuPsvToProgmemStringView) {
   EXPECT_EQ(out.str(), "Hey There");
 }
 
-TEST(InlineLiteralTest, McuPsvToLiteral) {
+TEST(ProgmemStringDataTest, McuPsvToLiteral) {
   Literal literal = MCU_PSV("Hey There!");
   EXPECT_EQ(literal.size(), 10);
   mcucore::test::PrintToStdString out;
@@ -675,10 +270,10 @@ TEST(InlineLiteralTest, McuPsvToLiteral) {
   EXPECT_EQ(out.str(), "Hey There!");
 }
 
-TEST(InlineLiteralTest, StreamMcuLit) {
+TEST(ProgmemStringDataTest, StreamMcuLit) {
   auto literal = MCU_LIT("Echo, echo, etc");
-  std::cout << "decltype(literal): " << PrettyTypeName<decltype(literal)>()
-            << std::endl;
+  VLOG(1) << "decltype(literal): " << PrettyTypeName<decltype(literal)>()
+          << std::endl;
   EXPECT_EQ(literal.size(), 15);
   mcucore::test::PrintToStdString out;
   OPrintStream strm(out);
@@ -686,24 +281,22 @@ TEST(InlineLiteralTest, StreamMcuLit) {
   EXPECT_EQ(out.str(), "Echo, echo, etc");
 }
 
-TEST(InlineLiteralTest, StringLiteralIsTooLong) {
+TEST(ProgmemStringDataTest, StringLiteralIsTooLong) {
   // Test that when too long a string is used, the type deduction produces the
   // type StringLiteralIsTooLong, rather than a ProgmemStringData.
 
-#define LENGTH_OK_TEST(len, max)                  \
-  {                                               \
-    static_assert(len <= max, "len too high!");   \
-    using T = _PSD_TYPE_##max(TEST_STR_##len);    \
-    static_assert((sizeof(T::kData) - 1) == len); \
+#define LENGTH_OK_TEST(len, max)                                  \
+  {                                                               \
+    static_assert(len <= max, "len too high!");                   \
+    using T = _PSD_TYPE_##max(_PSD_STRFRAG_TYPE, TEST_STR_##len); \
+    static_assert((sizeof(T::kData) - 1) == len);                 \
   }
 
-#define BAD_LENGTH_TEST(len, max)                                             \
-  {                                                                           \
-    using T = _PSD_TYPE_##max(TEST_STR_##len);                                \
-    static_assert(                                                            \
-        std::is_same<T,                                                       \
-                     ::mcucore::progmem_data::StringLiteralIsTooLong>::value, \
-        "Should not be valid.");                                              \
+#define BAD_LENGTH_TEST(len, max)                                 \
+  {                                                               \
+    using T = _PSD_TYPE_##max(_PSD_STRFRAG_TYPE, TEST_STR_##len); \
+    static_assert(std::is_same<T, StringLiteralIsTooLong>::value, \
+                  "Should not be valid.");                        \
   }
 
   LENGTH_OK_TEST(32, 32);
@@ -721,7 +314,137 @@ TEST(InlineLiteralTest, StringLiteralIsTooLong) {
   BAD_LENGTH_TEST(1025, 1024);
 }
 
+TEST(ProgmemStringDataTest, BasenameAfterForwardSlashes) {
+  EXPECT_EQ(PrintValueToStdString(MCU_BASENAME_32("/" TEST_STR_18 "/abc.def")),
+            "abc.def");
+  EXPECT_EQ(PrintValueToStdString(
+                MCU_BASENAME_64(TEST_STR_32 "/" TEST_STR_18 "/ABC.def")),
+            "ABC.def");
+  EXPECT_EQ(PrintValueToStdString(MCU_BASENAME_128(
+                TEST_STR_64 "/" TEST_STR_32 "/" TEST_STR_17 "/abc.c")),
+            "abc.c");
+  EXPECT_EQ(PrintValueToStdString(
+                MCU_BASENAME_256(TEST_STR_128 "/" TEST_STR_64 "/" TEST_STR_32
+                                              "/" TEST_STR_17 "/abC.def")),
+            "abC.def");
+  EXPECT_EQ(PrintValueToStdString(MCU_BASENAME_512(
+                TEST_STR_256 "/" TEST_STR_128 "/" TEST_STR_64 "/" TEST_STR_32
+                             "/" TEST_STR_16 "/ABC.DEF")),
+            "ABC.DEF");
+  EXPECT_EQ(PrintValueToStdString(MCU_BASENAME_1024(
+                TEST_STR_512 "/" TEST_STR_256 "/" TEST_STR_128 "/" TEST_STR_64
+                             "/" TEST_STR_32 "/" TEST_STR_16 "/abc.DEF")),
+            "abc.DEF");
+}
+
+TEST(ProgmemStringDataTest, BasenameAfterBackwardSlashes) {
+  EXPECT_EQ(
+      PrintValueToStdString(MCU_BASENAME_32("\\" TEST_STR_18 "\\abc.def")),
+      "abc.def");
+  EXPECT_EQ(PrintValueToStdString(
+                MCU_BASENAME_64(TEST_STR_32 "\\" TEST_STR_18 "\\ABC.def")),
+            "ABC.def");
+  EXPECT_EQ(PrintValueToStdString(MCU_BASENAME_128(
+                TEST_STR_64 "\\" TEST_STR_32 "\\" TEST_STR_17 "\\abc.c")),
+            "abc.c");
+  EXPECT_EQ(PrintValueToStdString(
+                MCU_BASENAME_256(TEST_STR_128 "\\" TEST_STR_64 "\\" TEST_STR_32
+                                              "\\" TEST_STR_17 "\\abC.def")),
+            "abC.def");
+  EXPECT_EQ(PrintValueToStdString(MCU_BASENAME_512(
+                TEST_STR_256 "\\" TEST_STR_128 "\\" TEST_STR_64 "\\" TEST_STR_32
+                             "\\" TEST_STR_16 "\\ABC.DEF")),
+            "ABC.DEF");
+  EXPECT_EQ(
+      PrintValueToStdString(MCU_BASENAME_1024(
+          TEST_STR_512 "\\" TEST_STR_256 "\\" TEST_STR_128 "\\" TEST_STR_64
+                       "\\" TEST_STR_32 "\\" TEST_STR_16 "\\abc.DEF")),
+      "abc.DEF");
+}
+
+TEST(ProgmemStringDataTest, Basename1024File) {
+  VLOG(1) << "__FILE__: " << __FILE__ << std::endl;
+  VLOG(1) << "MCU_BASENAME_1024(__FILE__): "
+          << PrintValueToStdString(MCU_BASENAME_1024(__FILE__)) << std::endl;
+  EXPECT_THAT(PrintValueToStdString(MCU_BASENAME_1024(__FILE__)),
+              StartsWith("progmem_string_data_test.c"));
+}
+
+// A 512 character path. This rather odd set of characters is chosen so that no
+// two leaf StringFragments will be the same as any other in the path, thus
+// ensuring the maximum amount of "work" by the compiler.
+#define A_REALLY_LONG_PATH                                                     \
+  "/23456789a123456789/123456789c123456789/123456789e123456789/123456789/"     \
+  "123456789/123456789i123456789.123456789j123456789/"                         \
+  "123456789l123456789m123456789n123456789o123456789/"                         \
+  "123456789q123456789r123456789."                                             \
+  "123456789s123456789t123456789u123456789v123456789w123456789x123456789y1234" \
+  "56789z123456789A123456789."                                                 \
+  "123456789B123456789C123456789D123456789E123456789F123456789G123456789H1234" \
+  "56789I123456789J123456789."                                                 \
+  "123456789K123456789L123456789M123456789N123456789O123456789P123456789Q1234" \
+  "56789R123456789S123456789/123456789T.2"
+
+#define BASENAME_512_1                                                   \
+  EXPECT_EQ(PrintValueToStdString(MCU_BASENAME_512(A_REALLY_LONG_PATH)), \
+            "123456789T.2")
+#define BASENAME_512_2 \
+  BASENAME_512_1;      \
+  BASENAME_512_1
+#define BASENAME_512_4 \
+  BASENAME_512_2;      \
+  BASENAME_512_2
+#define BASENAME_512_8 \
+  BASENAME_512_4;      \
+  BASENAME_512_4
+#define BASENAME_512_16 \
+  BASENAME_512_8;       \
+  BASENAME_512_8
+#define BASENAME_512_32 \
+  BASENAME_512_16;      \
+  BASENAME_512_16
+#define BASENAME_512_64 \
+  BASENAME_512_32;      \
+  BASENAME_512_32
+#define BASENAME_512_128 \
+  BASENAME_512_64;       \
+  BASENAME_512_64
+#define BASENAME_512_256 \
+  BASENAME_512_128;      \
+  BASENAME_512_128
+
+TEST(ProgmemStringDataTest, Basename512) {
+  VLOG(1) << "A_REALLY_LONG_PATH: " << A_REALLY_LONG_PATH << std::endl;
+  EXPECT_EQ(std::string_view(A_REALLY_LONG_PATH).size(), 512);
+
+  // We want to be able to have many separate evaluations of MCU_BASENAME_512 so
+  // that we can see whether it has a strongly negative impact on compiler
+  // performance.
+
+  BASENAME_512_1;
+}
+
+// Tests that each power-of-two maximum size compiles and works.
+
+#define COMPILES_TEST(x, len, max)                                          \
+  TEST(ProgmemStringDataTest, LiteralOfLength##len##CompilesWithMax##max) { \
+    VLOG(1) << "len(x)=" << ((sizeof x) - 1) << ", x: " << x << std::endl;  \
+    using Type = _PSD_TYPE_##max(_PSD_STRFRAG_TYPE, x);                     \
+    EXPECT_EQ(len + 1, sizeof(Type::kData));                                \
+    mcucore::test::PrintToStdString out;                                    \
+    EXPECT_EQ(out.print(MCU_FLASHSTR_##max(x)), len);                       \
+    EXPECT_EQ(out.str(), x);                                                \
+    EXPECT_EQ(PrintValueToStdString(MCU_BASENAME_##max(x)), x);             \
+  }
+
+COMPILES_TEST(TEST_STR_32, 32, 32);
+COMPILES_TEST(TEST_STR_64, 64, 64);
+COMPILES_TEST(TEST_STR_128, 128, 128);
+COMPILES_TEST(TEST_STR_256, 256, 256);
+COMPILES_TEST(TEST_STR_512, 512, 512);
+COMPILES_TEST(TEST_STR_1024, 1024, 1024);
+
 }  // namespace
 }  // namespace test
-}  // namespace progmem_data
+}  // namespace progmem_string_data
 }  // namespace mcucore

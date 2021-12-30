@@ -3,26 +3,40 @@
 
 // Provides macros for storing string literals in program memory (PROGMEM)
 // rather than RAM, when compiled with avr-gcc for the AVR line of processors.
-// The linker should be able to collapse multiple occurrences of the same string
+//
+// At root these macros use the template struct ProgmemStringData to store the
+// value in a static field of a full specialization of the template. This
+// enables the linker to collapse multiple occurrences of the same string
 // literal into a single array in PROGMEM; this isn't true when using the
 // Arduino defined F(string_literal) macro, where every occurrence in a single
 // file is stored separately.
 //
-// TASLIT(string_literal) expands to a ProgmemStringView instance with
+// MCU_PSV(string_literal) expands to a ProgmemStringView instance with
 // string_literal as the value it views.
 //
-// PSD_FLASHSTR(string_literal) expands to a const __FlashStringHelper* pointer
-// value, just as F(string_literal) does, but without the wasted storage.
+// MCU_FLASHSTR(string_literal) expands to a `const __FlashStringHelper*`
+// pointer value, just as F(string_literal) does, but without the wasted storage
+// when the string literal appears multiple times.
 //
-// This is inspired by https://github.com/irrequietus/typestring, by George
-// Makrydakis <george@irrequietus.eu>. typestring.hh expands a string literal
-// passed to a macro function into a list of char values which is used as a
-// template parameter pack; template metaprogramming is used to iterate through
-// the characters looking for the string terminating null character, though
-// recursive type deduction is used to perform that iteration. This works fine
-// for short strings, but with longer strings (e.g. above 128) the recursive
-// type deduction becomes rather slow, and can exceed the the stack size
-// supported by the compiler.
+// MCU_BASENAME(file_path_string_literal) is like MCU_FLASHSTR, but trims off
+// any characters to the left of the leftmost slash (forward or backward) in
+// file_path_literal; i.e. it expands to a `const __FlashStringHelper*` that
+// points to the file name in the file_path, but without the path of the
+// directory containing that file. This exists to support logging.h, which has
+// support for including the location (file name and line number) at which a
+// message was logged.
+//
+// -----------------------------------------------------------------------------
+//
+// The approach of using template metaprogramming and type deduction is inspired
+// by George Makrydakis https://github.com/irrequietus/typestring. typestring.hh
+// expands a string literal passed to a macro function into a list of char
+// values which is used as a template parameter pack; template metaprogramming
+// is used to iterate through the characters looking for the string terminating
+// null character, though recursive type deduction is used to perform that
+// iteration. This works fine for short strings, but with longer strings (e.g.
+// above 128) the recursive type deduction becomes rather slow, and can exceed
+// the the stack size supported by the compiler.
 //
 // To avoid the compilation issues mentioned above, this implementation is
 // different in these key ways:
@@ -34,16 +48,25 @@
 //    determined size of the string literal is used to find the end of the
 //    string.
 //
-// 3) Only the fragment containing the terminating null is processed to trim off
-//    the terminating null and the following padding, which is also made up of
-//    null characters.
+// 3) Only the fragment containing the last character AND the terminating null
+//    is processed in a special fashion to trim off the terminating null and the
+//    following padding, which is also made up of null characters. Fragments
+//    containing string characters but not the terminating null, and fragments
+//    containing only null characters (starting with the terminating null), are
+//    processed as a whole unit, without needing to process each character.
 //
-// 4) Recursion is used in a binary tree fashion, rather than as tail recursion.
-//    This means that the fragments 1 and 2 are concatenated together into
-//    fragment A, fragments 3 and 4 are concatenated together into fragment B,
-//    and finally fragments A and B are concatenated together into fragment C.
-//    This limits the depth of the compiler stack required to perform type
-//    deduction.
+// 4) Recursion is performed in a binary tree fashion on adjacent fragments or
+//    sequences of adjacent fragments, rather than as just a character at a time
+//    (ala iteration). This means that the fragments 1 and 2 are concatenated
+//    together into fragment A, fragments 3 and 4 are concatenated together into
+//    fragment B, and finally fragments A and B are concatenated together into
+//    fragment C. This limits the depth of the compiler stack required to
+//    perform type deduction.
+//
+// Note that character-at-a-time recursion is retained in the implementation of
+// finding slashes within the 16 character string fragments, but after that the
+// binary tree recursion method is used, which addresses the difficulties with
+// long __FILE__ strings.
 //
 // Author: james.synge@gmail.com
 
@@ -52,29 +75,27 @@
 #include "type_traits.h"
 
 namespace mcucore {
-namespace progmem_data {
+namespace progmem_string_data {
 
 // Get the Nth char from a string literal of length M, where that length
 // includes the trailing null character at index M-1. This is used to produce
 // the comma separated lists of chars that make up a literal string. If N is >
-// M, the trailing null character is returned; as a result, _PSD_EXPAND_16(,
-// "Hello") becomes:
-//
-//   'H','e','l','l','o','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'
+// M, the trailing null character is returned.
 template <int N, int M>
 constexpr char GetNthCharOfM(char const (&c)[M]) {
   return c[N < M ? N : M - 1];
 }
 
-// Instantiations of this template provide static, constexpr storage for string
-// literals. By placing them in the ::mcucore::progmem_data namespace, the
-// linker will combine multiple occurrences of the same
-// PSD_FLASHSTR(string_literal) across multiple files such that they share the
-// storage.
+// Full specializations of this template define static, constexpr storage for
+// string literals. Because all full specializations for the same string literal
+// produce exactly the same type, the compiler and linker will treat multiple
+// occurrences of the type as the same, and thus will combine multiple
+// occurrences so that only a single copy of the string literal is stored in the
+// program (i.e. we don't waste flash memory with multiple copies).
 template <char... C>
 struct ProgmemStringData final {
   // We add a trailing null character here so that we can interpret kData as a
-  // __FlashStringHelper instance (see PSD_FLASHSTR for how we do that);
+  // __FlashStringHelper instance (see MCU_FLASHSTR for how we do that);
   // Arduino's Print::print(const __FlashStringHelper*) needs the string to be
   // NUL terminated so that it knows when it has found the end of the string.
   static constexpr char const kData[1 + sizeof...(C)] AVR_PROGMEM = {C..., 0};
@@ -84,10 +105,11 @@ template <char... C>
 constexpr char const
     ProgmemStringData<C...>::kData[1 + sizeof...(C)] AVR_PROGMEM;
 
-// TODO Generate a compile time error if sizeof PSS:kData is too large to be
-// represented by ProgmemStringView. E.g. create a declared but unimplemented
-// specialization of this function for that case whose return type is
-// StringLiteralIsTooLong.
+// Note: It's a bit awkward for this file to have to depend on
+// ProgmemStringView, instead of just producing ProgmemStringData types that can
+// be used in various places to produce instances of the necessary types. In
+// particular, the fact that ProgmemStringView is limited to 255 characters
+// isn't something that this file should have to worry about.
 template <class PSS>
 ProgmemStringView MakeProgmemStringView() {
   constexpr size_t size =
@@ -112,31 +134,33 @@ template <bool BeforeLastChar, int CharsToDiscard, bool AfterLastChar,
           char... C>
 struct Phase1StringFragment final {};
 
-// template <int CharsToDiscard, char... C>
-// struct Phase2StringFragment final {};
-
+// StringFragment is a template struct whose parameters capture a sequence of
+// zero or more characters from a string literal.
 template <char... C>
 struct StringFragment final {};
 
-// template <char... C>
-// struct FullStringFragment final {};
-
+// DiscardCount is a template struct whose parameter captures the number of
+// trailing null characters to be discarded from the last (partial) string
+// fragment.
 template <int N>
 struct DiscardCount final {};
 
+// LengthCheck is a template struct whose parameter captures whether or not the
+// length of the string literal was supported by the macro used (true) or not
+// (false). This is used to produce a compile time error if too long a string is
+// passed to one of the macros.
 template <bool LengthOK>
 struct LengthCheck final {};
 
-class EmptyString;
-
 // "Forward" declaration of an undefined type. If this appears in a compiler
 // error message for the expansion of MCU_FLASHSTR_nnn, or a related macro, it
-// means that the string literal is too long (>= nnn).
+// means that the string literal is too long (> nnn).
 class StringLiteralIsTooLong;
 
-// KeepLiteral has specializations for each count of leading characters to be
-// kept (1 through 15) each count of trailing nulls to be discarded (15 through
-// 1).
+////////////////////////////////////////////////////////////////////////////////
+// KeepLiteral has specializations for each count of trailing null characters to
+// be dicarded (15 through 1). If it is necessary to edit or replace these, see
+// the script extras/dev_tools/make_keep_literal.py.
 
 // Keep 1 character, discard 15 nulls.
 template <char C1, char... X>
@@ -264,6 +288,11 @@ auto KeepLiteral(DiscardCount<1>, StringFragment<C1>, StringFragment<C2>,
     -> StringFragment<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13,
                       C14, C15>;
 
+////////////////////////////////////////////////////////////////////////////////
+// DiscardAfterLiteral is used to decide how to translate a Phase1StringFragment
+// into a StringFragment whose char... parameter pack contains only characters
+// of the string, and not the null termination, nor any trailing padding.
+
 // Matches a string fragment (C...) entirely in the string, i.e. before the
 // terminating null character.
 template <int CharsToDiscard, char... C>
@@ -286,7 +315,7 @@ auto DiscardAfterLiteral(
     -> decltype(KeepLiteral(DiscardCount<CharsToDiscard>(),
                             StringFragment<C>()...));
 
-// Concatenate string fragments.
+// Concatenate (adjacent) string fragments.
 template <char... X, char... Y>
 auto Concat(StringFragment<X...>, StringFragment<Y...>)
     -> StringFragment<X..., Y...>;
@@ -305,7 +334,76 @@ template <char... C>
 auto ProvideStorage(LengthCheck<false>, StringFragment<C...>)
     -> StringLiteralIsTooLong;
 
-}  // namespace progmem_data
+////////////////////////////////////////////////////////////////////////////////
+// Support for computing the basename of a file path, which mostly means
+// __FILE__. KeepBasename searches each StringFragment for slashes, retaining
+// only characters after the rightmost slash, and also indicating whether we
+// have found such a slash. Specializations of Concat support concatenating the
+// results of KeepBasename, again retaining only characters after the rightmost
+// slash.
+
+// Represents a string fragment while we're removing slashes and preceding
+// characters. FoundSlash is true if the evaluation that produced the type found
+// a slash.
+template <bool FoundSlash, char... C>
+struct PathFragment final {};
+
+// KeepBasename is a set of template function declarations for removing slashes
+// and preceding characters.
+
+template <bool FoundSlash, char... C>
+auto KeepBasename(PathFragment<FoundSlash, C...>)  // All done.
+    -> PathFragment<FoundSlash, C...>;
+
+template <bool FoundSlash, char A, char... X, char... Y>
+auto KeepBasename(PathFragment<FoundSlash, X...>, StringFragment<A>,
+                  StringFragment<Y>...)
+    -> decltype(KeepBasename(PathFragment<FoundSlash, X..., A>(),
+                             StringFragment<Y>()...));
+
+template <bool FoundSlash, char... X, char... Y>
+auto KeepBasename(PathFragment<FoundSlash, X...>, StringFragment<'/'>,
+                  StringFragment<Y>...)
+    -> decltype(KeepBasename(PathFragment<true>(), StringFragment<Y>()...));
+
+template <bool FoundSlash, char... X, char... Y>
+auto KeepBasename(PathFragment<FoundSlash, X...>, StringFragment<'\\'>,
+                  StringFragment<Y>...)
+    -> decltype(KeepBasename(PathFragment<true>(), StringFragment<Y>()...));
+
+// Entry point for trimming a fragment of a file path to just those characters
+// after any slashes found in the fragment. The input is the result of
+// DiscardAfterLiteral.
+template <char... C>
+auto KeepBasename(StringFragment<C...>)
+    -> decltype(KeepBasename(PathFragment<false>(), StringFragment<C>()...));
+
+// Concatenate path fragments, keeping only the characters after the right most
+// slash.
+
+// Matches a pair of path fragments where the right-hand fragment does not have
+// a slash in it; as a result we keep the characters in both fragments, and the
+// left-hand fragment determines whether the return type denotes a fragment in
+// which a slash was found.
+template <bool FoundSlash, char... X, char... Y>
+auto Concat(PathFragment<FoundSlash, X...>, PathFragment<false, Y...>)
+    -> PathFragment<FoundSlash, X..., Y...>;
+
+// Matches a pair of path fragments where the right-hand fragment had a slash in
+// it; as a result we don't need the left-hand fragment at all.
+template <bool FoundSlash, char... X, char... Y>
+auto Concat(PathFragment<FoundSlash, X...>, PathFragment<true, Y...>)
+    -> PathFragment<true, Y...>;
+
+// Another specialization of ProvideStorage, which transforms a PathFragment
+// back into a StringFragment and the uses the previously defined
+// specializations of ProvideStorage.
+template <bool LengthOk, bool FoundSlash, char... C>
+auto ProvideStorage(LengthCheck<LengthOk>, PathFragment<FoundSlash, C...>)
+    -> decltype(ProvideStorage(LengthCheck<LengthOk>(),
+                               StringFragment<C...>()));
+
+}  // namespace progmem_string_data
 }  // namespace mcucore
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -318,16 +416,17 @@ auto ProvideStorage(LengthCheck<false>, StringFragment<C...>)
 //
 // We assume here that the expansion may occur in any namespace, thus we make
 // absolute refererences to the types of the above templates.
+#define _PSD_NS ::mcucore::progmem_string_data
 
 // Expands to the n-th character of x; if n is greater than the size of x, then
 // expands to the null character.
-#define _PSD_GET_NTH_CHAR(n, x) ::mcucore::progmem_data::GetNthCharOfM<0x##n>(x)
+#define _PSD_GET_NTH_CHAR(n, x) _PSD_NS::GetNthCharOfM<0x##n>(x)
 
 // Value used to detect when the string literal is longer than is supported by
 // the macro used to decompose the string literal into characters. The value is
 // used to select the appropriate specialization of ProvideStorage.
 #define _PSD_LENGTH_CHECK(x, max_chars) \
-  (::mcucore::progmem_data::LengthCheck<((sizeof x) - 1 <= max_chars)>())
+  (_PSD_NS::LengthCheck<((sizeof x) - 1 <= max_chars)>())
 
 // Support for the working with individual string fragments of 16 characters.
 
@@ -336,7 +435,7 @@ auto ProvideStorage(LengthCheck<false>, StringFragment<C...>)
 // leading 0x before the digits in |n|. Any character offset that is beyond the
 // last character of |x| is expanded to the null character.
 #define _PSD_PHASE1_TYPE(n, x)                                                \
-  ::mcucore::progmem_data::Phase1StringFragment<                              \
+  _PSD_NS::Phase1StringFragment<                                              \
       /* BeforeLastChar */ ((sizeof x) >= 16 && 0x##n##F < ((sizeof x) - 1)), \
       /* CharsToDiscard */ (16 - (((sizeof x) - 1) % 16)),                    \
       /* AfterLastChar */ (0x##n##0 >= ((sizeof x) - 1)),                     \
@@ -349,168 +448,219 @@ auto ProvideStorage(LengthCheck<false>, StringFragment<C...>)
       _PSD_GET_NTH_CHAR(n##C, x), _PSD_GET_NTH_CHAR(n##D, x),                 \
       _PSD_GET_NTH_CHAR(n##E, x), _PSD_GET_NTH_CHAR(n##F, x)>
 
-// Expands to a string fragment without trailing nulls.
-#define _PSD_FRAGMENT_TYPE(n, x)                         \
-  decltype(::mcucore::progmem_data::DiscardAfterLiteral( \
-      _PSD_PHASE1_TYPE(n, x)()))
+// Expands to a string fragment type without trailing nulls.
+#define _PSD_STRFRAG_TYPE(n, x) \
+  decltype(_PSD_NS::DiscardAfterLiteral(_PSD_PHASE1_TYPE(n, x)()))
 
+// Expands to a path fragment type without trailing nulls, and without any
+// slashes or characters preceding such slashes.
+#define _PSD_PATHFRAG_TYPE(n, x) \
+  decltype(_PSD_NS::KeepBasename(_PSD_STRFRAG_TYPE(n, x)()))
+
+////////////////////////////////////////////////////////////////////////////////
 // Expands to the type of two (adjacent) string fragments, t1() and t2(), being
 // concatenated together.
-#define _PSD_CONCAT_TYPE(t1, t2) \
-  decltype(::mcucore::progmem_data::Concat(t1(), t2()))
+#define _PSD_CONCAT_TYPE(t1, t2) decltype(_PSD_NS::Concat(t1(), t2()))
 
 // Concatenates two preprocessor tokens together. This is used below to ensure
 // that two macro arguments are expanded before they are concatenated to produce
 // a new token.
 #define _PSD_CONCAT_TOKENS(token1, token2) token1##token2
 
-// Expands to the type from concatenating the types of two fragments of 16
+// Expands to the type from concatenating the types of two string fragments of
+// 16 characters starting at 0x##hex0##hex1##0 and at 0x##hex0##hex2##0.
+#define _PSD_CONCAT_FRAGMENTS_TYPE(fragtype, hex0, hex1, hex2, x) \
+  _PSD_CONCAT_TYPE(fragtype(_PSD_CONCAT_TOKENS(hex0, hex1), x),   \
+                   fragtype(_PSD_CONCAT_TOKENS(hex0, hex2), x))
+
+// Expands to the type from concatenating the types of two path fragments of 16
 // characters starting at 0x##hex0##hex1##0 and at 0x##hex0##hex2##0.
-#define _PSD_CONCAT_FRAGMENTS_TYPE(hex0, hex1, hex2, x)                   \
-  _PSD_CONCAT_TYPE(_PSD_FRAGMENT_TYPE(_PSD_CONCAT_TOKENS(hex0, hex1), x), \
-                   _PSD_FRAGMENT_TYPE(_PSD_CONCAT_TOKENS(hex0, hex2), x))
+#define _PSD_CONCAT_PATHFRAG_TYPE(hex0, hex1, hex2, x)                    \
+  _PSD_CONCAT_TYPE(_PSD_PATHFRAG_TYPE(_PSD_CONCAT_TOKENS(hex0, hex1), x), \
+                   _PSD_PATHFRAG_TYPE(_PSD_CONCAT_TOKENS(hex0, hex2), x))
 
 ////////////////////////////////////////////////////////////////////////////////
-// Macros for producing StringFragment and ProgmemStringData types that support
-// string literals whose size do not exceed the specified number of chars.
+// Macros for producing StringFragment, PathFragment and ProgmemStringData types
+// that support string literals whose sizes do not exceed the specified number
+// of chars.
+
+#define _MAKE_PSD_TYPE_nnn(nnn, fragtype, x) \
+  decltype(_PSD_NS::ProvideStorage(          \
+      _PSD_LENGTH_CHECK(x, nnn), _PSD_CONCAT_##nnn##_TYPE(fragtype, 0, x)()))
 
 /* 2^5 = 32 */
-#define _PSD_CONCAT_32_TYPE(n, x) _PSD_CONCAT_FRAGMENTS_TYPE(n, 0, 1, x)
+#define _PSD_CONCAT_32_TYPE(fragtype, n, x) \
+  _PSD_CONCAT_FRAGMENTS_TYPE(fragtype, n, 0, 1, x)
 
-#define _PSD_TYPE_32(x)                             \
-  decltype(::mcucore::progmem_data::ProvideStorage( \
-      _PSD_LENGTH_CHECK(x, 32), _PSD_CONCAT_32_TYPE(, x)()))
+#define _PSD_TYPE_32(fragtype, x) _MAKE_PSD_TYPE_nnn(32, fragtype, x)
 
 /* 2^6 = 64 */
-#define _PSD_CONCAT_64_TYPE(n, x)                          \
-  _PSD_CONCAT_TYPE(_PSD_CONCAT_FRAGMENTS_TYPE(n, 0, 1, x), \
-                   _PSD_CONCAT_FRAGMENTS_TYPE(n, 2, 3, x))
+#define _PSD_CONCAT_64_TYPE(fragtype, n, x)                          \
+  _PSD_CONCAT_TYPE(_PSD_CONCAT_FRAGMENTS_TYPE(fragtype, n, 0, 1, x), \
+                   _PSD_CONCAT_FRAGMENTS_TYPE(fragtype, n, 2, 3, x))
 
-#define _PSD_TYPE_64(x)                             \
-  decltype(::mcucore::progmem_data::ProvideStorage( \
-      _PSD_LENGTH_CHECK(x, 64), _PSD_CONCAT_64_TYPE(, x)()))
+#define _PSD_TYPE_64(fragtype, x) _MAKE_PSD_TYPE_nnn(64, fragtype, x)
 
 /* 2^7 = 128 */
-#define _PSD_CONCAT_128_TYPE(n, x)                                           \
-  _PSD_CONCAT_TYPE(_PSD_CONCAT_TYPE(_PSD_CONCAT_FRAGMENTS_TYPE(n, 0, 1, x),  \
-                                    _PSD_CONCAT_FRAGMENTS_TYPE(n, 2, 3, x)), \
-                   _PSD_CONCAT_TYPE(_PSD_CONCAT_FRAGMENTS_TYPE(n, 4, 5, x),  \
-                                    _PSD_CONCAT_FRAGMENTS_TYPE(n, 6, 7, x)))
+#define _PSD_CONCAT_128_TYPE(fragtype, n, x)                              \
+  _PSD_CONCAT_TYPE(                                                       \
+      _PSD_CONCAT_TYPE(_PSD_CONCAT_FRAGMENTS_TYPE(fragtype, n, 0, 1, x),  \
+                       _PSD_CONCAT_FRAGMENTS_TYPE(fragtype, n, 2, 3, x)), \
+      _PSD_CONCAT_TYPE(_PSD_CONCAT_FRAGMENTS_TYPE(fragtype, n, 4, 5, x),  \
+                       _PSD_CONCAT_FRAGMENTS_TYPE(fragtype, n, 6, 7, x)))
 
-#define _PSD_TYPE_128(x)                            \
-  decltype(::mcucore::progmem_data::ProvideStorage( \
-      _PSD_LENGTH_CHECK(x, 128), _PSD_CONCAT_128_TYPE(, x)()))
+#define _PSD_TYPE_128(fragtype, x) _MAKE_PSD_TYPE_nnn(128, fragtype, x)
 
 /* 2^8 = 256 */
-#define _PSD_CONCAT_256_TYPE(n, x)                                   \
-  _PSD_CONCAT_TYPE(                                                  \
-      _PSD_CONCAT_TYPE(                                              \
-          _PSD_CONCAT_TYPE(_PSD_CONCAT_FRAGMENTS_TYPE(n, 0, 1, x),   \
-                           _PSD_CONCAT_FRAGMENTS_TYPE(n, 2, 3, x)),  \
-          _PSD_CONCAT_TYPE(_PSD_CONCAT_FRAGMENTS_TYPE(n, 4, 5, x),   \
-                           _PSD_CONCAT_FRAGMENTS_TYPE(n, 6, 7, x))), \
-      _PSD_CONCAT_TYPE(                                              \
-          _PSD_CONCAT_TYPE(_PSD_CONCAT_FRAGMENTS_TYPE(n, 8, 9, x),   \
-                           _PSD_CONCAT_FRAGMENTS_TYPE(n, A, B, x)),  \
-          _PSD_CONCAT_TYPE(_PSD_CONCAT_FRAGMENTS_TYPE(n, C, D, x),   \
-                           _PSD_CONCAT_FRAGMENTS_TYPE(n, E, F, x))))
+#define _PSD_CONCAT_256_TYPE(fragtype, n, x)                                   \
+  _PSD_CONCAT_TYPE(                                                            \
+      _PSD_CONCAT_TYPE(                                                        \
+          _PSD_CONCAT_TYPE(_PSD_CONCAT_FRAGMENTS_TYPE(fragtype, n, 0, 1, x),   \
+                           _PSD_CONCAT_FRAGMENTS_TYPE(fragtype, n, 2, 3, x)),  \
+          _PSD_CONCAT_TYPE(_PSD_CONCAT_FRAGMENTS_TYPE(fragtype, n, 4, 5, x),   \
+                           _PSD_CONCAT_FRAGMENTS_TYPE(fragtype, n, 6, 7, x))), \
+      _PSD_CONCAT_TYPE(                                                        \
+          _PSD_CONCAT_TYPE(_PSD_CONCAT_FRAGMENTS_TYPE(fragtype, n, 8, 9, x),   \
+                           _PSD_CONCAT_FRAGMENTS_TYPE(fragtype, n, A, B, x)),  \
+          _PSD_CONCAT_TYPE(_PSD_CONCAT_FRAGMENTS_TYPE(fragtype, n, C, D, x),   \
+                           _PSD_CONCAT_FRAGMENTS_TYPE(fragtype, n, E, F, x))))
 
-#define _PSD_TYPE_256(x)                            \
-  decltype(::mcucore::progmem_data::ProvideStorage( \
-      _PSD_LENGTH_CHECK(x, 256), _PSD_CONCAT_256_TYPE(, x)()))
+#define _PSD_TYPE_256(fragtype, x) _MAKE_PSD_TYPE_nnn(256, fragtype, x)
 
 // Special case: length 255, for those cases below where the string length must
 // be encoded in a uint8.
-#define _PSD_TYPE_255(x)                            \
-  decltype(::mcucore::progmem_data::ProvideStorage( \
-      _PSD_LENGTH_CHECK(x, 255), _PSD_CONCAT_256_TYPE(, x)()))
+#define _PSD_TYPE_255(fragtype, x)                            \
+  decltype(_PSD_NS::ProvideStorage(_PSD_LENGTH_CHECK(x, 255), \
+                                   _PSD_CONCAT_256_TYPE(fragtype, 0, x)()))
 
 /* 2^9 = 512 */
-#define _PSD_CONCAT_512_TYPE(n, x)                                    \
-  _PSD_CONCAT_TYPE(_PSD_CONCAT_256_TYPE(_PSD_CONCAT_TOKENS(n, 0), x), \
-                   _PSD_CONCAT_256_TYPE(_PSD_CONCAT_TOKENS(n, 1), x))
+#define _PSD_CONCAT_512_TYPE(fragtype, n, x)                       \
+  _PSD_CONCAT_TYPE(                                                \
+      _PSD_CONCAT_256_TYPE(fragtype, _PSD_CONCAT_TOKENS(n, 0), x), \
+      _PSD_CONCAT_256_TYPE(fragtype, _PSD_CONCAT_TOKENS(n, 1), x))
 
-#define _PSD_TYPE_512(x)                            \
-  decltype(::mcucore::progmem_data::ProvideStorage( \
-      _PSD_LENGTH_CHECK(x, 512), _PSD_CONCAT_512_TYPE(, x)()))
+#define _PSD_TYPE_512(fragtype, x) _MAKE_PSD_TYPE_nnn(512, fragtype, x)
 
 /* 2^10 = 1024 */
-#define _PSD_CONCAT_1024_TYPE(n, x)                                        \
-  _PSD_CONCAT_TYPE(                                                        \
-      _PSD_CONCAT_TYPE(_PSD_CONCAT_256_TYPE(_PSD_CONCAT_TOKENS(n, 0), x),  \
-                       _PSD_CONCAT_256_TYPE(_PSD_CONCAT_TOKENS(n, 1), x)), \
-      _PSD_CONCAT_TYPE(_PSD_CONCAT_256_TYPE(_PSD_CONCAT_TOKENS(n, 2), x),  \
-                       _PSD_CONCAT_256_TYPE(_PSD_CONCAT_TOKENS(n, 3), x)))
+#define _PSD_CONCAT_1024_TYPE(fragtype, n, x)                           \
+  _PSD_CONCAT_TYPE(                                                     \
+      _PSD_CONCAT_TYPE(                                                 \
+          _PSD_CONCAT_256_TYPE(fragtype, _PSD_CONCAT_TOKENS(n, 0), x),  \
+          _PSD_CONCAT_256_TYPE(fragtype, _PSD_CONCAT_TOKENS(n, 1), x)), \
+      _PSD_CONCAT_TYPE(                                                 \
+          _PSD_CONCAT_256_TYPE(fragtype, _PSD_CONCAT_TOKENS(n, 2), x),  \
+          _PSD_CONCAT_256_TYPE(fragtype, _PSD_CONCAT_TOKENS(n, 3), x)))
 
-#define _PSD_TYPE_1024(x)                           \
-  decltype(::mcucore::progmem_data::ProvideStorage( \
-      _PSD_LENGTH_CHECK(x, 1024), _PSD_CONCAT_1024_TYPE(, x)()))
+#define _PSD_TYPE_1024(fragtype, x) _MAKE_PSD_TYPE_nnn(1024, fragtype, x)
 
 ////////////////////////////////////////////////////////////////////////////////
-// We define below macros PSV_nnn (PSV==ProgmemStringView) and
-// MCU_FLASHSTR_nnn (PSD=ProgmemStringData) for various values of nnn, which
-// represents the maximum length of string literal (not including the
-// terminating null character) supported by the macro. These produce *values*
-// that can be printed or otherwise operated upon at runtime.
+// We define below macros PSV_nnn (PSV==ProgmemStringView), MCU_FLASHSTR_nnn,
+// and MCU_BASENAME_nnn for various values of nnn, which represents the maximum
+// length of string literal (not including the terminating null character)
+// supported by the macro. These produce *values* that can be printed or
+// otherwise operated upon at runtime.
 
 // Max length 32:
 
 #define PSV_32(x) \
-  (::mcucore::progmem_data::MakeProgmemStringView<_PSD_TYPE_32(x)>())
+  (_PSD_NS::MakeProgmemStringView<_PSD_TYPE_32(_PSD_STRFRAG_TYPE, x)>())
 
-#define MCU_FLASHSTR_32(x) \
-  (reinterpret_cast<const __FlashStringHelper*>(_PSD_TYPE_32(x)::kData))
+#define MCU_FLASHSTR_32(x)                       \
+  (reinterpret_cast<const __FlashStringHelper*>( \
+      _PSD_TYPE_32(_PSD_STRFRAG_TYPE, x)::kData))
+
+#define MCU_BASENAME_32(x)                       \
+  (reinterpret_cast<const __FlashStringHelper*>( \
+      _PSD_TYPE_32(_PSD_PATHFRAG_TYPE, x)::kData))
 
 // Max length 64 (not including trailing NUL).
 
 #define PSV_64(x) \
-  (::mcucore::progmem_data::MakeProgmemStringView<_PSD_TYPE_64(x)>())
+  (_PSD_NS::MakeProgmemStringView<_PSD_TYPE_64(_PSD_STRFRAG_TYPE, x)>())
 
-#define MCU_FLASHSTR_64(x) \
-  (reinterpret_cast<const __FlashStringHelper*>(_PSD_TYPE_64(x)::kData))
+#define MCU_FLASHSTR_64(x)                       \
+  (reinterpret_cast<const __FlashStringHelper*>( \
+      _PSD_TYPE_64(_PSD_STRFRAG_TYPE, x)::kData))
+
+#define MCU_BASENAME_64(x)                       \
+  (reinterpret_cast<const __FlashStringHelper*>( \
+      _PSD_TYPE_64(_PSD_PATHFRAG_TYPE, x)::kData))
 
 // Max length 128 (not including trailing NUL).
 
 #define PSV_128(x) \
-  (::mcucore::progmem_data::MakeProgmemStringView<_PSD_TYPE_128(x)>())
+  (_PSD_NS::MakeProgmemStringView<_PSD_TYPE_128(_PSD_STRFRAG_TYPE, x)>())
 
-#define MCU_FLASHSTR_128(x) \
-  (reinterpret_cast<const __FlashStringHelper*>(_PSD_TYPE_128(x)::kData))
+#define MCU_FLASHSTR_128(x)                      \
+  (reinterpret_cast<const __FlashStringHelper*>( \
+      _PSD_TYPE_128(_PSD_STRFRAG_TYPE, x)::kData))
+
+#define MCU_BASENAME_128(x)                      \
+  (reinterpret_cast<const __FlashStringHelper*>( \
+      _PSD_TYPE_128(_PSD_PATHFRAG_TYPE, x)::kData))
 
 // Max length 255 (not including trailing NUL). This is not a power of two
 // because ProgmemStringView uses a uint8 to record the size of the string, and
 // can't represent 256.
 
 #define PSV_255(x) \
-  (::mcucore::progmem_data::MakeProgmemStringView<_PSD_TYPE_255(x)>())
+  (_PSD_NS::MakeProgmemStringView<_PSD_TYPE_255(_PSD_STRFRAG_TYPE, x)>())
 
 // Max length 256 (not including trailing NUL). There is no support here for
 // ProgmemStringView because it can't support such a long string.
 
-#define MCU_FLASHSTR_256(x) \
-  (reinterpret_cast<const __FlashStringHelper*>(_PSD_TYPE_256(x)::kData))
+#define MCU_FLASHSTR_256(x)                      \
+  (reinterpret_cast<const __FlashStringHelper*>( \
+      _PSD_TYPE_256(_PSD_STRFRAG_TYPE, x)::kData))
+
+#define MCU_BASENAME_256(x)                      \
+  (reinterpret_cast<const __FlashStringHelper*>( \
+      _PSD_TYPE_256(_PSD_PATHFRAG_TYPE, x)::kData))
 
 // Max length 512 (not including trailing NUL). There is no support here for
 // ProgmemStringView because it can't support such a long string.
 
-#define MCU_FLASHSTR_512(x) \
-  (reinterpret_cast<const __FlashStringHelper*>(_PSD_TYPE_512(x)::kData))
+#define MCU_FLASHSTR_512(x)                      \
+  (reinterpret_cast<const __FlashStringHelper*>( \
+      _PSD_TYPE_512(_PSD_STRFRAG_TYPE, x)::kData))
+
+#define MCU_BASENAME_512(x)                      \
+  (reinterpret_cast<const __FlashStringHelper*>( \
+      _PSD_TYPE_512(_PSD_PATHFRAG_TYPE, x)::kData))
 
 // Max length 1024 (not including trailing NUL). There is no support here for
 // ProgmemStringView because it can't support such a long string.
 
-#define MCU_FLASHSTR_1024(x) \
-  (reinterpret_cast<const __FlashStringHelper*>(_PSD_TYPE_1024(x)::kData))
+#define MCU_FLASHSTR_1024(x)                     \
+  (reinterpret_cast<const __FlashStringHelper*>( \
+      _PSD_TYPE_1024(_PSD_STRFRAG_TYPE, x)::kData))
+
+#define MCU_BASENAME_1024(x)                     \
+  (reinterpret_cast<const __FlashStringHelper*>( \
+      _PSD_TYPE_1024(_PSD_PATHFRAG_TYPE, x)::kData))
 
 ////////////////////////////////////////////////////////////////////////////////
-// Because we expect almost all string literals to be relatively short, we
-// define these macros without specific lengths in their names for use in most
-// of the code base. Where a longer string literal is required, use the
-// appropriate macro defined above whose name specifies the next larger size
-// limit.
+// Because we expect almost all explicitly defined string literals to be
+// relatively short, we define these macros without specific lengths in their
+// names for use in most of the code base. Where a longer string literal is
+// required, use the appropriate macro defined above whose name specifies the
+// next larger size limit.
 
 #define MCU_PSV(x) PSV_64(x)
 #define MCU_FLASHSTR(x) MCU_FLASHSTR_64(x)
 #define MCU_LIT(x) PSV_128(x)
+
+// We provide a default for file paths that should work in most circumstances.
+// If necessary, change the supported length to a higher power of two.
+//
+// Note that the length of __FILE__ is a function of the file relative file path
+// of the file being compiled relative to the root of the build tree, where in
+// the file system that build tree is located, and whether or not the compiler
+// is including the full path in __FILE__, or just a relative path within the
+// build tree. Note that some build systems (e.g. Arduino) copy the input files
+// to another location, and thus their original file path may be shorter or
+// longer than the one used when they're compiled.
+
+#define MCU_BASENAME(x) MCU_BASENAME_512(x)
 
 #endif  // MCUCORE_SRC_PROGMEM_STRING_DATA_H_
