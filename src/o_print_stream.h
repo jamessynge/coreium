@@ -1,5 +1,5 @@
-#ifndef EXPERIMENTAL_USERS_JAMESSYNGE_ARDUINO_TAS_SRC_UTILS_O_PRINT_STREAM_H_
-#define EXPERIMENTAL_USERS_JAMESSYNGE_ARDUINO_TAS_SRC_UTILS_O_PRINT_STREAM_H_
+#ifndef MCUCORE_SRC_O_PRINT_STREAM_H_
+#define MCUCORE_SRC_O_PRINT_STREAM_H_
 
 // Support for streaming into a Print instance, primarily for logging.
 //
@@ -9,7 +9,7 @@
 #include "print_to_trait.h"
 #include "type_traits.h"
 
-#if TAS_HOST_TARGET
+#if MCU_HOST_TARGET
 #include <string>  // pragma: keep standard include
 #endif
 
@@ -111,7 +111,7 @@ class OPrintStream {
     print_hex(i);
   }
 
-#if TAS_HOST_TARGET
+#if MCU_HOST_TARGET
   void do_print_d(const std::string& value, false_type /*!is_pointer*/) {
     out_.write(value.data(), value.size());
   }
@@ -153,4 +153,4 @@ inline void BaseTwo(OPrintStream& strm) { strm.set_base(2); }
 
 }  // namespace mcucore
 
-#endif  // EXPERIMENTAL_USERS_JAMESSYNGE_ARDUINO_TAS_SRC_UTILS_O_PRINT_STREAM_H_
+#endif  // MCUCORE_SRC_O_PRINT_STREAM_H_

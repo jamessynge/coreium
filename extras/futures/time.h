@@ -1,5 +1,5 @@
-#ifndef EXPERIMENTAL_USERS_JAMESSYNGE_ARDUINO_TAS_EXTRAS_FUTURES_TIME_H_
-#define EXPERIMENTAL_USERS_JAMESSYNGE_ARDUINO_TAS_EXTRAS_FUTURES_TIME_H_
+#ifndef MCUCORE_EXTRAS_FUTURES_TIME_H_
+#define MCUCORE_EXTRAS_FUTURES_TIME_H_
 
 // Time and Duration classes to bring time computations together into one
 // location.
@@ -104,4 +104,4 @@ class Duration : public Printable {
 
 }  // namespace mcucore
 
-#endif  // EXPERIMENTAL_USERS_JAMESSYNGE_ARDUINO_TAS_EXTRAS_FUTURES_TIME_H_
+#endif  // MCUCORE_EXTRAS_FUTURES_TIME_H_

@@ -20,7 +20,7 @@
 
 namespace mcucore {
 
-// We include the TAS_CONSTEXPR_FUNC specifier only on constructors, as those
+// We include the MCU_CONSTEXPR_FUNC specifier only on constructors, as those
 // are the only one's we're trying to guarantee are executable at compile time.
 // However, if we want to be able to create Literals from substrings (e.g.
 // "action" is a substring of "supportedactions"), then we could add a constexpr
@@ -54,7 +54,7 @@ class Literal {
       : ptr_(s.begin()), size_(s.size()) {}
 
   // Copy constructor and assignment operator.
-  TAS_CONSTEXPR_FUNC Literal(const Literal&) = default;
+  MCU_CONSTEXPR_FUNC Literal(const Literal&) = default;
   Literal& operator=(const Literal&) = default;
 
   // Returns true if the other literal has the same value.

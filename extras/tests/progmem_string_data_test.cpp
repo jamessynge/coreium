@@ -362,7 +362,43 @@ TEST(ProgmemStringDataTest, BasenameAfterBackwardSlashes) {
       "abc.DEF");
 }
 
-TEST(ProgmemStringDataTest, Basename1024File) {
+TEST(ProgmemStringDataTest, NoSlash) {
+  mcucore::test::PrintToStdString out;
+  out.print(MCU_BASENAME("foo.bar.baz"));
+  EXPECT_EQ(out.str(), "foo.bar.baz");
+}
+
+TEST(ProgmemStringDataTest, LeadingSlash) {
+  mcucore::test::PrintToStdString out;
+  out.print(MCU_BASENAME("/bar.baz"));
+  EXPECT_EQ(out.str(), "bar.baz");
+}
+
+TEST(ProgmemStringDataTest, LeadingSlashes) {
+  mcucore::test::PrintToStdString out;
+  out.print(MCU_BASENAME("//bar.baz"));
+  EXPECT_EQ(out.str(), "bar.baz");
+}
+
+TEST(ProgmemStringDataTest, MiddleSlash) {
+  mcucore::test::PrintToStdString out;
+  out.print(MCU_BASENAME("foo/bar.baz"));
+  EXPECT_EQ(out.str(), "bar.baz");
+}
+
+TEST(ProgmemStringDataTest, LeadingAndMiddleSlashes) {
+  mcucore::test::PrintToStdString out;
+  out.print(MCU_BASENAME("//foo//bar/baz.cc"));
+  EXPECT_EQ(out.str(), "baz.cc");
+}
+
+TEST(ProgmemStringDataTest, TrailingSlash) {
+  mcucore::test::PrintToStdString out;
+  out.print(MCU_BASENAME("foo.bar.baz/"));
+  EXPECT_EQ(out.str(), "");
+}
+
+TEST(ProgmemStringDataTest, Basename1024_ThisFile) {
   VLOG(1) << "__FILE__: " << __FILE__ << std::endl;
   VLOG(1) << "MCU_BASENAME_1024(__FILE__): "
           << PrintValueToStdString(MCU_BASENAME_1024(__FILE__)) << std::endl;

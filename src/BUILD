@@ -5,11 +5,9 @@ cc_library(
         ":any_printable",
         ":array",
         ":array_view",
-        ":basename",
         ":counting_print",
         ":eeprom_io",
         ":hex_escape",
-        ":inline_literal",
         ":json_encoder",
         ":json_encoder_helpers",
         ":literal",
@@ -22,6 +20,7 @@ cc_library(
         ":print_to_trait",
         ":printable_cat",
         ":progmem_string",
+        ":progmem_string_data",
         ":progmem_string_view",
         ":status",
         ":status_or",
@@ -72,6 +71,7 @@ cc_library(
     deps = [
         ":inline_literal",
         ":mcucore_platform",
+        ":progmem_string_data",
     ],
 )
 
@@ -110,16 +110,6 @@ cc_library(
     deps = [
         ":mcucore_platform",
         ":progmem_string_view",
-    ],
-)
-
-cc_library(
-    name = "progmem_string_data",
-    hdrs = ["progmem_string_data.h"],
-    deps = [
-        ":mcucore_platform",
-        ":progmem_string_view",
-        ":type_traits",
     ],
 )
 
@@ -181,9 +171,9 @@ cc_library(
     name = "logging",
     hdrs = ["logging.h"],
     deps = [
-        ":basename",
         ":log_sink",
         ":mcucore_config",
+        ":progmem_string_data",
     ],
 )
 
@@ -224,6 +214,7 @@ cc_library(
         ":counting_print",
         ":inline_literal",
         ":mcucore_platform",
+        ":progmem_string_data",
     ],
 )
 
@@ -255,6 +246,17 @@ cc_library(
     deps = [
         ":inline_literal",
         ":mcucore_platform",
+        ":progmem_string_data",
+    ],
+)
+
+cc_library(
+    name = "progmem_string_data",
+    hdrs = ["progmem_string_data.h"],
+    deps = [
+        ":mcucore_platform",
+        ":progmem_string_view",
+        ":type_traits",
     ],
 )
 
@@ -279,6 +281,7 @@ cc_library(
         ":literal",
         ":mcucore_platform",
         ":o_print_stream",
+        ":progmem_string_data",
     ],
 )
 
@@ -324,6 +327,7 @@ cc_library(
         ":mcucore_platform",
         ":o_print_stream",
         ":print_to_trait",
+        ":progmem_string_data",
     ],
 )
 

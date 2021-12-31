@@ -6,8 +6,8 @@
 // CheckSink is used for printing a fatal failure message to a Print instance.
 //
 // VoidSink is used in place of LogSink when a logging statement is disabled at
-// compile time (e.g. if the level passed to TAS_VLOG is too high, or if
-// TAS_DCHECK is disabled).
+// compile time (e.g. if the level passed to MCU_VLOG is too high, or if
+// MCU_DCHECK is disabled).
 //
 // Author: james.synge@gmail.com
 
@@ -68,7 +68,7 @@ class VoidSink {
 // Based on https://github.com/google/asylo/blob/master/asylo/util/logging.h
 // This class is used just to take a type used as a log sink (i.e. the LHS of
 // insert operators in log statements) and make it a void type to satisify the
-// ternary operator in TAS_VLOG, TAS_CHECK and TAS_DCHECK. `operand&&` is used
+// ternary operator in MCU_VLOG, MCU_CHECK and MCU_DCHECK. `operand&&` is used
 // because it has precedence lower than `<<` but higher than the ternary
 // operator `:?`
 

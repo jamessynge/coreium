@@ -1,5 +1,5 @@
-#ifndef EXPERIMENTAL_USERS_JAMESSYNGE_ARDUINO_TAS_SRC_UTILS_HEX_ESCAPE_H_
-#define EXPERIMENTAL_USERS_JAMESSYNGE_ARDUINO_TAS_SRC_UTILS_HEX_ESCAPE_H_
+#ifndef MCUCORE_SRC_HEX_ESCAPE_H_
+#define MCUCORE_SRC_HEX_ESCAPE_H_
 
 // Support for printing strings (Printable's or similar) with non-printable
 // ASCII characters hex escaped. Intended to produce output that is valid as a
@@ -60,4 +60,4 @@ inline HexEscapedPrintable<T> HexEscaped(const T& like_printable) {
 
 }  // namespace mcucore
 
-#endif  // EXPERIMENTAL_USERS_JAMESSYNGE_ARDUINO_TAS_SRC_UTILS_HEX_ESCAPE_H_
+#endif  // MCUCORE_SRC_HEX_ESCAPE_H_

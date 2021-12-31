@@ -10,9 +10,9 @@ size_t PrintableJsonObject::printTo(Print& out) const {
   CountingPrint counter(out);
   JsonObjectEncoder::Encode(source_, counter);
 #if SIZE_MAX < UINT32_MAX
-  TAS_DCHECK_LE(counter.count(), SIZE_MAX)
-      << TAS_FLASHSTR("size_t max (") << SIZE_MAX
-      << TAS_FLASHSTR(") is too small for ") << counter.count();
+  MCU_DCHECK_LE(counter.count(), SIZE_MAX)
+      << MCU_FLASHSTR("size_t max (") << SIZE_MAX
+      << MCU_FLASHSTR(") is too small for ") << counter.count();
 #endif
   return counter.count();
 }

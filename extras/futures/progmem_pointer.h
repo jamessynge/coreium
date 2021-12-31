@@ -1,5 +1,5 @@
-#ifndef EXPERIMENTAL_USERS_JAMESSYNGE_ARDUINO_TAS_EXTRAS_FUTURES_PROGMEM_POINTER_H_
-#define EXPERIMENTAL_USERS_JAMESSYNGE_ARDUINO_TAS_EXTRAS_FUTURES_PROGMEM_POINTER_H_
+#ifndef MCUCORE_EXTRAS_FUTURES_PROGMEM_POINTER_H_
+#define MCUCORE_EXTRAS_FUTURES_PROGMEM_POINTER_H_
 
 // In support of iterating over strings, and possibly other structures, this
 // helps to encapsulate some of the challenges of dealing with data stored in
@@ -74,4 +74,4 @@ class ProgMemPtr {
 
 }  // namespace mcucore
 
-#endif  // EXPERIMENTAL_USERS_JAMESSYNGE_ARDUINO_TAS_EXTRAS_FUTURES_PROGMEM_POINTER_H_
+#endif  // MCUCORE_EXTRAS_FUTURES_PROGMEM_POINTER_H_

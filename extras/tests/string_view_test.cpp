@@ -461,7 +461,7 @@ TEST(StringViewTest, ToDoubleFails) {
 
 #ifdef NDEBUG
 // Really slow if not optimized.
-#if TAS_ENABLED_VLOG_LEVEL < 1
+#if MCU_ENABLED_VLOG_LEVEL < 1
 // to_uint32 and to_int32 are a bit noisy at level 5, which would slow this down
 // too much, so skip if logging.
 #if 0
@@ -506,7 +506,7 @@ TEST(StringViewTest, ToInt32All) {
 }
 
 #endif  // 0
-#endif  // TAS_ENABLED_VLOG_LEVEL < 1
+#endif  // MCU_ENABLED_VLOG_LEVEL < 1
 #endif  // NDEBUG
 
 TEST(StringViewTest, StreamOutOperator) {

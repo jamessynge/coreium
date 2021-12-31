@@ -141,7 +141,7 @@ std::ostream& operator<<(std::ostream& os, const JsonValue& jv);
 template <typename T>
 JsonObject& JsonObject::Add(std::string_view key, T t) {
   JsonValue value(t);
-  TAS_CHECK(value.type() != JsonValue::kUnset);
+  MCU_CHECK(value.type() != JsonValue::kUnset);
   insert_or_assign(std::string(key), value);
   return *this;
 }
@@ -149,7 +149,7 @@ JsonObject& JsonObject::Add(std::string_view key, T t) {
 template <typename T>
 JsonArray& JsonArray::Add(T t) {
   JsonValue value(t);
-  TAS_CHECK(value.type() != JsonValue::kUnset);
+  MCU_CHECK(value.type() != JsonValue::kUnset);
   push_back(value);
   return *this;
 }

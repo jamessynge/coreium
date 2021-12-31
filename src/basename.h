@@ -8,8 +8,8 @@
 //      /baz/bar/foo.cc
 //      C:\baz\bar\foo.cc
 //
-// then TAS_BASENAME(__FILE__) will be equivalent to TAS_FLASHSTR("foo.cc").
-// This is used by TAS_VLOG, TAS_CHECK, etc., to capture the file name where
+// then TAS_BASENAME(__FILE__) will be equivalent to MCU_FLASHSTR("foo.cc").
+// This is used by MCU_VLOG, MCU_CHECK, etc., to capture the file name where
 // those macros are used, i.e. the location from which a message is logged.
 //
 // If compiled with avr-gcc for the AVR line of processors, the linker will
@@ -21,7 +21,7 @@
 // printed with Arduino's Print class (e.g. Serial), the basename of path_string
 // is the value that is printed.
 //
-// Why is this useful? Because it allows TAS_CHECK (and similar macros) to
+// Why is this useful? Because it allows MCU_CHECK (and similar macros) to
 // include the name of the file from which a message is logged.
 //
 // This is based on inline_literal.h in the same directory as this header, which
@@ -32,6 +32,7 @@
 
 #include "inline_literal.h"
 #include "mcucore_platform.h"
+#include "progmem_string_data.h"
 
 namespace mcucore {
 namespace progmem_data {

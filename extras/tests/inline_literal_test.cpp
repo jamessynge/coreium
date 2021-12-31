@@ -44,20 +44,20 @@ TEST(InlineLiteralTest, TasExpand16) {
 
 TEST(InlineLiteralTest, PrintTasFlashstr) {
   mcucore::test::PrintToStdString out;
-  EXPECT_EQ(out.print(TAS_FLASHSTR("Echo, echo, echo, echo, echo")), 28);
+  EXPECT_EQ(out.print(MCU_FLASHSTR("Echo, echo, echo, echo, echo")), 28);
   EXPECT_EQ(out.str(), "Echo, echo, echo, echo, echo");
 }
 
 TEST(InlineLiteralTest, PrintEmptyTasFlashstr) {
   mcucore::test::PrintToStdString out;
-  EXPECT_EQ(out.print(TAS_FLASHSTR("")), 0);
+  EXPECT_EQ(out.print(MCU_FLASHSTR("")), 0);
   EXPECT_EQ(out.str(), "");
 }
 
 TEST(InlineLiteralTest, StreamTasFlashstr) {
   mcucore::test::PrintToStdString out;
   OPrintStream strm(out);
-  strm << TAS_FLASHSTR("foo, Bar, BAZ");
+  strm << MCU_FLASHSTR("foo, Bar, BAZ");
   EXPECT_EQ(out.str(), "foo, Bar, BAZ");
 }
 
@@ -65,7 +65,7 @@ TEST(InlineLiteralTest, LeadingNUL) {
   using Type = _TAS_PSD_TYPE_128("\0abc");
   EXPECT_EQ(1, sizeof(Type::kData));
   mcucore::test::PrintToStdString out;
-  EXPECT_EQ(out.print(TAS_FLASHSTR_128("\0abc")), 0);
+  EXPECT_EQ(out.print(MCU_FLASHSTR_128("\0abc")), 0);
   EXPECT_EQ(out.str(), "");
 }
 
@@ -138,7 +138,7 @@ TEST(InlineLiteralTest, StreamTasLit) {
     using Type = _TAS_PSD_TYPE_##max(x);              \
     EXPECT_EQ(len + 1, sizeof(Type::kData));          \
     mcucore::test::PrintToStdString out;              \
-    EXPECT_EQ(out.print(TAS_FLASHSTR_##max(x)), len); \
+    EXPECT_EQ(out.print(MCU_FLASHSTR_##max(x)), len); \
     EXPECT_EQ(out.str(), x);                          \
   }
 

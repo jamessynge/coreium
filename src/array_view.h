@@ -52,11 +52,11 @@ class ArrayView {
 
   // Element access:
   reference operator[](size_type ndx) {
-    TAS_DCHECK_LT(ndx, size_);
+    MCU_DCHECK_LT(ndx, size_);
     return ptr_[ndx];
   }
   const_reference operator[](size_type ndx) const {
-    TAS_DCHECK_LT(ndx, size_);
+    MCU_DCHECK_LT(ndx, size_);
     return ptr_[ndx];
   }
 

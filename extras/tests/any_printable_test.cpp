@@ -12,6 +12,7 @@
 #include "gtest/gtest.h"
 #include "inline_literal.h"
 #include "literal.h"
+#include "progmem_string_data.h"
 #include "string_view.h"
 
 namespace mcucore {
@@ -108,7 +109,7 @@ void VerifyFlashStringPrinting(const __FlashStringHelper* str,
 }
 
 #define VERIFY_FLASH_STRING_PRINTING(string_literal)      \
-  VerifyFlashStringPrinting(TAS_FLASHSTR(string_literal), \
+  VerifyFlashStringPrinting(MCU_FLASHSTR(string_literal), \
                             std::string(string_literal))
 
 TEST(AnyPrintableTest, FlashStrings) {

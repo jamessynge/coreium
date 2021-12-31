@@ -19,7 +19,7 @@
 // when the string literal appears multiple times.
 //
 // MCU_BASENAME(file_path_string_literal) is like MCU_FLASHSTR, but trims off
-// any characters to the left of the leftmost slash (forward or backward) in
+// any characters to the left of the rightmost slash (forward or backward) in
 // file_path_literal; i.e. it expands to a `const __FlashStringHelper*` that
 // points to the file name in the file_path, but without the path of the
 // directory containing that file. This exists to support logging.h, which has

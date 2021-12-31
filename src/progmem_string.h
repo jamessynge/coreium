@@ -17,6 +17,7 @@
 
 #include "inline_literal.h"
 #include "mcucore_platform.h"
+#include "progmem_string_data.h"
 
 namespace mcucore {
 

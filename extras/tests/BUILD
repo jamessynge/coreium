@@ -12,6 +12,7 @@ cc_test(
         "//mcucore/src:any_printable",
         "//mcucore/src:inline_literal",
         "//mcucore/src:literal",
+        "//mcucore/src:progmem_string_data",
         "//mcucore/src:string_view",
     ],
 )
@@ -124,6 +125,7 @@ cc_test(
         "//mcucore/src:inline_literal",
         "//mcucore/src:log_sink",
         "//mcucore/src:o_print_stream",
+        "//mcucore/src:progmem_string_data",
     ],
 )
 

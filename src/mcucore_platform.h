@@ -13,9 +13,9 @@
 
 #ifdef ARDUINO
 
-#define TAS_EMBEDDED_TARGET 1
-#define TAS_HOST_TARGET 0
-#define TAS_ENABLE_DEBUGGING 0
+#define MCU_EMBEDDED_TARGET 1
+#define MCU_HOST_TARGET 0
+#define MCU_ENABLE_DEBUGGING 0
 
 #include <Arduino.h>  // IWYU pragma: export
 #include <EEPROM.h>
@@ -32,13 +32,13 @@ using MicrosT = unsigned long;  // NOLINT
 
 #else  // !ARDUINO
 
-#define TAS_EMBEDDED_TARGET 0
-#define TAS_HOST_TARGET 1
+#define MCU_EMBEDDED_TARGET 0
+#define MCU_HOST_TARGET 1
 
 #ifdef NDEBUG
-#define TAS_ENABLE_DEBUGGING 0
+#define MCU_ENABLE_DEBUGGING 0
 #else
-#define TAS_ENABLE_DEBUGGING 1
+#define MCU_ENABLE_DEBUGGING 1
 #endif  // NDEBUG
 
 #include "absl/base/attributes.h"
@@ -57,26 +57,26 @@ using MicrosT = uint32_t;
 
 // See absl/base/attributes.h.
 #ifdef ABSL_FALLTHROUGH_INTENDED
-#define TAS_FALLTHROUGH_INTENDED ABSL_FALLTHROUGH_INTENDED
+#define MCU_FALLTHROUGH_INTENDED ABSL_FALLTHROUGH_INTENDED
 #elif defined(__GNUC__) && __GNUC__ >= 7
-#define TAS_FALLTHROUGH_INTENDED [[gnu::fallthrough]]
+#define MCU_FALLTHROUGH_INTENDED [[gnu::fallthrough]]
 #else
-#define TAS_FALLTHROUGH_INTENDED \
+#define MCU_FALLTHROUGH_INTENDED \
   do {                           \
   } while (0)
 #endif
 
-// If a function contains a TAS_DLOG, et al (e.g. when compiled for debugging),
+// If a function contains a MCU_DLOG, et al (e.g. when compiled for debugging),
 // then the function can't be a constexpr. To allow for including these macros
 // in such functions, we use these macros to choose whether it is a constexpr or
 // not based on whether we've compiled it for debugging or not.
-#if TAS_ENABLE_DEBUGGING
-#define TAS_CONSTEXPR_FUNC
-#define TAS_CONSTEXPR_VAR const
+#if MCU_ENABLE_DEBUGGING
+#define MCU_CONSTEXPR_FUNC
+#define MCU_CONSTEXPR_VAR const
 #else
-#define TAS_CONSTEXPR_FUNC constexpr
-#define TAS_CONSTEXPR_VAR constexpr
-#endif  // TAS_ENABLE_DEBUGGING
+#define MCU_CONSTEXPR_FUNC constexpr
+#define MCU_CONSTEXPR_VAR constexpr
+#endif  // MCU_ENABLE_DEBUGGING
 
 // max is a macro in Arduino, but not on a host. We avoid 'confusion' by using
 // inlineable function.

@@ -101,10 +101,10 @@ CheckSink::~CheckSink() {
 }
 
 void CheckSink::Announce(Print& out) const {
-  // Note that we don't use TAS_FLASHSTR here, or elsewhere in this file to
+  // Note that we don't use MCU_FLASHSTR here, or elsewhere in this file to
   // avoid a cycle of dependencies involving log_sink, inline_literal and
   // progmem_string_view.
-  out.print(FLASHSTR("TAS_CHECK FAILED: "));
+  out.print(FLASHSTR("MCU_CHECK FAILED: "));
   PrintLocation(out);
   out.print(expression_message_);
 }
