@@ -1,4 +1,4 @@
-# Utilities intended to simplify the task of writing unit tests of Arduino libraries.
+# Utilities intended to simplify the task of writing unit tests of McuCore.
 
 cc_library(
     name = "case_insensitive_less",
