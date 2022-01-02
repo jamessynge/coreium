@@ -102,8 +102,9 @@ CheckSink::~CheckSink() {
 
 void CheckSink::Announce(Print& out) const {
   // Note that we don't use MCU_FLASHSTR here, or elsewhere in this file to
-  // avoid a cycle of dependencies involving log_sink, inline_literal and
+  // avoid a cycle of dependencies involving log_sink, progmem_string_data and
   // progmem_string_view.
+  // TODO(jamessynge): Eliminate this issue.
   out.print(FLASHSTR("MCU_CHECK FAILED: "));
   PrintLocation(out);
   out.print(expression_message_);

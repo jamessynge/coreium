@@ -11,8 +11,8 @@
 //
 // Author: james.synge@gmail.com
 
-#include "literal.h"
 #include "mcucore_platform.h"
+#include "progmem_string_view.h"
 
 namespace mcucore {
 
@@ -34,16 +34,16 @@ class Status {
  public:
   Status() : code_(0) {}
   explicit Status(uint32_t code) : code_(code) {}
-  Status(uint32_t code, Literal message)
-      : code_(code), message_(code != 0 ? message : Literal()) {}
+  Status(uint32_t code, ProgmemStringView message)
+      : code_(code), message_(code != 0 ? message : ProgmemStringView()) {}
   bool ok() const { return code_ == 0; }
   uint32_t code() const { return code_; }
-  const Literal message() const { return message_; }
+  const ProgmemStringView message() const { return message_; }
   size_t printTo(Print& out) const;
 
  private:
   uint32_t code_;
-  Literal message_;
+  ProgmemStringView message_;
 };
 
 inline Status OkStatus() { return Status(); }

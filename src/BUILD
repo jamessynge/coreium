@@ -11,7 +11,6 @@ cc_library(
         ":hex_escape",
         ":json_encoder",
         ":json_encoder_helpers",
-        ":literal",
         ":log_sink",
         ":logging",
         ":mcucore_config",
@@ -37,7 +36,6 @@ cc_library(
     srcs = ["any_printable.cc"],
     hdrs = ["any_printable.h"],
     deps = [
-        ":literal",
         ":mcucore_platform",
         ":progmem_string",
         ":progmem_string_view",
@@ -113,15 +111,6 @@ cc_library(
 )
 
 cc_library(
-    name = "inline_literal",
-    hdrs = ["inline_literal.h"],
-    deps = [
-        ":mcucore_platform",
-        ":progmem_string_view",
-    ],
-)
-
-cc_library(
     name = "json_encoder",
     srcs = ["json_encoder.cc"],
     hdrs = ["json_encoder.h"],
@@ -129,10 +118,10 @@ cc_library(
         ":any_printable",
         ":array_view",
         ":counting_print",
-        ":literal",
         ":mcucore_platform",
         ":o_print_stream",
         ":progmem_string",
+        ":progmem_string_data",
         ":progmem_string_view",
     ],
 )
@@ -146,19 +135,6 @@ cc_library(
         ":json_encoder",
         ":logging",
         ":mcucore_platform",
-    ],
-)
-
-cc_library(
-    name = "literal",
-    srcs = ["literal.cc"],
-    hdrs = ["literal.h"],
-    deps = [
-        ":has_print_to",
-        ":logging",
-        ":mcucore_platform",
-        ":progmem_string",
-        ":progmem_string_view",
     ],
 )
 
@@ -220,7 +196,6 @@ cc_library(
     hdrs = ["print_misc.h"],
     deps = [
         ":counting_print",
-        ":inline_literal",
         ":mcucore_platform",
         ":progmem_string_data",
     ],
@@ -244,7 +219,6 @@ cc_library(
     hdrs = ["progmem_string.h"],
     deps = [
         ":has_progmem_char_array",
-        ":inline_literal",
         ":mcucore_platform",
     ],
 )
@@ -277,11 +251,10 @@ cc_library(
     deps = [
         ":counting_print",
         ":hex_escape",
-        ":inline_literal",
-        ":literal",
         ":mcucore_platform",
         ":o_print_stream",
         ":progmem_string_data",
+        ":progmem_string_view",
     ],
 )
 
@@ -309,7 +282,6 @@ cc_library(
     srcs = ["string_compare.cc"],
     hdrs = ["string_compare.h"],
     deps = [
-        ":literal",
         ":mcucore_platform",
         ":progmem_string_view",
         ":string_view",
@@ -323,7 +295,6 @@ cc_library(
     deps = [
         ":has_print_to",
         ":hex_escape",
-        ":inline_literal",
         ":logging",
         ":mcucore_platform",
         ":o_print_stream",

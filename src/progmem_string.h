@@ -19,7 +19,6 @@
 // Author: james.synge@gmail.com
 
 #include "has_progmem_char_array.h"
-#include "inline_literal.h"
 #include "mcucore_platform.h"
 
 namespace mcucore {

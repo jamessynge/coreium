@@ -2,7 +2,6 @@
 
 #include "counting_print.h"
 #include "hex_escape.h"
-#include "inline_literal.h"
 #include "mcucore_platform.h"
 #include "o_print_stream.h"
 #include "progmem_string_data.h"

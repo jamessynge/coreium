@@ -4,10 +4,6 @@ namespace mcucore {
 
 AnyPrintable::AnyPrintable() : type_(AnyPrintable::kEmpty), signed_(0) {}
 
-AnyPrintable::AnyPrintable(Literal value)
-    : type_(AnyPrintable::kProgmemStringView),
-      psv_(value.begin(), value.size()) {}
-
 AnyPrintable::AnyPrintable(StringView value)
     : type_(AnyPrintable::kStringView), view_(value) {}
 

@@ -1,7 +1,6 @@
 #include "print_misc.h"
 
 #include "counting_print.h"
-#include "inline_literal.h"
 #include "mcucore_platform.h"
 #include "progmem_string_data.h"
 

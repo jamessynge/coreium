@@ -21,7 +21,6 @@
 //
 // Author: james.synge@gmail.com
 
-#include "inline_literal.h"
 #include "logging.h"
 #include "mcucore_platform.h"
 #include "o_print_stream.h"

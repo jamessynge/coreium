@@ -12,7 +12,6 @@
 #include "extras/test_tools/sample_printable.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "literal.h"
 #include "string_view.h"
 #include "util/gtl/map_util.h"
 
@@ -26,7 +25,6 @@ using ::testing::Contains;
 using ::testing::IsEmpty;
 using ::testing::Not;
 using ::testing::SizeIs;
-using ::testing::StartsWith;
 
 TEST(PrintCharHexEscapedTest, TestAll) {
   std::vector<std::pair<char, std::string>> test_cases = {
@@ -131,8 +129,8 @@ TEST(HexEscapedPrintableTest, StringViewWithEscapes) {
 }
 
 TEST(HexEscapedPrintableTest, LiteralWithEscapes) {
-  Literal original(kStringLiteral);
-  auto printable = HexEscapedPrintable<Literal>(original);
+  ProgmemStringView original(kStringLiteral);
+  auto printable = HexEscapedPrintable<ProgmemStringView>(original);
 
   PrintToStdString out;
   const size_t count = printable.printTo(out);
@@ -155,8 +153,8 @@ TEST(HexEscapedTest, PrintableWithEscapes) {
 }
 
 TEST(HexEscapedTest, LiteralWithEscapes) {
-  Literal literal(kStringLiteral);
-  auto printable = HexEscaped(literal);
+  ProgmemStringView original(kStringLiteral);
+  auto printable = HexEscaped(original);
 
   PrintToStdString out;
   const size_t count = out.print(printable);

@@ -10,9 +10,8 @@
 #include "extras/test_tools/print_to_std_string.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "inline_literal.h"
-#include "literal.h"
 #include "progmem_string_data.h"
+#include "progmem_string_view.h"
 #include "string_view.h"
 
 namespace mcucore {
@@ -84,7 +83,7 @@ void VerifyStringLiteralPrinting(const char (&buf)[N]) {
   EXPECT_EQ(expected.size(), N - 1);
 
   {
-    Literal value(buf);
+    ProgmemStringView value(buf);
     EXPECT_EQ(value.size(), expected.size());
     EXPECT_EQ(AnyPrintableToString(value), expected);
   }

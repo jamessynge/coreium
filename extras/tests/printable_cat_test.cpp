@@ -4,7 +4,8 @@
 #include "any_printable.h"
 #include "extras/test_tools/print_value_to_std_string.h"
 #include "gtest/gtest.h"
-#include "literal.h"
+#include "progmem_string.h"
+#include "progmem_string_view.h"
 #include "string_view.h"
 
 namespace mcucore {
@@ -14,10 +15,11 @@ namespace {
 TEST(PrintableCatTest, Strings) {
   char space = ' ';
   StringView abc("abc");
-  Literal def("def");
-  AnyPrintable ghi(StringView("ghi"));
-  auto p = PrintableCat(abc, space, def, space, ghi);
-  EXPECT_EQ(PrintValueToStdString(p), "abc def ghi");
+  ProgmemStringView def("def");
+  AnyPrintable ghi(StringView(" ghi"));
+  ProgmemString jkl = MCU_PSD(" jkl");
+  auto p = PrintableCat(abc, space, def, ghi, jkl);
+  EXPECT_EQ(PrintValueToStdString(p), "abc def ghi jkl");
 }
 
 TEST(PrintableCatTest, Numbers) {

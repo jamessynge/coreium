@@ -5,17 +5,11 @@
 #include <math.h>
 
 #include "counting_print.h"
-#include "literal.h"
 #include "o_print_stream.h"
+#include "progmem_string_data.h"
 
 namespace mcucore {
 namespace {
-
-TAS_DEFINE_LITERAL(JsonTrue, "true")
-TAS_DEFINE_LITERAL(JsonFalse, "false")
-TAS_DEFINE_LITERAL(JsonNan, "NaN")
-TAS_DEFINE_LITERAL(JsonNegInf, "-Inf")
-TAS_DEFINE_LITERAL(JsonInf, "Inf")
 
 size_t PrintCharJsonEscaped(Print& out, const char c) {
   size_t total = 0;
@@ -91,9 +85,9 @@ size_t PrintJsonEscapedStringTo(const Printable& value, Print& raw_output) {
 
 void PrintBoolean(Print& out, const bool value) {
   if (value) {
-    JsonTrue().printTo(out);
+    out.print(MCU_FLASHSTR("true"));
   } else {
-    JsonFalse().printTo(out);
+    out.print(MCU_FLASHSTR("false"));
   }
 }
 
@@ -112,12 +106,12 @@ void PrintFloatingPoint(Print& out, const T value) {
   // Haven't got std::isnan or std::isfinite in the Arduino environment, so
   // using the C versions in <math.h>.
   if (isnan(value)) {
-    PrintJsonEscapedStringTo(AnyPrintable(JsonNan()), out);
+    PrintJsonEscapedStringTo(AnyPrintable(MCU_FLASHSTR("NaN")), out);
   } else if (!isfinite(value)) {
     if (value > 0) {
-      PrintJsonEscapedStringTo(AnyPrintable(JsonInf()), out);
+      PrintJsonEscapedStringTo(AnyPrintable(MCU_FLASHSTR("Inf")), out);
     } else {
-      PrintJsonEscapedStringTo(AnyPrintable(JsonNegInf()), out);
+      PrintJsonEscapedStringTo(AnyPrintable(MCU_FLASHSTR("-Inf")), out);
     }
   } else {
     // We're assuming that the Print object is configured to match JSON

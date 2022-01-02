@@ -84,12 +84,6 @@ cc_library(
 )
 
 cc_library(
-    name = "literal_utils",
-    hdrs = ["literal_utils.h"],
-    deps = ["//mcucore/src:literal"],
-)
-
-cc_library(
     name = "mock_ethernet_client",
     hdrs = ["mock_ethernet_client.h"],
     deps = [

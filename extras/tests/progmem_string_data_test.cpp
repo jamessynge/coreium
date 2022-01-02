@@ -15,7 +15,6 @@
 #include "extras/test_tools/test_strings.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "literal.h"
 #include "mcucore_platform.h"
 #include "o_print_stream.h"
 #include "progmem_string_view.h"
@@ -260,14 +259,6 @@ TEST(ProgmemStringDataTest, McuPsvToProgmemStringView) {
   mcucore::test::PrintToStdString out;
   EXPECT_EQ(progmem_string_view.printTo(out), 9);
   EXPECT_EQ(out.str(), "Hey There");
-}
-
-TEST(ProgmemStringDataTest, McuPsvToLiteral) {
-  Literal literal = MCU_PSV("Hey There!");
-  EXPECT_EQ(literal.size(), 10);
-  mcucore::test::PrintToStdString out;
-  EXPECT_EQ(literal.printTo(out), 10);
-  EXPECT_EQ(out.str(), "Hey There!");
 }
 
 TEST(ProgmemStringDataTest, StreamMcuLit) {

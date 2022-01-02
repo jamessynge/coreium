@@ -12,7 +12,7 @@
 #include "extras/test_tools/sample_printable.h"
 #include "glog/logging.h"
 #include "gtest/gtest.h"
-#include "literal.h"
+#include "progmem_string_view.h"
 #include "string_view.h"
 
 // Tests of JsonObjectEncoder and JsonArrayEncoder.
@@ -68,15 +68,16 @@ TEST_F(JsonEncodersTest, EmptyObject) {
 
 TEST_F(JsonEncodersTest, ObjectWithStringValues) {
   constexpr char kSomeTextStr[] = "some text";
-  const Literal kSomeText(kSomeTextStr);
+  const ProgmemStringView kSomeText(kSomeTextStr);
   constexpr char kWithQuotesAndBackslashesStr[] =
       "with \" quotes and \\ backslashes";
-  const Literal kWithQuotesAndBackslashes(kWithQuotesAndBackslashesStr);
+  const ProgmemStringView kWithQuotesAndBackslashes(
+      kWithQuotesAndBackslashesStr);
   const mcucore::test::SamplePrintable kPrintableValue("with controls \r\n");
 
   auto func = [&](JsonObjectEncoder& object_encoder) {
     object_encoder.AddStringProperty(StringView("empty"), StringView());
-    object_encoder.AddStringProperty(Literal("a"), kSomeText);
+    object_encoder.AddStringProperty(ProgmemStringView("a"), kSomeText);
     object_encoder.AddStringProperty(StringView("b"),
                                      kWithQuotesAndBackslashes);
     object_encoder.AddStringProperty(StringView("c"), kPrintableValue);
@@ -213,7 +214,7 @@ TEST_F(JsonEncodersTest, ArrayOfEmptyStructures) {
 
 TEST_F(JsonEncodersTest, ArrayOfMixedValueTypes) {
   constexpr char kSomeTextStr[] = "some text \r\n with escaping characters";
-  const Literal kSomeText(kSomeTextStr);
+  const ProgmemStringView kSomeText(kSomeTextStr);
   const mcucore::test::SamplePrintable kPrintableValue("just printable");
 
   auto func = [&](JsonArrayEncoder& array_encoder) {

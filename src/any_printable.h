@@ -12,7 +12,6 @@
 //
 // Author: james.synge@gmail.com
 
-#include "literal.h"
 #include "mcucore_platform.h"
 #include "progmem_string.h"
 #include "progmem_string_view.h"
@@ -38,7 +37,6 @@ class AnyPrintable : public Printable {
   AnyPrintable();
   // For values that are clearly strings, we allow implicit conversion to
   // AnyPrintable.
-  AnyPrintable(Literal value);                     // NOLINT
   AnyPrintable(StringView value);                  // NOLINT
   AnyPrintable(ProgmemString value);               // NOLINT
   AnyPrintable(ProgmemStringView value);           // NOLINT

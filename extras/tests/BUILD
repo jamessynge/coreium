@@ -10,9 +10,8 @@ cc_test(
         "//mcucore/extras/host/arduino:print",
         "//mcucore/extras/test_tools:print_to_std_string",
         "//mcucore/src:any_printable",
-        "//mcucore/src:inline_literal",
-        "//mcucore/src:literal",
         "//mcucore/src:progmem_string_data",
+        "//mcucore/src:progmem_string_view",
         "//mcucore/src:string_view",
     ],
 )
@@ -52,22 +51,8 @@ cc_test(
         "//mcucore/extras/test_tools:print_to_std_string",
         "//mcucore/extras/test_tools:sample_printable",
         "//mcucore/src:hex_escape",
-        "//mcucore/src:literal",
         "//mcucore/src:string_view",
         "//util/gtl:map_util",
-    ],
-)
-
-cc_test(
-    name = "inline_literal_test",
-    srcs = ["inline_literal_test.cc"],
-    deps = [
-        "//googletest:gunit_main",
-        "//mcucore/extras/test_tools:print_to_std_string",
-        "//mcucore/src:inline_literal",
-        "//mcucore/src:literal",
-        "//mcucore/src:o_print_stream",
-        "//mcucore/src:progmem_string_view",
     ],
 )
 
@@ -82,25 +67,7 @@ cc_test(
         "//mcucore/extras/test_tools:print_to_std_string",
         "//mcucore/extras/test_tools:sample_printable",
         "//mcucore/src:json_encoder",
-        "//mcucore/src:literal",
-        "//mcucore/src:string_view",
-    ],
-)
-
-cc_test(
-    name = "literal_test",
-    srcs = ["literal_test.cc"],
-    deps = [
-        "//absl/strings",
-        "//googletest:gunit_main",
-        "//mcucore/extras/test_tools:literal_utils",
-        "//mcucore/extras/test_tools:print_to_std_string",
-        "//mcucore/extras/test_tools:string_view_utils",
-        "//mcucore/src:hex_escape",
-        "//mcucore/src:literal",
-        "//mcucore/src:mcucore_platform",
-        "//mcucore/src:o_print_stream",
-        "//mcucore/src:string_compare",
+        "//mcucore/src:progmem_string_view",
         "//mcucore/src:string_view",
     ],
 )
@@ -111,7 +78,6 @@ cc_test(
     deps = [
         "//googletest:gunit_main",
         "//mcucore/extras/test_tools:print_to_std_string",
-        "//mcucore/src:inline_literal",
         "//mcucore/src:log_sink",
         "//mcucore/src:o_print_stream",
         "//mcucore/src:progmem_string_data",
@@ -148,8 +114,9 @@ cc_test(
         "//googletest:gunit_main",
         "//mcucore/extras/test_tools:print_value_to_std_string",
         "//mcucore/src:any_printable",
-        "//mcucore/src:literal",
         "//mcucore/src:printable_cat",
+        "//mcucore/src:progmem_string",
+        "//mcucore/src:progmem_string_view",
         "//mcucore/src:string_view",
     ],
 )
@@ -162,7 +129,6 @@ cc_test(
         "//mcucore/extras/test_tools:print_to_std_string",
         "//mcucore/extras/test_tools:print_value_to_std_string",
         "//mcucore/extras/test_tools:test_strings",
-        "//mcucore/src:literal",
         "//mcucore/src:mcucore_platform",
         "//mcucore/src:o_print_stream",
         "//mcucore/src:progmem_string_data",
@@ -205,7 +171,6 @@ cc_test(
     srcs = ["status_or_test.cc"],
     deps = [
         "//googletest:gunit_main",
-        "//mcucore/src:literal",
         "//mcucore/src:status",
         "//mcucore/src:status_or",
         "//mcucore/src:string_view",
@@ -217,7 +182,6 @@ cc_test(
     srcs = ["status_test.cc"],
     deps = [
         "//googletest:gunit_main",
-        "//mcucore/src:literal",
         "//mcucore/src:status",
     ],
 )

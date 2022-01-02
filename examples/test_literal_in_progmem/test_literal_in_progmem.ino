@@ -1,11 +1,9 @@
 #include <Arduino.h>
 #include <McuCore.h>
 
-using mcucore::Literal;
-
 constexpr char buffer1[] AVR_PROGMEM = "abc";
 
-constexpr mcucore::Literal literal(buffer1);
+constexpr mcucore::ProgmemStringView literal(buffer1);
 
 void setup() {
   // Setup serial, wait for it to be ready so that our logging messages can be

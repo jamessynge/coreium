@@ -96,55 +96,32 @@ the same storage in Flash.
 
 ## Defining Literals
 
-1.  Adding appropriate entries to src/literals.inc, such as these:
+1.  Defining them at file scope in .cc files using the above macros; for
+    example:
 
     ```
-    TAS_DEFINE_BUILTIN_LITERAL1(ClientTransactionID)
-    TAS_DEFINE_BUILTIN_LITERAL(HttpRequestHeaderFieldsTooLarge,
-                               "Request Header Fields Too Large")
+    constexpr auto kFalseFlashStr = MCU_FLASHSTR("false");
+    constexpr auto kOKStrView = MCU_PSV("OK");
     ```
 
-    These macros define a PROGMEM char array holding the NUL terminated string,
-    and a function (e.g. `ClientTransactionID()`) which returns an instance of
-    the mcucore::Literal class pointing to that string, and also holding a
-    member variable with the length of the string. The macros are actually
-    expanded in multiple contexts: in the file `literals.h` where the function
-    is declared, and in `literals.cc` where the char array and function are
-    defined.
-
-    Defining a literal in this file is appropriate if the string will be used in
-    multiple files.
-
-1.  Defining them at file scope in .cc files using TAS_DEFINE_LITERAL, such as
-    these:
+1.  Using the `MCU_PSV(value)` macro inline in expressions, such as:
 
     ```
-    TAS_DEFINE_LITERAL(JsonFalse, "false")
-    TAS_DEFINE_LITERAL(JsonNan, "NaN")
-    ```
-
-    This macro defines a char array and function, just like the behaves much
-    like those in literals.inc, as they are expanded in `literals.cc`.
-
-    TAS_DEFINE_LITERAL is an appropriate choice when the string will be used
-    multiple times in a single file (which these examples won't be).
-
-1.  Using the `TASLIT(value)` macro inline in expressions, such as:
-
-    ```
-    MCU_CHECK(false) << TASLIT("api group (") << group
-                     << TASLIT(") is not device or setup");
+    MCU_CHECK(false) << MCU_PSV("api group (") << group
+                     << MCU_PSV(") is not device or setup");
     ```
 
     Unlike the above macros, this defines a full specialization of the variadic
     class template `ProgmemStringStorage`. The template declares a static
     function MakeProgmemStringView that returns a mcucore::ProgmemStringView
     instance. The storage class has a static array holding the characters of the
-    string, without a terminating NUL. One advantage of TASLIT over
-    TAS_DEFINE_LITERAL is that the compiler and linker should collapse multiple
-    occurrences of TASLIT(x) with the same value of x. A downside of using
-    TASLIT is that it uses some fancy compile time type deduction to determine
-    the length of the string, and this slows compilation.
+    string, without a terminating NUL. One advantage of MCU_PSV over
+    TAS_DEFINE_PROGMEM_LITERAL is that the compiler and linker should collapse
+    multiple occurrences of TASLIT(x) with the same value of x. A downside of
+    using MCU_PSV is that it uses some fancy compile time type deduction to
+    determine the length of the string, and this slows compilation. If you use
+    the string in multiple files, defining it in a shared source file and
+    exposing them via TAS_DEFINE_PROGMEM_LITERAL will reduce compile time.
 
 1.  Using the `MCU_FLASHSTR(value)` macro inline in expressions, such as:
 

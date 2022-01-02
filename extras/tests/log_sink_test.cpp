@@ -2,7 +2,6 @@
 
 #include "extras/test_tools/print_to_std_string.h"
 #include "gtest/gtest.h"
-#include "inline_literal.h"
 #include "o_print_stream.h"
 #include "progmem_string_data.h"
 
