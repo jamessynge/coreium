@@ -4,9 +4,13 @@
 // Logging and assert-like utility macros for Arduino sketches and similar
 // environments. These are inspired by the Google Logging Library
 // (https://github.com/google/glog), but are not identical. The features
-// available are controlled by defining, or not, the macro MCU_ENABLE_CHECK and
-// MCU_ENABLE_CHECK, and by the value of the macro MCU_ENABLED_VLOG_LEVEL
+// available are controlled by defining, or not, macros MCU_ENABLE_CHECK,
+// MCU_DISABLE_CHECK, etc., and by the value of the macro MCU_ENABLED_VLOG_LEVEL
 // (undefined or defined to an integer in the range 1 through 9).
+//
+// The overall enable and level choices are made in mcucore_config.h, and
+// individual source files can override those decisions by defining the
+// appropriate MCU_DISABLE_* macro prior to including any files.
 //
 // Author: james.synge@gmail.com
 //
