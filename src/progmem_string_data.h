@@ -116,11 +116,7 @@ constexpr char const
 // isn't something that this file should have to worry about.
 template <class PSS>
 constexpr ProgmemStringView MakeProgmemStringView() {
-  constexpr size_t size =
-      (sizeof PSS::kData) - 1;  // Size without the null termination.
-  static_assert(size <= ProgmemStringView::kMaxSize, "String is too long");
-  return ProgmemStringView(PSS());
-  // return ProgmemStringView(PSS::kData, size);
+  return ProgmemStringView(PSS::kData, (sizeof PSS::kData) - 1);
 }
 
 // Phase1StringFragment is a fragment of a string literal AND of the trailing
