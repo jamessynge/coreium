@@ -66,16 +66,6 @@ cc_library(
 )
 
 cc_library(
-    name = "basename",
-    hdrs = ["basename.h"],
-    deps = [
-        ":inline_literal",
-        ":mcucore_platform",
-        ":progmem_string_data",
-    ],
-)
-
-cc_library(
     name = "counting_print",
     srcs = ["counting_print.cc"],
     hdrs = ["counting_print.h"],
