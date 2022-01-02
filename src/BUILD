@@ -79,6 +79,7 @@ cc_library(
         ":logging",
         ":mcucore_platform",
         ":o_print_stream",
+        ":progmem_string_view",
     ],
 )
 

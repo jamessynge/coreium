@@ -23,6 +23,12 @@ uint32_t GetCrcTableEntry(uint32_t key) {
   return kCrcTable[offset];
 #endif  // ARDUINO_ARCH_AVR
 }
+
+// Returns the char at the specified location in PROGMEM.
+inline char pgm_read_char_near(PGM_P ptr) {
+  auto byte = pgm_read_byte_near(reinterpret_cast<const uint8_t*>(ptr));
+  return static_cast<char>(byte);
+}
 }  // namespace
 
 void Crc32::appendByte(uint8_t v) {
@@ -67,12 +73,36 @@ int SaveName(int toAddress, const char* name) {
   return toAddress;
 }
 
+int SaveName(int toAddress, const ProgmemStringView& name) {
+  for (ProgmemStringView::size_type pos = 0; pos < name.size(); ++pos) {
+    auto c = name.at(pos);
+    EEPROM.put(toAddress++, c);
+  }
+  return toAddress;
+}
+
 bool VerifyName(int atAddress, const char* name, int* afterAddress) {
   // Confirm the name matches.
   while (*name != 0) {
     char c;
     EEPROM.get(atAddress++, c);
     if (c != *name++) {
+      // Names don't match.
+      return false;
+    }
+  }
+  *afterAddress = atAddress;
+  return true;
+}
+
+bool VerifyName(int atAddress, const ProgmemStringView& name,
+                int* afterAddress) {
+  // Confirm the name matches.
+  for (ProgmemStringView::size_type pos = 0; pos < name.size(); ++pos) {
+    const auto expected = name.at(pos);
+    char c;
+    EEPROM.get(atAddress++, c);
+    if (c != expected) {
       // Names don't match.
       return false;
     }

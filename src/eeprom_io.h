@@ -7,6 +7,7 @@
 // Author: james.synge@gmail.com
 
 #include "mcucore_platform.h"
+#include "progmem_string_view.h"
 
 namespace mcucore {
 
@@ -34,8 +35,18 @@ class Crc32 {
 
 namespace eeprom_io {
 
+// Write name to EEPROM starting at byte toAddress. Does NOT write the
+// terminating null.
 int SaveName(int toAddress, const char* name);
+int SaveName(int toAddress, const ProgmemStringView& name);
+
+// Verify that EEPROM contains name starting at byte atAddress. If matches,
+// writes the address of the EEPROM location after the name to afterAddress
+// (i.e. the location that would correspond to the terminating null of name, if
+// that had been written to EEPROM).
 bool VerifyName(int atAddress, const char* name, int* afterAddress);
+bool VerifyName(int atAddress, const ProgmemStringView& name,
+                int* afterAddress);
 
 // By passing all of the bytes written to a CRC instance as we save to the
 // EEPROM, we can ensure that the CRC value is computed from the same bytes
