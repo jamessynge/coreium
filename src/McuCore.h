@@ -6,6 +6,7 @@
 #include "array_view.h"            // IWYU pragma: export
 #include "counting_print.h"        // IWYU pragma: export
 #include "eeprom_io.h"             // IWYU pragma: export
+#include "has_print_to.h"          // IWYU pragma: export
 #include "hex_escape.h"            // IWYU pragma: export
 #include "json_encoder.h"          // IWYU pragma: export
 #include "json_encoder_helpers.h"  // IWYU pragma: export
@@ -16,7 +17,6 @@
 #include "mcucore_platform.h"      // IWYU pragma: export
 #include "o_print_stream.h"        // IWYU pragma: export
 #include "print_misc.h"            // IWYU pragma: export
-#include "print_to_trait.h"        // IWYU pragma: export
 #include "printable_cat.h"         // IWYU pragma: export
 #include "progmem_string.h"        // IWYU pragma: export
 #include "progmem_string_data.h"

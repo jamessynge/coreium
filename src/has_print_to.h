@@ -1,5 +1,5 @@
-#ifndef MCUCORE_SRC_PRINT_TO_TRAIT_H_
-#define MCUCORE_SRC_PRINT_TO_TRAIT_H_
+#ifndef MCUCORE_SRC_HAS_PRINT_TO_H_
+#define MCUCORE_SRC_HAS_PRINT_TO_H_
 
 // Support for determining at compile time if a value has support for being
 // inserted into an OPrintStream. In particular, is it a class instance with a
@@ -13,7 +13,7 @@
 #include "type_traits.h"
 
 namespace mcucore {
-namespace print_to_trait_internal {
+namespace has_print_to_internal {
 
 // Matches a T that has a printTo(Print&) member function.
 template <class T>
@@ -27,12 +27,12 @@ static auto test_print_to(int)
 template <typename T>
 static auto test_print_to(long) -> false_type;  // NOLINT
 
-}  // namespace print_to_trait_internal
+}  // namespace has_print_to_internal
 
 // has_print_to extends either true_type or false_type, depending on whether T
 // has a printTo(Print&) member function.
 template <typename T>
-struct has_print_to : decltype(print_to_trait_internal::test_print_to<T>(0)) {};
+struct has_print_to : decltype(has_print_to_internal::test_print_to<T>(0)) {};
 
 // has_print_value_to extends either true_type or false_type, depending on
 // whether there exists a PrintValueTo(T, Print&) function. The first definition
@@ -49,4 +49,4 @@ struct has_print_value_to<
 
 }  // namespace mcucore
 
-#endif  // MCUCORE_SRC_PRINT_TO_TRAIT_H_
+#endif  // MCUCORE_SRC_HAS_PRINT_TO_H_

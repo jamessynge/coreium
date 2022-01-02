@@ -5,8 +5,8 @@
 //
 // Author: james.synge@gmail.com
 
+#include "has_print_to.h"
 #include "mcucore_platform.h"
-#include "print_to_trait.h"
 #include "type_traits.h"
 
 #if MCU_HOST_TARGET

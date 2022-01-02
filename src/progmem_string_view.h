@@ -21,6 +21,7 @@
 //
 // Author: james.synge@gmail.com
 
+#include "has_progmem_char_array.h"
 #include "mcucore_platform.h"
 
 namespace mcucore {
@@ -45,6 +46,13 @@ class ProgmemStringView {
   template <size_type N>
   explicit constexpr ProgmemStringView(const char (&buf)[N] PROGMEM)
       : ptr_(buf), size_(N - 1) {}
+
+  // Constructs from the value returned by the `progmem_char_array` member
+  // function of the arg.
+  template <typename PSD,
+            typename = enable_if_t<has_progmem_char_array<PSD>::value>>
+  constexpr ProgmemStringView(PSD p)  // NOLINT: Should be implicit
+      : ProgmemStringView(p.progmem_char_array()) {}
 
   // Copy constructor and assignment operator.
   constexpr ProgmemStringView(const ProgmemStringView&) = default;

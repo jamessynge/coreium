@@ -1,7 +1,7 @@
 #include "literal.h"
 
+#include "has_print_to.h"
 #include "logging.h"
-#include "print_to_trait.h"
 
 namespace mcucore {
 namespace {

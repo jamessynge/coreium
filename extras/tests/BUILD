@@ -182,6 +182,18 @@ cc_test(
 )
 
 cc_test(
+    name = "progmem_string_test",
+    srcs = ["progmem_string_test.cc"],
+    deps = [
+        "//googletest:gunit_main",
+        "//mcucore/extras/test_tools:print_value_to_std_string",
+        "//mcucore/extras/test_tools:test_strings",
+        "//mcucore/src:progmem_string",
+        "//mcucore/src:progmem_string_data",
+    ],
+)
+
+cc_test(
     name = "progmem_string_view_test",
     srcs = ["progmem_string_view_test.cc"],
     deps = [

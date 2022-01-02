@@ -1,7 +1,7 @@
 #include "string_view.h"
 
+#include "has_print_to.h"
 #include "hex_escape.h"
-#include "print_to_trait.h"
 
 namespace mcucore {
 

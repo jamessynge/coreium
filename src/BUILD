@@ -7,6 +7,7 @@ cc_library(
         ":array_view",
         ":counting_print",
         ":eeprom_io",
+        ":has_print_to",
         ":hex_escape",
         ":json_encoder",
         ":json_encoder_helpers",
@@ -17,7 +18,6 @@ cc_library(
         ":mcucore_platform",
         ":o_print_stream",
         ":print_misc",
-        ":print_to_trait",
         ":printable_cat",
         ":progmem_string",
         ":progmem_string_data",
@@ -95,6 +95,24 @@ cc_library(
 )
 
 cc_library(
+    name = "has_print_to",
+    hdrs = ["has_print_to.h"],
+    deps = [
+        ":mcucore_platform",
+        ":type_traits",
+    ],
+)
+
+cc_library(
+    name = "has_progmem_char_array",
+    hdrs = ["has_progmem_char_array.h"],
+    deps = [
+        ":mcucore_platform",
+        ":type_traits",
+    ],
+)
+
+cc_library(
     name = "hex_escape",
     srcs = ["hex_escape.cc"],
     hdrs = ["hex_escape.h"],
@@ -146,9 +164,9 @@ cc_library(
     srcs = ["literal.cc"],
     hdrs = ["literal.h"],
     deps = [
+        ":has_print_to",
         ":logging",
         ":mcucore_platform",
-        ":print_to_trait",
         ":progmem_string",
         ":progmem_string_view",
     ],
@@ -200,8 +218,8 @@ cc_library(
     name = "o_print_stream",
     hdrs = ["o_print_stream.h"],
     deps = [
+        ":has_print_to",
         ":mcucore_platform",
-        ":print_to_trait",
         ":type_traits",
     ],
 )
@@ -215,15 +233,6 @@ cc_library(
         ":inline_literal",
         ":mcucore_platform",
         ":progmem_string_data",
-    ],
-)
-
-cc_library(
-    name = "print_to_trait",
-    hdrs = ["print_to_trait.h"],
-    deps = [
-        ":mcucore_platform",
-        ":type_traits",
     ],
 )
 
@@ -244,9 +253,9 @@ cc_library(
     srcs = ["progmem_string.cc"],
     hdrs = ["progmem_string.h"],
     deps = [
+        ":has_progmem_char_array",
         ":inline_literal",
         ":mcucore_platform",
-        ":progmem_string_data",
     ],
 )
 
@@ -265,8 +274,9 @@ cc_library(
     srcs = ["progmem_string_view.cc"],
     hdrs = ["progmem_string_view.h"],
     deps = [
+        ":has_print_to",
+        ":has_progmem_char_array",
         ":mcucore_platform",
-        ":print_to_trait",
     ],
 )
 
@@ -321,12 +331,12 @@ cc_library(
     srcs = ["string_view.cc"],
     hdrs = ["string_view.h"],
     deps = [
+        ":has_print_to",
         ":hex_escape",
         ":inline_literal",
         ":logging",
         ":mcucore_platform",
         ":o_print_stream",
-        ":print_to_trait",
         ":progmem_string_data",
     ],
 )

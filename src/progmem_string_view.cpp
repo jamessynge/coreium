@@ -3,7 +3,7 @@
 // NOTE: There is no use of logging.h here because that introduces an include
 // cycle, and hence a BUILD dependency sycle.
 
-#include "print_to_trait.h"
+#include "has_print_to.h"
 
 namespace mcucore {
 namespace {
