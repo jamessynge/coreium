@@ -51,7 +51,7 @@ class ProgmemStringView {
   // function of the arg.
   template <typename PSD,
             typename = enable_if_t<has_progmem_char_array<PSD>::value>>
-  constexpr ProgmemStringView(PSD p)  // NOLINT: Should be implicit
+  constexpr ProgmemStringView(PSD p)  // NOLINT: Want this to be implicit.
       : ProgmemStringView(p.progmem_char_array()) {}
 
   // Copy constructor and assignment operator.

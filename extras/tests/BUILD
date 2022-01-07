@@ -39,6 +39,7 @@ cc_test(
     srcs = ["counting_print_test.cc"],
     deps = [
         "//googletest:gunit_main",
+        "//mcucore/extras/test_tools:sample_printable",
         "//mcucore/src:counting_print",
     ],
 )

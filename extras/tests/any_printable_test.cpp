@@ -20,7 +20,14 @@ namespace {
 
 #ifdef TEST_TEMPORARY_PRINTABLE
 // For testing that we can't pass temporary Printable instances into an
-// AnyPrintable constructor.
+// AnyPrintable constructor. See these pages for ideas on how to add a negative
+// compilation tests to code that actually does compile:
+//
+// https://akrzemi1.wordpress.com/2016/05/10/diagnosable-validity/
+//
+// https://coderedirect.com/questions/553155/sfinae-to-assert-that-code-does-not-compile
+//
+// https://stackoverflow.com/questions/23547831/assert-that-code-does-not-compile
 TEST(AnyPrintableTest, PrintableNegativeCompilation) {
   // None of these lines should compile.
   auto a = AnyPrintable{SamplePrintable()};
@@ -136,39 +143,72 @@ TEST(AnyPrintableTest, ConstPrintableReference) {
 }
 
 TEST(AnyPrintableTest, ManyTypes) {
-  char c = '*';
-  EXPECT_EQ(PrintRefViaAnyPrintable(c), "*");
-  EXPECT_EQ(PrintValueViaAnyPrintable(c), "*");
-  EXPECT_EQ(PrintValueViaAnyPrintable<char>(' '), " ");
-  EXPECT_EQ(PrintValueViaAnyPrintable('&'), "&");
+  {
+    char v = '*';
+    EXPECT_EQ(PrintRefViaAnyPrintable(v), "*");
+    EXPECT_EQ(PrintValueViaAnyPrintable(v), "*");
+    EXPECT_EQ(PrintValueViaAnyPrintable<char>(' '), " ");
+    EXPECT_EQ(PrintValueViaAnyPrintable('&'), "&");
+  }
 
-  EXPECT_EQ(PrintValueViaAnyPrintable<int32_t>(123), "123");
-  EXPECT_EQ(PrintValueViaAnyPrintable(123), "123");
+  {
+    int16_t v = -32768;
+    EXPECT_EQ(PrintRefViaAnyPrintable<int16_t>(v), "-32768");
+    EXPECT_EQ(PrintValueViaAnyPrintable<int16_t>(v), "-32768");
+    EXPECT_EQ(PrintValueViaAnyPrintable<int16_t>(-32768), "-32768");
+  }
 
-  int32_t i32 = -345;
-  EXPECT_EQ(PrintRefViaAnyPrintable(i32), "-345");
-  EXPECT_EQ(PrintValueViaAnyPrintable(i32), "-345");
-  EXPECT_EQ(PrintValueViaAnyPrintable(-345), "-345");
+  {
+    int16_t v = 32767;
+    EXPECT_EQ(PrintRefViaAnyPrintable<int16_t>(v), "32767");
+    EXPECT_EQ(PrintValueViaAnyPrintable<int16_t>(v), "32767");
+    EXPECT_EQ(PrintValueViaAnyPrintable<int16_t>(32767), "32767");
+  }
 
-  uint32_t ui32 = 12345678;
-  EXPECT_EQ(PrintRefViaAnyPrintable(ui32), "12345678");
-  EXPECT_EQ(PrintValueViaAnyPrintable(ui32), "12345678");
-  EXPECT_EQ(PrintValueViaAnyPrintable(1234U), "1234");
+  {
+    uint16_t v = 65535;
+    EXPECT_EQ(PrintRefViaAnyPrintable<uint16_t>(v), "65535");
+    EXPECT_EQ(PrintValueViaAnyPrintable<uint16_t>(v), "65535");
+    EXPECT_EQ(PrintValueViaAnyPrintable<uint16_t>(65535), "65535");
+  }
 
-  float f = 3.1415f;
-  EXPECT_EQ(PrintRefViaAnyPrintable(f), "3.14");
-  EXPECT_EQ(PrintValueViaAnyPrintable(f), "3.14");
-  EXPECT_EQ(PrintValueViaAnyPrintable(3.14f), "3.14");
+  {
+    int32_t v = -345;
+    EXPECT_EQ(PrintRefViaAnyPrintable(v), "-345");
+    EXPECT_EQ(PrintValueViaAnyPrintable(v), "-345");
+    EXPECT_EQ(PrintValueViaAnyPrintable(-345), "-345");
 
-  double d = 2.71828;
-  EXPECT_EQ(PrintRefViaAnyPrintable(d), "2.72");
-  EXPECT_EQ(PrintValueViaAnyPrintable(d), "2.72");
-  EXPECT_EQ(PrintValueViaAnyPrintable(2.71828), "2.72");
+    EXPECT_EQ(PrintValueViaAnyPrintable<int32_t>(123), "123");
+    EXPECT_EQ(PrintValueViaAnyPrintable(123), "123");
+  }
 
-  StringView some_text("some_text");
-  EXPECT_EQ(PrintRefViaAnyPrintable(some_text), "some_text");
-  EXPECT_EQ(PrintValueViaAnyPrintable(some_text), "some_text");
-  EXPECT_EQ(PrintValueViaAnyPrintable(AnyPrintable(some_text)), "some_text");
+  {
+    uint32_t v = 12345678;
+    EXPECT_EQ(PrintRefViaAnyPrintable(v), "12345678");
+    EXPECT_EQ(PrintValueViaAnyPrintable(v), "12345678");
+    EXPECT_EQ(PrintValueViaAnyPrintable(1234U), "1234");
+  }
+
+  {
+    float v = 3.1415f;
+    EXPECT_EQ(PrintRefViaAnyPrintable(v), "3.14");
+    EXPECT_EQ(PrintValueViaAnyPrintable(v), "3.14");
+    EXPECT_EQ(PrintValueViaAnyPrintable(3.14f), "3.14");
+  }
+
+  {
+    double v = 2.71828;
+    EXPECT_EQ(PrintRefViaAnyPrintable(v), "2.72");
+    EXPECT_EQ(PrintValueViaAnyPrintable(v), "2.72");
+    EXPECT_EQ(PrintValueViaAnyPrintable(2.71828), "2.72");
+  }
+
+  {
+    StringView v("some_text");
+    EXPECT_EQ(PrintRefViaAnyPrintable(v), "some_text");
+    EXPECT_EQ(PrintValueViaAnyPrintable(v), "some_text");
+    EXPECT_EQ(PrintValueViaAnyPrintable(AnyPrintable(v)), "some_text");
+  }
 }
 
 }  // namespace

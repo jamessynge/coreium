@@ -4,6 +4,7 @@
 //
 // Author: james.synge@gmail.com
 
+#include "extras/test_tools/sample_printable.h"
 #include "gtest/gtest.h"
 
 namespace mcucore {
@@ -50,6 +51,17 @@ TEST(CountingPrintTest, Mixed) {
   counter.print('a');
   counter.print(123);
   EXPECT_EQ(counter.count(), 4);
+}
+
+TEST(CountingPrintTest, SizeOfPrintable) {
+  {
+    SamplePrintable sp("foo bar baz");
+    EXPECT_EQ(SizeOfPrintable(sp), 11);
+  }
+  {
+    SamplePrintable empty("");
+    EXPECT_EQ(SizeOfPrintable(empty), 0);
+  }
 }
 
 }  // namespace
