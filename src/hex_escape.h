@@ -11,11 +11,31 @@
 
 namespace mcucore {
 
+enum class EHexEscapingState : uint8_t {
+  kNormal = 0,
+  // Last character output was the last character output for a hex escaped
+  // character.
+  kHexDigitOutput,
+  // Last character output was a question mark. We need to know this IFF
+  // avoiding printing trigraph sequences for ASCII characters outside of the
+  // ISO/IEC 646 Invariant character set, i.e. the characters #, $, @, [, \, ],
+  // ^, `, {, |, }, and ~.
+  kQuestionMarkOutput
+};
+
 // Print |c| hex escaped to |out|. Actually backslash escapes backslash and
 // double quote, and uses named escapes for newline (\n), carriage return (\t),
 // etc.; for other control characters and non-ascii characters, uses a hex
 // escape (e.g. \x01 or \xff).
-size_t PrintCharHexEscaped(Print& out, const char c);
+size_t PrintCharHexEscaped(Print& out, char c);
+
+// As above, but may escape the character also if the last output character was
+// not kNormal. For example, if |c| is a hex digit (0-9, A-F, a-f), and state is
+// kHexDigitOutput, then |c| must be escaped. |state| is updated accordingly.
+// This function is useful for hex escaping multiple characters, e.g. for
+// implementing PrintHexEscaped.
+size_t PrintCharWithStateHexEscaped(Print& out, char c,
+                                    EHexEscapingState& state);
 
 // Wraps a Print instance, forwards output to that instance with hex escaping
 // applied. Note that this does NOT add double quotes before and after the
@@ -34,6 +54,7 @@ class PrintHexEscaped : public Print {
 
  private:
   Print& wrapped_;
+  EHexEscapingState state_;
 };
 
 template <class T>
@@ -53,6 +74,9 @@ class HexEscapedPrintable : public Printable {
   const T& wrapped_;
 };
 
+// NOTE: We could use trait has_print_to to limit this to types that support
+// printTo. Obviously it will fail to compile today, but the error will be
+// different.
 template <typename T>
 inline HexEscapedPrintable<T> HexEscaped(const T& like_printable) {
   return HexEscapedPrintable<T>(like_printable);

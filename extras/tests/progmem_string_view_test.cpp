@@ -33,7 +33,7 @@ constexpr StringView kUpperView(kUpperStr);
 constexpr char kLowerJson[] AVR_PROGMEM =
     "\"some\\\\thing\\twith\\r\\n\\b\\f\\\"quotes\\\".\"";
 constexpr char kLowerHexEscaped[] AVR_PROGMEM =
-    "\"some\\\\thing\\twith\\r\\n\\x08\\x0C\\\"quotes\\\".\"";
+    "\"some\\\\thing\\x09with\\r\\n\\x08\\x0C\\\"quotes\\\".\"";
 constexpr char kUpperHexEscaped[] AVR_PROGMEM =
     "\"SOME\\\\THING\\tWITH\\r\\n\\x08\\x0C\\\"QUOTES\\\".\"";
 
