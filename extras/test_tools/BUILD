@@ -113,7 +113,10 @@ cc_library(
 cc_library(
     name = "progmem_string_view_utils",
     hdrs = ["progmem_string_view_utils.h"],
-    deps = ["//mcucore/src:progmem_string_view"],
+    deps = [
+        ":print_value_to_std_string",
+        "//mcucore/src:progmem_string_view",
+    ],
 )
 
 cc_library(
@@ -132,4 +135,23 @@ cc_library(
     name = "test_strings",
     srcs = ["test_strings.cc"],
     hdrs = ["test_strings.h"],
+)
+
+cc_library(
+    name = "status_test_utils",
+    hdrs = ["status_test_utils.h"],
+    deps = [
+        ":print_value_to_std_string",
+        "//mcucore/src:status",
+    ],
+)
+
+cc_library(
+    name = "status_or_test_utils",
+    hdrs = ["status_or_test_utils.h"],
+    deps = [
+        ":print_value_to_std_string",
+        ":status_test_utils",
+        "//mcucore/src:status_or",
+    ],
 )

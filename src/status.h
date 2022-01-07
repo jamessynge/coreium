@@ -46,6 +46,9 @@ class Status {
   ProgmemStringView message_;
 };
 
+// Compare two Status instances for equality.
+bool operator==(const Status& a, const Status& b);
+
 inline Status OkStatus() { return Status(); }
 
 }  // namespace mcucore

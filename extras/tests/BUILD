@@ -171,6 +171,7 @@ cc_test(
     srcs = ["status_or_test.cc"],
     deps = [
         "//googletest:gunit_main",
+        "//mcucore/extras/test_tools:status_or_test_utils",
         "//mcucore/src:status",
         "//mcucore/src:status_or",
         "//mcucore/src:string_view",
@@ -182,6 +183,8 @@ cc_test(
     srcs = ["status_test.cc"],
     deps = [
         "//googletest:gunit_main",
+        "//mcucore/extras/test_tools:print_to_std_string",
+        "//mcucore/extras/test_tools:progmem_string_view_utils",
         "//mcucore/src:status",
     ],
 )

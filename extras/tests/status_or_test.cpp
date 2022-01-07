@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 
+#include "extras/test_tools/status_or_test_utils.h"
 #include "gtest/gtest.h"
 #include "status.h"
 #include "string_view.h"
@@ -80,6 +81,89 @@ TEST(StatusOrTest, StringViewValue) {
   EXPECT_FALSE(status_or.status().ok());
   EXPECT_EQ(status_or.status().code(), 90210);
   EXPECT_EQ(status_or.status().message(), ProgmemStringView("Beverly Hills"));
+}
+
+TEST(StatusOrTest, Ctors) {
+  {
+    StatusOr<int> status_or_int(1);
+    EXPECT_TRUE(status_or_int.ok());
+    EXPECT_EQ(status_or_int.status(), OkStatus());
+    EXPECT_EQ(status_or_int.value(), 1);
+  }
+  {
+    StatusOr<int> status_or_int(OkStatus());
+    EXPECT_TRUE(status_or_int.ok());
+    EXPECT_EQ(status_or_int.status(), OkStatus());
+    EXPECT_EQ(status_or_int.value(), 0);  // Default value for an int;
+  }
+  {
+    StatusOr<int> status_or_int(StatusOr<int>(345));
+    EXPECT_TRUE(status_or_int.ok());
+    EXPECT_EQ(status_or_int.status(), OkStatus());
+    EXPECT_EQ(status_or_int.value(), 345);
+  }
+  {
+    StatusOr<int> status_or_int(Status(123));
+    EXPECT_FALSE(status_or_int.ok());
+    EXPECT_EQ(status_or_int.status(), Status(123));
+  }
+}
+
+TEST(StatusOrTest, AssignOrReturn_OKValue) {
+  bool did_not_return = false;
+  auto outer = [&]() -> Status {
+    StatusOr<int> value = 987;
+    MCU_ASSIGN_OR_RETURN(auto value_in_status_or, value);
+    did_not_return = true;
+    EXPECT_EQ(value_in_status_or, 987);
+    return OkStatus();
+  };
+  EXPECT_EQ(outer(), OkStatus());
+  EXPECT_TRUE(did_not_return);
+}
+
+TEST(StatusOrTest, AssignOrReturn_CallReturnsOK) {
+  auto inner = []() -> StatusOr<int> { return 987; };
+  bool did_not_return = false;
+  auto outer = [&]() -> Status {
+    MCU_ASSIGN_OR_RETURN(auto value_in_status_or, inner());
+    did_not_return = true;
+    EXPECT_EQ(value_in_status_or, 987);
+    return OkStatus();
+  };
+  EXPECT_EQ(outer(), OkStatus());
+  EXPECT_TRUE(did_not_return);
+}
+
+TEST(StatusOrTest, AssignOrReturn_ErrorNotValue) {
+  bool did_return = false;
+  auto outer = [&]() -> Status {
+    StatusOr<int> status_or_value1 = Status(123);
+    StatusOr<int> status_or_value2(0);
+    did_return = true;
+    MCU_ASSIGN_OR_RETURN(status_or_value2, status_or_value1);
+    did_return = false;
+    ADD_FAILURE() << "Should have returned! status_or_value2="
+                  << status_or_value2;
+    return Status(3232);
+  };
+  EXPECT_EQ(outer(), Status(123));
+  EXPECT_TRUE(did_return);
+}
+
+TEST(StatusOrTest, AssignOrReturn_CallReturnsError) {
+  auto inner = []() -> StatusOr<int> { return Status(123); };
+  bool did_return = false;
+  auto outer = [&]() -> Status {
+    did_return = true;
+    MCU_ASSIGN_OR_RETURN(auto value_in_status_or, inner());
+    did_return = false;
+    ADD_FAILURE() << "Should have returned! value_in_status_or="
+                  << value_in_status_or;
+    return Status(3232);
+  };
+  EXPECT_EQ(outer(), Status(123));
+  EXPECT_TRUE(did_return);
 }
 
 }  // namespace

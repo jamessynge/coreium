@@ -7,10 +7,28 @@
 // Author: james.synge@gmail.com
 
 #include <ostream>
+#include <string>
+#include <string_view>
 
+#include "extras/test_tools/print_value_to_std_string.h"
 #include "progmem_string_view.h"
 
 namespace mcucore {
+namespace test {
+
+inline ProgmemStringView MakeProgmemStringView(const std::string& str) {
+  return ProgmemStringView(str.data(), str.size());
+}
+
+inline ProgmemStringView MakeProgmemStringView(std::string_view view) {
+  return ProgmemStringView(view.data(), view.size());
+}
+
+inline std::string MakeStdString(const ProgmemStringView& view) {
+  return PrintValueToStdString(view);
+}
+
+}  // namespace test
 
 inline std::ostream& operator<<(std::ostream& out,
                                 const ProgmemStringView& view) {
