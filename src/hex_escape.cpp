@@ -73,7 +73,7 @@ size_t PrintCharWithStateHexEscaped(Print& out, const char c,
 }
 
 size_t PrintCharHexEscaped(Print& out, const char c) {
-  EHexEscapingState state;
+  EHexEscapingState state = EHexEscapingState::kNormal;
   return PrintCharWithStateHexEscaped(out, c, state);
 }
 

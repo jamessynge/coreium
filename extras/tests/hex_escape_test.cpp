@@ -80,15 +80,16 @@ TEST(PrintCharHexEscapedTest, TestAll) {
     EXPECT_EQ(out.str(), expected);
   }
   for (char c = ' '; c < 127; ++c) {
+    std::string c_as_str(1, c);
     if (c == '"' || c == '\\') {
-      EXPECT_THAT(tested, Contains(c));
+      EXPECT_THAT(tested, Contains(c)) << " '" << c_as_str << "'";
     } else {
-      EXPECT_THAT(tested, Not(Contains(c)));
+      EXPECT_THAT(tested, Not(Contains(c))) << " \"" << c_as_str << "\"";
       tested.insert(c);
       PrintToStdString out;
       PrintCharHexEscaped(out, c);
-      EXPECT_THAT(out.str(), SizeIs(1));
-      EXPECT_EQ(out.str().at(0), c);
+      EXPECT_THAT(out.str(), SizeIs(1)) << " \"" << c_as_str << "\"";
+      EXPECT_EQ(out.str().at(0), c) << " \"" << c_as_str << "\"";
     }
   }
   for (int i = -128; i <= 127; ++i) {
