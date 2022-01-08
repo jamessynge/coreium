@@ -1,7 +1,7 @@
 #ifndef MCUCORE_EXTRAS_HOST_EEPROM_EEPROM_H_
 #define MCUCORE_EXTRAS_HOST_EEPROM_EEPROM_H_
 
-// A totally fake version of Arduino's EEPROM. Just stores in RAM, no
+// A totally fake version of Arduino's EEPROM. Just stores in RAM, and has no
 // persistence. IFF we really wanted to, we could use mmap to read and write
 // from a file, and thus provide persistence from run to run... which would
 // complicate testing.
@@ -20,8 +20,8 @@ class EEPROMClass {
 
   // Functionality to 'get' and 'put' objects to and from EEPROM.
   template <typename T>
-  T &get(int idx, T &t) {
-    uint8_t *ptr = reinterpret_cast<uint8_t *>(&t);
+  T& get(int idx, T& t) {
+    uint8_t* ptr = reinterpret_cast<uint8_t*>(&t);
     int limit = idx + sizeof(T);
     while (idx < limit) {
       *ptr++ = read(idx++);
@@ -30,17 +30,18 @@ class EEPROMClass {
   }
 
   template <typename T>
-  const T &put(int idx, const T &t) {
-    const uint8_t *ptr = reinterpret_cast<const uint8_t *>(&t);
+  const T& put(int idx, const T& t) {
+    const uint8_t* ptr = reinterpret_cast<const uint8_t*>(&t);
     int limit = idx + sizeof(T);
     while (idx < limit) {
-      update(idx, *ptr++);
+      update(idx++, *ptr++);
     }
     return t;
   }
 
  private:
-  uint8_t data_[1024];
+  // Initializes to zeroes.
+  uint8_t data_[1024] = {};
 };
 
 extern EEPROMClass EEPROM;

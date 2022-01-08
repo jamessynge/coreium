@@ -1,4 +1,4 @@
-# Tests of host_arduino targets.
+# Tests of some mcucore host implementations of Arduino libraries.
 
 cc_test(
     name = "pgmspace_test",
