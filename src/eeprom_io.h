@@ -1,60 +1,49 @@
 #ifndef MCUCORE_SRC_EEPROM_IO_H_
 #define MCUCORE_SRC_EEPROM_IO_H_
 
-// Support for writing names and values to EEPROM, and later reading them back.
-// Requires the Arduino EEPROM library.
+// Support for writing values to EEPROM, and later reading them back, with
+// verification that values match some expectation. Requires the Arduino EEPROM
+// library.
 //
 // Author: james.synge@gmail.com
 
+#include "crc32.h"
 #include "mcucore_platform.h"
 #include "progmem_string_view.h"
 
 namespace mcucore {
-
-// Class for computing a 32-bit Cyclic Redundancy Check (a hash).
-// Used for verifying that the EEPROM is uncorrupted.
-class Crc32 {
- public:
-  // Add the next byte of the sequence on which we're computing a CRC.
-  void appendByte(uint8_t v);
-
-  // The current value of the CRC.
-  uint32_t value() const { return value_; }
-
-  // Store the CRC (value_) at the specified address. Returns the address after
-  // the stored CRC.
-  int put(int crcAddress) const;
-
-  // Validate that the computed CRC (value_) matches the CRC stored at the
-  // specified address.
-  bool verify(int crcAddress) const;
-
- private:
-  uint32_t value_ = ~0L;
-};
-
 namespace eeprom_io {
 
 // Write name to EEPROM starting at byte toAddress. Does NOT write the
-// terminating null.
+// terminating null. Returns the EEPROM address after the last byte to which
+// name was written.
 int SaveName(int toAddress, const char* name);
 int SaveName(int toAddress, const ProgmemStringView& name);
 
 // Verify that EEPROM contains name starting at byte atAddress. If matches,
 // writes the address of the EEPROM location after the name to afterAddress
 // (i.e. the location that would correspond to the terminating null of name, if
-// that had been written to EEPROM).
+// that had been written to EEPROM). name must not be null.
 bool VerifyName(int atAddress, const char* name, int* afterAddress);
 bool VerifyName(int atAddress, const ProgmemStringView& name,
                 int* afterAddress);
 
-// By passing all of the bytes written to a CRC instance as we save to the
-// EEPROM, we can ensure that the CRC value is computed from the same bytes
-// that we're later going to validate.
+// Writes numBytes from RAM, starting at src, to EEPROM starting at address. If
+// crc is not null, each byte is also appended to the CRC, thus allowing
+// verification that bytes read back from EEPROM haven't been corrupted. src
+// must not be null, crc may be null.
 void PutBytes(int address, const uint8_t* src, size_t numBytes, Crc32* crc);
 
-// Similarly, we can validate during restore.
+// Similarly, we can validate during restore. dest must not be null.
 void GetBytes(int address, size_t numBytes, uint8_t* dest, Crc32* crc);
+
+// Store the CRC (i.e. crc.value()) at the specified address. Returns the
+// address after the stored CRC.
+int PutCrc(int toAddress, const Crc32& crc);
+
+// Validate that the computed CRC (i.e. crc.value()) matches the CRC stored at
+// the specified address.
+bool VerifyCrc(int atAddress, const Crc32& crc);
 
 }  // namespace eeprom_io
 }  // namespace mcucore

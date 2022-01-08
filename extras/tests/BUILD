@@ -45,6 +45,18 @@ cc_test(
 )
 
 cc_test(
+    name = "crc32_test",
+    srcs = ["crc32_test.cc"],
+    deps = [
+        "//googletest:gunit_main",
+        "//mcucore/extras/test_tools:print_to_std_string",
+        "//mcucore/extras/test_tools:random_utils",
+        "//mcucore/extras/test_tools:sample_printable",
+        "//mcucore/src:crc32",
+    ],
+)
+
+cc_test(
     name = "hex_escape_test",
     srcs = ["hex_escape_test.cc"],
     deps = [

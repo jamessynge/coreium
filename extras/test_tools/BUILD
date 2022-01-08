@@ -1,5 +1,9 @@
 # Utilities intended to simplify the task of writing unit tests of McuCore.
 
+package(
+    default_testonly = 1,
+)
+
 cc_library(
     name = "case_insensitive_less",
     srcs = ["case_insensitive_less.cc"],
@@ -120,21 +124,29 @@ cc_library(
 )
 
 cc_library(
+    name = "random_utils",
+    srcs = ["random_utils.cc"],
+    hdrs = ["random_utils.h"],
+    deps = [
+        "//absl/flags:flag",
+        "//glog:logging",
+    ],
+)
+
+cc_library(
     name = "sample_printable",
     hdrs = ["sample_printable.h"],
     deps = ["//mcucore/extras/host/arduino:print"],
 )
 
 cc_library(
-    name = "string_view_utils",
-    hdrs = ["string_view_utils.h"],
-    deps = ["//mcucore/src:string_view"],
-)
-
-cc_library(
-    name = "test_strings",
-    srcs = ["test_strings.cc"],
-    hdrs = ["test_strings.h"],
+    name = "status_or_test_utils",
+    hdrs = ["status_or_test_utils.h"],
+    deps = [
+        ":print_value_to_std_string",
+        ":status_test_utils",
+        "//mcucore/src:status_or",
+    ],
 )
 
 cc_library(
@@ -147,11 +159,13 @@ cc_library(
 )
 
 cc_library(
-    name = "status_or_test_utils",
-    hdrs = ["status_or_test_utils.h"],
-    deps = [
-        ":print_value_to_std_string",
-        ":status_test_utils",
-        "//mcucore/src:status_or",
-    ],
+    name = "string_view_utils",
+    hdrs = ["string_view_utils.h"],
+    deps = ["//mcucore/src:string_view"],
+)
+
+cc_library(
+    name = "test_strings",
+    srcs = ["test_strings.cc"],
+    hdrs = ["test_strings.h"],
 )

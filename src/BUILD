@@ -71,14 +71,26 @@ cc_library(
 )
 
 cc_library(
+    name = "crc32",
+    srcs = ["crc32.cc"],
+    hdrs = ["crc32.h"],
+    deps = [
+        ":logging",
+        ":mcucore_platform",
+    ],
+)
+
+cc_library(
     name = "eeprom_io",
     srcs = ["eeprom_io.cc"],
     hdrs = ["eeprom_io.h"],
     deps = [
+        ":crc32",
         ":hex_escape",
         ":logging",
         ":mcucore_platform",
         ":o_print_stream",
+        ":progmem_string_data",
         ":progmem_string_view",
     ],
 )
