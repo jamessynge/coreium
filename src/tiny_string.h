@@ -8,6 +8,8 @@
 //
 // Author: james.synge@gmail.com
 
+#include <string.h>  // For memmove
+
 #include "logging.h"
 #include "mcucore_platform.h"
 
@@ -29,7 +31,7 @@ class TinyString {
     if (size > N) {
       return false;
     }
-    memcpy(data_, from, size);
+    memmove(data_, from, size);
     size_ = size;
     return true;
   }
