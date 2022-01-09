@@ -1,6 +1,10 @@
 # Utilities intended to simplify the task of writing unit tests of McuCore.
 
 package(
+    # In addition to testonly, I'd also like to have a "hostonly" feature on a
+    # target, so that I could readily mark those features that can be used on
+    # embedded systems, and those that are only available on host systems. There
+    # probably is some notion of "platform" that I can use. TBD.
     default_testonly = 1,
 )
 
@@ -99,6 +103,7 @@ cc_library(
 
 cc_library(
     name = "print_to_std_string",
+    testonly = 0,
     hdrs = ["print_to_std_string.h"],
     deps = [
         "//mcucore/extras/host/arduino:print",

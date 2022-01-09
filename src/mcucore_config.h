@@ -14,23 +14,20 @@
 
 #ifdef ARDUINO
 // After development, for the embedded target, we *should* leave MCU_CHECK
-// enabled, but not MCU_VLOG or MCU_DCHECK.
+// enabled, but not MCU_VLOG or MCU_DCHECK. Ideally we'd have a build system
+// that supports easily producing debug and release variants.
+
+#if !defined(MCU_ENABLE_CHECK) && !defined(MCU_DISABLE_CHECK)
+#define MCU_ENABLE_CHECK
+#endif  // !MCU_ENABLE_CHECK && !MCU_DISABLE_CHECK
+
+#if !defined(MCU_ENABLE_DCHECK) && !defined(MCU_DISABLE_DCHECK)
+#define MCU_ENABLE_DCHECK
+#endif  // !MCU_ENABLE_DCHECK && !MCU_DISABLE_DCHECK
 
 #ifndef MCU_ENABLED_VLOG_LEVEL
-#define MCU_ENABLED_VLOG_LEVEL 3
+#define MCU_ENABLED_VLOG_LEVEL 1
 #endif  //! MCU_ENABLED_VLOG_LEVEL
-
-#ifndef MCU_ENABLE_CHECK
-#define MCU_ENABLE_CHECK
-#endif  // !MCU_ENABLE_CHECK
-
-#ifdef MCU_ENABLE_DCHECK
-#undef MCU_ENABLE_DCHECK
-#endif  // MCU_ENABLE_DCHECK
-
-// #ifndef MCU_ENABLE_DCHECK
-// #define MCU_ENABLE_DCHECK
-// #endif  // !MCU_ENABLE_DCHECK
 
 #else  // !ARDUINO
 
@@ -38,15 +35,15 @@
 #define MCU_ENABLED_VLOG_LEVEL 4
 #endif  //! MCU_ENABLED_VLOG_LEVEL
 
-#ifndef MCU_ENABLE_CHECK
+#if !defined(MCU_ENABLE_CHECK) && !defined(MCU_DISABLE_CHECK)
 #define MCU_ENABLE_CHECK
-#endif  // !MCU_ENABLE_CHECK
+#endif  // !MCU_ENABLE_CHECK && !MCU_DISABLE_CHECK
 
-#ifndef MCU_ENABLE_DCHECK
+#if !defined(MCU_ENABLE_DCHECK) && !defined(MCU_DISABLE_DCHECK)
 #ifndef NDEBUG
 #define MCU_ENABLE_DCHECK
 #endif  // !NDEBUG
-#endif  // !MCU_ENABLE_DCHECK
+#endif  // !MCU_ENABLE_DCHECK && !MCU_DISABLE_DCHECK
 
 #endif  // ARDUINO
 
