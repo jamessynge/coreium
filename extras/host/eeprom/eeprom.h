@@ -1,10 +1,11 @@
 #ifndef MCUCORE_EXTRAS_HOST_EEPROM_EEPROM_H_
 #define MCUCORE_EXTRAS_HOST_EEPROM_EEPROM_H_
 
-// A totally fake version of Arduino's EEPROM. Just stores in RAM, and has no
-// persistence. IFF we really wanted to, we could use mmap to read and write
-// from a file, and thus provide persistence from run to run... which would
-// complicate testing.
+// A totally fake implementation of Arduino's EEPROM API. Just stores in RAM,
+// and has no persistence. IFF we really wanted to, we could use mmap to read
+// and write from a file, and thus provide persistence from run to run... which
+// would complicate testing; if appropriate to add this feature this, we could
+// make that configurable.
 
 #include <stdint.h>
 
