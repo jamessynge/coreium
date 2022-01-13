@@ -160,6 +160,7 @@ cc_library(
         ":o_print_stream",
         "//base:logging_extensions",
         "//glog:logging",
+        "//mcucore/extras/host/arduino:serial",
         "//mcucore/extras/test_tools:print_to_std_string",
     ],
 )

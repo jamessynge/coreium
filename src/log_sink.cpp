@@ -15,23 +15,10 @@
 #endif
 
 namespace mcucore {
-namespace {
-// If file is provided, and has a '/' in it, return the location after the last
-// occurrence of '/'.
-const __FlashStringHelper* TrimPath(const __FlashStringHelper* file) {
-  if (file != nullptr) {
-    auto* last_slash = strrchr_P(reinterpret_cast<const char*>(file), '/');
-    if (last_slash != nullptr) {
-      file = reinterpret_cast<decltype(file)>(last_slash + 1);
-    }
-  }
-  return file;
-}
-}  // namespace
 
 MessageSinkBase::MessageSinkBase(Print& out, const __FlashStringHelper* file,
                                  uint16_t line_number)
-    : OPrintStream(out), file_(TrimPath(file)), line_number_(line_number) {}
+    : OPrintStream(out), file_(file), line_number_(line_number) {}
 
 void MessageSinkBase::PrintLocation(Print& out) const {
   if (file_ != nullptr) {
@@ -107,7 +94,10 @@ void CheckSink::Announce(Print& out) const {
   // TODO(jamessynge): Eliminate this issue.
   out.print(FLASHSTR("MCU_CHECK FAILED: "));
   PrintLocation(out);
-  out.print(expression_message_);
+  if (expression_message_ != nullptr) {
+    out.print(expression_message_);
+    out.print(' ');
+  }
 }
 
 }  // namespace mcucore

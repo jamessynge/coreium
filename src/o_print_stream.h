@@ -1,7 +1,27 @@
 #ifndef MCUCORE_SRC_O_PRINT_STREAM_H_
 #define MCUCORE_SRC_O_PRINT_STREAM_H_
 
-// Support for streaming into a Print instance, primarily for logging.
+// Support for streaming into a Print instance. While I've used this primarily
+// in the context of logging.h, OPrintStream can also make using Serial much
+// easier. For example, making use of mcucore::LogSink:
+//
+//    #include "log_sink.h"
+//    void setup() {
+//      const int kBaudRate = 9600;
+//      Serial.begin(kBaudRate);
+//      while (!Serial) {}
+//      mcucore::LogSink() << F("Starting the program, with baud rate ")
+//                         << kBaudRate << F(", current time: ") << millis();
+//    }
+//
+// Here LogSink is taking care of writing a newline at the end, and flushing the
+// Serial buffers (if there are any). If we used Serial directly, that last
+// statement would become these 4:
+//
+//      Serial.print(F("Starting the program, with baud rate "));
+//      Serial.print(kBaudRate);
+//      Serial.print(F(", current time: "));
+//      Serial.printLn(millis());
 //
 // Author: james.synge@gmail.com
 
@@ -15,6 +35,24 @@
 
 namespace mcucore {
 
+// Most methods of this class call other methods based on the type of their
+// template parameters. Since the type is fully determined at compile time, it
+// should be that the compiler is able to replace most such functions calls with
+// a direct call to the leafmost function call; given the following example:
+//
+// [1]    SomeType foo;
+// [2]    OPrintStream ostrm(Serial);
+// [3]    ostrm << &foo;
+//
+// the insertion operator (operator<<) ultimately calls the do_print_d overload
+// for values of type "const void*". The compiler should thus be able to replace
+// line [3] with (roughly) this:
+//
+//        ostrm.print_hex(reinterpret_cast<const uintptr_t>(&foo));
+//
+// While it isn't necessary to declare the member functions as inline, I'm
+// choosing to do so to clarify to readers that I expect these functions to be
+// inlined in practice (at least with appropriate optimizations enabled).
 class OPrintStream {
  public:
   // An OPrintStreamManipulator is a function which can modify the OPrintStream
@@ -25,19 +63,23 @@ class OPrintStream {
   explicit OPrintStream(Print& out) : out_(out), base_(10) {}
   OPrintStream() : out_(::Serial), base_(10) {}
 
+  // It may be that this should be a friend function rather than a method, thus
+  // enabling overloading for concrete T's. TBD whether that is necessary.
   template <typename T>
-  OPrintStream& operator<<(const T value) {
+  inline OPrintStream& operator<<(const T value) {
+    // Choose the overload of do_print_a based on whether T is a class or struct
+    // with a printTo method.
     do_print_a(value, has_print_to<T>{});
     return *this;
   }
 
   // Set the base in which numbers are printed.
-  void set_base(uint8_t base) { base_ = base; }
+  inline void set_base(uint8_t base) { base_ = base; }
 
  protected:
   // Exposed so that subclasses can call this.
   template <typename T>
-  void printValue(const T value) {
+  inline void printValue(const T value) {
     do_print_a(value, has_print_to<T>{});
   }
 
@@ -50,17 +92,27 @@ class OPrintStream {
 
   // T is a class with a printTo function.
   template <typename T>
-  void do_print_a(const T value, true_type /*has_print_to*/) {
+  inline void do_print_a(const T value, true_type /*has_print_to*/) {
     value.printTo(out_);
   }
 
   // Type T does NOT have a printTo method.
   template <typename T>
-  void do_print_a(const T value, false_type /*!has_print_to*/) {
+  inline void do_print_a(const T value, false_type /*!has_print_to*/) {
+    // Choose the overload of do_print_b based on whether T is an int or similar
+    // type.
     do_print_b(value, is_integral<T>{});
   }
 
   // Type T is an integral type (includes bool and char).
+  // TODO(jamessynge): Consider whether making OPrintStream::operator<< a global
+  // function, rather than a member function, would also allow us to change
+  // BaseHex, such that the return type for streaming BaseHex would be
+  // OPrintStreamHex, a sub-class of OPrintStream. That would avoid the need for
+  // OPrintStream to have a base_ member, and thus the method below for printing
+  // integral types would be simpler, which in turn might mean reduced
+  // complexity in the generated code (i.e. it would be closer to just calling
+  // Print::print(value, HEX)).
   template <typename T>
   void do_print_b(const T value, true_type /*is_integral*/) {
     if (base_ == 10 || (base_ != 2 && base_ != 16)) {
@@ -72,41 +124,47 @@ class OPrintStream {
       out_.print('b');
       out_.print(value, base_);
     } else {
-      // Should be unreachable.
+      // Should be unreachable, unless a bogus base is passed to set_base.
       out_.print(value, base_);
     }
   }
 
   // Type T is NOT an integral type.
   template <typename T>
-  void do_print_b(const T value, false_type /*!is_integral*/) {
+  inline void do_print_b(const T value, false_type /*!is_integral*/) {
+    // Choose the overload of do_print_c based on whether there exists a
+    // PrintValueTo function with this signature:
+    //     PrintValueTo(T, Print&)
     do_print_c(value, has_print_value_to<T>{});
   }
 
   template <typename T>
-  void do_print_c(const T value, true_type /*has_print_value_to*/) {
+  inline void do_print_c(const T value, true_type /*has_print_value_to*/) {
     PrintValueTo(value, out_);
   }
 
   template <typename T>
-  void do_print_c(const T value, false_type /*has_print_value_to*/) {
+  inline void do_print_c(const T value, false_type /*has_print_value_to*/) {
+    // Choose the overload of do_print_d based on whether T is a pointer.
     do_print_d(value, is_pointer<T>{});
   }
 
-  void do_print_d(const char* value, true_type /*is_pointer*/) {
+  inline void do_print_d(const char* value, true_type /*is_pointer*/) {
     out_.print(value);
   }
 
-  void do_print_d(const __FlashStringHelper* value, true_type /*is_pointer*/) {
+  inline void do_print_d(const __FlashStringHelper* value,
+                         true_type /*is_pointer*/) {
     out_.print(value);
   }
 
-  void do_print_d(OPrintStreamManipulator manipulator,
-                  true_type /*is_pointer*/) {
+  inline void do_print_d(OPrintStreamManipulator manipulator,
+                         true_type /*is_pointer*/) {
     (*manipulator)(*this);
   }
 
-  void do_print_d(const void* misc_pointer, true_type /*is_pointer*/) {
+  // Print any pointer of a type we don't directly support  of an otherwise
+  inline void do_print_d(const void* misc_pointer, true_type /*is_pointer*/) {
     auto i = reinterpret_cast<const uintptr_t>(misc_pointer);
     print_hex(i);
   }
@@ -117,6 +175,8 @@ class OPrintStream {
   }
 #endif
 
+  // T is not a pointer. Just pass the value to to print. Most likely T is a
+  // floating point type.
   template <typename T>
   void do_print_d(const T value, false_type /*!is_pointer*/) {
     out_.print(value);

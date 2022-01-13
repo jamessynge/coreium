@@ -33,10 +33,15 @@ class MessageSinkBase : public OPrintStream {
 
 class LogSink final : public MessageSinkBase {
  public:
+  // Defaults to DEFAULT_SINK_OUT, which is Serial on Arduino, and FakeSerial on
+  // host (i.e. stdout).
+  LogSink();
+
   LogSink(Print& out, const __FlashStringHelper* file, uint16_t line_number);
   LogSink(const __FlashStringHelper* file, uint16_t line_number);
   explicit LogSink(Print& out);
-  LogSink();
+
+  // Writes a newline and flushes the output.
   ~LogSink();
 };
 
