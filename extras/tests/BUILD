@@ -57,6 +57,20 @@ cc_test(
 )
 
 cc_test(
+    name = "eeprom_io_test",
+    srcs = ["eeprom_io_test.cc"],
+    deps = [
+        "//googletest:gunit_main",
+        "//mcucore/extras/host/eeprom",
+        "//mcucore/extras/test_tools:eeprom_test_utils",
+        "//mcucore/extras/test_tools:print_value_to_std_string",
+        "//mcucore/src:crc32",
+        "//mcucore/src:eeprom_io",
+        "//mcucore/src:progmem_string_view",
+    ],
+)
+
+cc_test(
     name = "hex_escape_test",
     srcs = ["hex_escape_test.cc"],
     deps = [

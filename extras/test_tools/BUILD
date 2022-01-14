@@ -15,6 +15,18 @@ cc_library(
 )
 
 cc_library(
+    name = "eeprom_test_utils",
+    srcs = ["eeprom_test_utils.cc"],
+    hdrs = ["eeprom_test_utils.h"],
+    deps = [
+        "//absl/strings",
+        "//absl/strings:str_format",
+        "//googletest:gunit_headers",
+        "//mcucore/extras/host/eeprom",
+    ],
+)
+
+cc_library(
     name = "http_request",
     srcs = ["http_request.cc"],
     hdrs = ["http_request.h"],

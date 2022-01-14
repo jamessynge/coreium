@@ -5,65 +5,13 @@
 #include <unordered_map>
 #include <vector>
 
+#include "extras/test_tools/eeprom_test_utils.h"
 #include "gtest/gtest.h"
 
 namespace {
-
-// Helpers for reading all of the bytes in the EEPROMClass instance via all of
-// the methods it exposes for that. Note that it would be nice if these methods
-// worked with const EEPROMClass instances, but the Arduino definition has the
-// read-only methods declared as non-const.
-
-auto ReadAllBytes(EEPROMClass& eeprom) {
-  std::vector<uint8_t> result;
-  for (int idx = 0; idx < eeprom.length(); ++idx) {
-    result.push_back(eeprom.read(idx));
-  }
-  return result;
-}
-
-auto ReadAllBytesViaSubscript(EEPROMClass& eeprom) {
-  std::vector<uint8_t> result;
-  for (int idx = 0; idx < eeprom.length(); ++idx) {
-    result.push_back(eeprom[idx]);
-  }
-  return result;
-}
-
-// If the EEPROM size is not an integer multiple of sizeof T, then the bytes at
-// the end of the EEPROM will not be read.
-template <typename T>
-std::vector<T> GetAllValues(EEPROMClass& eeprom) {
-  const auto last = eeprom.length() - sizeof(T);
-  std::vector<T> result;
-  for (int idx = 0; idx <= last; ++idx) {
-    T t;
-    const auto& tref = eeprom.get(idx, t);
-    EXPECT_EQ(&t, &tref);
-    result.push_back(t);
-  }
-  return result;
-}
-
-auto ReadAllBytesAllWaysAndVerify(EEPROMClass& eeprom) {
-  const auto result = ReadAllBytes(eeprom);
-  EXPECT_EQ(result, ReadAllBytesViaSubscript(eeprom));
-  EXPECT_EQ(result, GetAllValues<uint8_t>(eeprom));
-  return result;
-}
-
-auto GenerateByteValues(double d) {
-  // Come up with some values to write deterministically, but we'll store them
-  // in an unordered_map so that we'll write them in a different order.
-  std::unordered_map<int, uint8_t> values;  // NOLINT
-  for (int address = 0; address < 1024; ++address) {
-    d = d + d * address;
-    // Choose one of the bytes of d as the next to write to the EEPROM.
-    uint8_t b = *(reinterpret_cast<const uint8_t*>(&d) + 2);
-    EXPECT_EQ(values.insert({address, b}).second, true);
-  }
-  return values;
-}
+using ::mcucore::test::AddressToValueMap;
+using ::mcucore::test::GenerateByteValues;
+using ::mcucore::test::ReadAllBytesAllWaysAndVerify;
 
 class EepromTest : public testing::Test {
  protected:
@@ -91,8 +39,8 @@ TEST_F(EepromTest, StartsZeroedOut) {
 
 TEST_F(EepromTest, WritesBytes) {
   // Write values in the order determined by a hash map.
-  std::unordered_map<int, uint8_t> values =  // NOLINT
-      GenerateByteValues(3.14159265358979323846);
+  AddressToValueMap values =
+      GenerateByteValues(3.14159265358979323846, eeprom_.length());
 
   for (const auto [address, value] : values) {
     EXPECT_EQ(eeprom_.read(address), 0);
@@ -108,8 +56,8 @@ TEST_F(EepromTest, WritesBytes) {
 
 TEST_F(EepromTest, UpdateBytes) {
   // Update values in the order determined by a hash map.
-  std::unordered_map<int, uint8_t> values =  // NOLINT
-      GenerateByteValues(1.41421356237309504880);
+  AddressToValueMap values =
+      GenerateByteValues(1.41421356237309504880, eeprom_.length());
 
   for (const auto [address, value] : values) {
     EXPECT_EQ(eeprom_.read(address), 0);
@@ -125,8 +73,8 @@ TEST_F(EepromTest, UpdateBytes) {
 
 TEST_F(EepromTest, PutBytes) {
   // Put bytes in the order determined by a hash map.
-  std::unordered_map<int, uint8_t> values =  // NOLINT
-      GenerateByteValues(2.71828182845904523536);
+  AddressToValueMap values =
+      GenerateByteValues(2.71828182845904523536, eeprom_.length());
 
   for (const auto [address, value] : values) {
     EXPECT_EQ(eeprom_.read(address), 0);

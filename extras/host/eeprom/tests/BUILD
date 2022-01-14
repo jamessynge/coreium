@@ -6,5 +6,6 @@ cc_test(
     deps = [
         "//googletest:gunit_main",
         "//mcucore/extras/host/eeprom",
+        "//mcucore/extras/test_tools:eeprom_test_utils",
     ],
 )

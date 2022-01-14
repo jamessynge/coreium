@@ -41,7 +41,7 @@ void GetBytes(int address, size_t numBytes, uint8_t* dest, Crc32* crc);
 // address after the stored CRC.
 int PutCrc(int toAddress, const Crc32& crc);
 
-// Validate that the computed CRC (i.e. crc.value()) matches the CRC stored at
+// Returns true if the computed CRC (i.e. crc.value()) matches the CRC stored at
 // the specified address.
 bool VerifyCrc(int atAddress, const Crc32& crc);
 
