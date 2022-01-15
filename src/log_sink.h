@@ -12,6 +12,12 @@
 // Author: james.synge@gmail.com
 
 #include "mcucore_platform.h"
+
+#if MCU_HOST_TARGET
+#include <functional>   // pragma: keep standard include
+#include <string_view>  // pragma: keep standard include
+#endif
+
 #include "o_print_stream.h"
 
 namespace mcucore {
@@ -23,7 +29,7 @@ class MessageSinkBase : public OPrintStream {
 
  protected:
   // Prints the location (e.g. "filename.ext:line_number] ") to out, if file_ is
-  // not null. Omits ":line_number" if line_number_ is zero.
+  // points to a non-empty string. Omits ":line_number" if line_number_ is zero.
   void PrintLocation(Print& out) const;
 
  private:
@@ -33,13 +39,16 @@ class MessageSinkBase : public OPrintStream {
 
 class LogSink final : public MessageSinkBase {
  public:
-  // Defaults to DEFAULT_SINK_OUT, which is Serial on Arduino, and FakeSerial on
-  // host (i.e. stdout).
-  LogSink();
-
+  // Streams to out, with a prefix of the file and line_number, as described by
+  // PrintLocation above.
   LogSink(Print& out, const __FlashStringHelper* file, uint16_t line_number);
+  // As above, but with the Print instance set to DEFAULT_SINK_OUT, which is
+  // Serial on Arduino, and FakeSerial on host (i.e. stdout).
   LogSink(const __FlashStringHelper* file, uint16_t line_number);
+  // Omits the log location, i.e. file defaults to nullptr.
   explicit LogSink(Print& out);
+  // Streams to DEFAULT_SINK_OUT, omits the log location.
+  LogSink();
 
   // Writes a newline and flushes the output.
   ~LogSink();
@@ -47,8 +56,6 @@ class LogSink final : public MessageSinkBase {
 
 class CheckSink : public MessageSinkBase {
  public:
-  CheckSink(Print& out, const __FlashStringHelper* file, uint16_t line_number,
-            const __FlashStringHelper* expression_message);
   CheckSink(const __FlashStringHelper* file, uint16_t line_number,
             const __FlashStringHelper* expression_message);
   ~CheckSink();
@@ -82,6 +89,16 @@ class LogSinkVoidify {
   void operator&&(const OPrintStream&) {}
   void operator&&(const VoidSink&) {}
 };
+
+#if MCU_HOST_TARGET
+// To enable testing of the log sinks and logging macros, we allow the default
+// printers to be replaced, along with the function called when an MCU_CHECK
+// statement is done streaming values.
+void SetPrintForLogSink(Print* out);
+void SetPrintForCheckSink(Print* out);
+using CheckSinkExitFn = std::function<void(std::string_view)>;
+void SetCheckSinkExitFn(CheckSinkExitFn exit_fn);
+#endif
 
 }  // namespace mcucore
 

@@ -1,5 +1,7 @@
 #include "log_sink.h"
 
+#include <stdlib.h>
+
 #include "mcucore_platform.h"
 
 #ifndef ARDUINO
@@ -15,14 +17,58 @@
 #endif
 
 namespace mcucore {
+namespace {
+#if MCU_HOST_TARGET
+
+Print* the_print_for_log_sink = &(DEFAULT_SINK_OUT);
+inline Print& GetPrintForLogSink() { return *the_print_for_log_sink; }
+
+Print* the_print_for_check_sink = &(DEFAULT_SINK_OUT);
+inline Print& GetPrintForCheckSink() { return *the_print_for_check_sink; }
+
+CheckSinkExitFn* the_check_sink_exit_fn = nullptr;
+inline void CheckSinkExit(std::string_view message) {
+  if (the_check_sink_exit_fn != nullptr) {
+    (*the_check_sink_exit_fn)(message);
+  } else {
+    CHECK(false) << message;
+  }
+}
+
+#else  // !MCU_HOST_TARGET
+
+inline Print& GetPrintForLogSink() { return DEFAULT_SINK_OUT; }
+inline Print& GetPrintForCheckSink() { return DEFAULT_SINK_OUT; }
+
+#endif  // MCU_HOST_TARGET
+}  // namespace
+
+#if MCU_HOST_TARGET
+
+void SetPrintForLogSink(Print* out) {
+  the_print_for_log_sink = out != nullptr ? out : &(DEFAULT_SINK_OUT);
+}
+void SetPrintForCheckSink(Print* out) {
+  the_print_for_check_sink = out != nullptr ? out : &(DEFAULT_SINK_OUT);
+}
+void SetCheckSinkExitFn(CheckSinkExitFn exit_fn) {
+  if (the_check_sink_exit_fn != nullptr) {
+    delete the_check_sink_exit_fn;
+    the_check_sink_exit_fn = nullptr;
+  }
+  if (exit_fn) {
+    the_check_sink_exit_fn = new CheckSinkExitFn(exit_fn);
+  }
+}
+
+#endif  // MCU_HOST_TARGET
 
 MessageSinkBase::MessageSinkBase(Print& out, const __FlashStringHelper* file,
                                  uint16_t line_number)
     : OPrintStream(out), file_(file), line_number_(line_number) {}
 
 void MessageSinkBase::PrintLocation(Print& out) const {
-  if (file_ != nullptr) {
-    out.print(file_);
+  if (file_ != nullptr && out.print(file_) > 0) {
     if (line_number_ != 0) {
       out.print(':');
       out.print(line_number_);
@@ -39,11 +85,11 @@ LogSink::LogSink(Print& out, const __FlashStringHelper* file,
 }
 
 LogSink::LogSink(const __FlashStringHelper* file, uint16_t line_number)
-    : LogSink(DEFAULT_SINK_OUT, file, line_number) {}
+    : LogSink(GetPrintForLogSink(), file, line_number) {}
 
 LogSink::LogSink(Print& out) : LogSink(out, nullptr, 0) {}
 
-LogSink::LogSink() : LogSink(DEFAULT_SINK_OUT) {}
+LogSink::LogSink() : LogSink(GetPrintForLogSink()) {}
 
 LogSink::~LogSink() {
   // End the line of output produced by the active logging statement.
@@ -51,17 +97,12 @@ LogSink::~LogSink() {
   out_.flush();
 }
 
-CheckSink::CheckSink(Print& out, const __FlashStringHelper* file,
-                     uint16_t line_number,
-                     const __FlashStringHelper* expression_message)
-    : MessageSinkBase(out, file, line_number),
-      expression_message_(expression_message) {
-  Announce(out);
-}
-
 CheckSink::CheckSink(const __FlashStringHelper* file, uint16_t line_number,
                      const __FlashStringHelper* expression_message)
-    : CheckSink(DEFAULT_SINK_OUT, file, line_number, expression_message) {}
+    : MessageSinkBase(GetPrintForCheckSink(), file, line_number),
+      expression_message_(expression_message) {
+  Announce(out_);
+}
 
 CheckSink::~CheckSink() {
   // End the line of output produced by the current TAS_*CHECK* statement.
@@ -79,11 +120,15 @@ CheckSink::~CheckSink() {
     out_.println();
     out_.flush();
   }
-#else   // !ARDUINO
+#else  // !ARDUINO
+#if MCU_HOST_TARGET
   FlushLogFiles(base_logging::INFO);
   mcucore::test::PrintToStdString ptss;
   Announce(ptss);
-  CHECK(false) << ptss.str();
+  CheckSinkExit(ptss.str());
+#else  // !MCU_HOST_TARGET
+#error "Not yet implemented"
+#endif  // MCU_HOST_TARGET
 #endif  // ARDUINO
 }
 

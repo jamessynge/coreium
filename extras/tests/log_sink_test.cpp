@@ -1,7 +1,13 @@
 #include "log_sink.h"
 
+#include <functional>
+#include <string_view>
+
+#include "absl/strings/str_cat.h"
 #include "extras/test_tools/print_to_std_string.h"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "mcucore_platform.h"
 #include "o_print_stream.h"
 #include "progmem_string_data.h"
 
@@ -9,78 +15,134 @@ namespace mcucore {
 namespace test {
 namespace {
 
-TEST(LogSinkTest, CreateAndDelete) {
-  mcucore::test::PrintToStdString out;
-  { LogSink sink(out); }
-  // Prints out a newline to end the message. So far there isn't a message
-  // prefix (i.e. no time or location).
-  EXPECT_EQ(out.str(), "\n");
+class LogSinkTest : public testing::Test {
+ protected:
+  void SetUp() override { SetPrintForLogSink(&out_); }
+  void TearDown() override { SetPrintForLogSink(nullptr); }
+
+  PrintToStdString out_;
+};
+
+TEST_F(LogSinkTest, ExplicitPrint) {
+  {
+    PrintToStdString other;
+    { LogSink sink(other, FLASHSTR("here"), 123); }
+    EXPECT_EQ(other.str(), "here:123] \n");
+  }
+  {
+    // Omits the line number if it is zero.
+    PrintToStdString other;
+    { LogSink sink(other, FLASHSTR("there"), 0); }
+    EXPECT_EQ(other.str(), "there] \n");
+  }
+  // An empty or null file means skip printing the location, so prints only a
+  // newline to end the message.
+  {
+    PrintToStdString other;
+    { LogSink sink(other, nullptr, 123); }
+    EXPECT_EQ(other.str(), "\n");
+  }
+  {
+    PrintToStdString other;
+    { LogSink sink(other, FLASHSTR(""), 123); }
+    EXPECT_EQ(other.str(), "\n");
+  }
+  {
+    PrintToStdString other;
+    // Omit the file ane line number ars entirely.
+    { LogSink sink(other); }
+    // Prints only a newline to end the message.
+    EXPECT_EQ(other.str(), "\n");
+  }
 }
 
-TEST(LogSinkTest, InsertIntoNonTemporary) {
-  mcucore::test::PrintToStdString out;
+TEST_F(LogSinkTest, NoArgCtor) {
+  { LogSink sink; }
+  EXPECT_EQ(out_.str(), "\n");
+}
+
+TEST_F(LogSinkTest, ImplicitPrint) {
+  { LogSink sink(FLASHSTR("somewhere"), 1); }
+  EXPECT_EQ(out_.str(), "somewhere:1] \n");
+}
+
+TEST_F(LogSinkTest, InsertIntoNonTemporary) {
   {
-    LogSink sink(out);
+    LogSink sink;
     sink << "abc";
   }
-  EXPECT_EQ(out.str(), "abc\n");
+  EXPECT_EQ(out_.str(), "abc\n");
 }
 
-TEST(LogSinkTest, InsertIntoTemporary) {
-  mcucore::test::PrintToStdString out;
-  LogSink(out) << "abc";
-  EXPECT_EQ(out.str(), "abc\n");
+TEST_F(LogSinkTest, InsertIntoTemporary) {
+  LogSink(FLASHSTR("whereelse"), 0) << "abc";
+  EXPECT_EQ(out_.str(), "whereelse] abc\n");
 }
 
-TEST(CheckSinkDeathTest, CreateAndDelete) {
-  mcucore::test::PrintToStdString out;
-  EXPECT_DEATH(
-      {
-        CheckSink sink(out, MCU_FLASHSTR("foo.cc"), 123,
-                       MCU_FLASHSTR("prefix1"));
-      },
-      "MCU_CHECK FAILED: foo.cc:123] prefix1");
+class CheckSinkTest : public testing::Test {
+ protected:
+  void SetUp() override {
+    SetCheckSinkExitFn(mock_exit_fn_.AsStdFunction());
+    SetPrintForCheckSink(&out_);
+  }
+  void TearDown() override {
+    SetCheckSinkExitFn(nullptr);
+    SetPrintForCheckSink(nullptr);
+  }
 
-  // The EXPECT_DEATH created a subprocess, so out shouldn't have been modified
-  // in this process.
-  EXPECT_EQ(out.str(), "");
+  PrintToStdString out_;
+  testing::MockFunction<void(std::string_view)> mock_exit_fn_;
+  std::function<void(std::string_view)> std_exit_fn_;
+};
+
+TEST_F(CheckSinkTest, CreateAndDelete) {
+  const std::string_view common = "MCU_CHECK FAILED: foo.cc:123] prefix1 ";
+  EXPECT_CALL(mock_exit_fn_, Call(common)).Times(1);
+  { CheckSink sink(FLASHSTR("foo.cc"), 123, FLASHSTR("prefix1")); }
+  EXPECT_EQ(out_.str(), absl::StrCat(common, "\n"));
 }
 
-TEST(CheckSinkDeathTest, NoFileName) {
-  EXPECT_DEATH({ CheckSink sink(nullptr, 123, MCU_FLASHSTR("prefix2")); },
-               "MCU_CHECK FAILED: prefix2");
+TEST_F(CheckSinkTest, NoExpressionMessage) {
+  const std::string_view common = "MCU_CHECK FAILED: foo.cc:123] ";
+  EXPECT_CALL(mock_exit_fn_, Call(common)).Times(1);
+  { CheckSink sink(FLASHSTR("foo.cc"), 123, nullptr); }
+  EXPECT_EQ(out_.str(), absl::StrCat(common, "\n"));
 }
 
-TEST(CheckSinkDeathTest, NoLineNumber) {
-  mcucore::test::PrintToStdString out;
-  EXPECT_DEATH(
-      {
-        CheckSink sink(out, MCU_FLASHSTR("foo.cc"), 0, MCU_FLASHSTR("prefix3"));
-      },
-      "MCU_CHECK FAILED: foo.cc] prefix3");
-
-  // The EXPECT_DEATH created a subprocess, so out shouldn't have been modified
-  // in this process.
-  EXPECT_EQ(out.str(), "");
+TEST_F(CheckSinkTest, NoFileName) {
+  const std::string_view common = "MCU_CHECK FAILED: Foo!=Bar ";
+  EXPECT_CALL(mock_exit_fn_, Call(common)).Times(1);
+  { CheckSink sink(FLASHSTR(""), 123, FLASHSTR("Foo!=Bar")); }
+  EXPECT_EQ(out_.str(), absl::StrCat(common, "\n"));
 }
 
-TEST(CheckSinkDeathTest, InsertIntoNonTemporarySink) {
-  EXPECT_DEATH(
-      {
-        CheckSink sink(MCU_FLASHSTR_32("foo/bar/baz.cc"), 234,
-                       MCU_FLASHSTR_32("Prefix4"));
-        sink << "abc def";
-      },
-      "MCU_CHECK FAILED: foo/bar/baz.cc:234] Prefix4 abc def");
+TEST_F(CheckSinkTest, NoLineNumber) {
+  const std::string_view common = "MCU_CHECK FAILED: bar.h] Bar!=Baz ";
+  EXPECT_CALL(mock_exit_fn_, Call(common)).Times(1);
+  { CheckSink sink(FLASHSTR("bar.h"), 0, FLASHSTR("Bar!=Baz")); }
+  EXPECT_EQ(out_.str(), absl::StrCat(common, "\n"));
 }
 
-TEST(CheckSinkDeathTest, InsertIntoTemporarySink) {
-  EXPECT_DEATH(
-      {
-        CheckSink(MCU_BASENAME("foo/bar/baz.h"), 321, MCU_FLASHSTR("message"))
-            << "abc";
-      },
-      "MCU_CHECK FAILED: baz.h:321] message abc");
+TEST_F(CheckSinkTest, InsertIntoNonTemporarySink) {
+  const std::string_view common = "MCU_CHECK FAILED: SomeExpr ";
+  EXPECT_CALL(mock_exit_fn_, Call(common)).Times(1);
+  {
+    CheckSink sink(nullptr, 0, FLASHSTR("SomeExpr"));
+    sink << "abc def";
+  }
+  EXPECT_EQ(out_.str(), absl::StrCat(common, "abc def\n"));
+}
+
+TEST_F(CheckSinkTest, InsertIntoTemporarySink) {
+  const std::string_view common =
+      "MCU_CHECK FAILED: baz.h:321] expression message ";
+  EXPECT_CALL(mock_exit_fn_, Call(common)).Times(1);
+  {
+    CheckSink sink(MCU_BASENAME("foo/bar/baz.h"), 321,
+                   MCU_FLASHSTR("expression message"));
+    sink << "abc" << 1.2 << '!';
+  }
+  EXPECT_EQ(out_.str(), absl::StrCat(common, "abc1.20!\n"));
 }
 
 }  // namespace

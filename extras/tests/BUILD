@@ -103,9 +103,11 @@ cc_test(
     name = "log_sink_test",
     srcs = ["log_sink_test.cc"],
     deps = [
+        "//absl/strings",
         "//googletest:gunit_main",
         "//mcucore/extras/test_tools:print_to_std_string",
         "//mcucore/src:log_sink",
+        "//mcucore/src:mcucore_platform",
         "//mcucore/src:o_print_stream",
         "//mcucore/src:progmem_string_data",
     ],
