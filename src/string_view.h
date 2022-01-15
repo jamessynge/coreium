@@ -108,10 +108,10 @@ class StringView {
   // Non-mutating methods:
 
   bool operator==(const StringView& other) const;
-
   bool operator==(const char* other) const;
 
   bool operator!=(const StringView& other) const;
+  bool operator!=(const char* other) const;
 
   const_iterator begin() const { return ptr_; }
   const_iterator end() const { return ptr_ + size_; }

@@ -90,6 +90,7 @@ cc_test(
         "//absl/strings",
         "//glog:logging",
         "//googletest:gunit_main",
+        "//mcucore/extras/host/arduino:print",
         "//mcucore/extras/test_tools:json_test_utils",
         "//mcucore/extras/test_tools:print_to_std_string",
         "//mcucore/extras/test_tools:sample_printable",
@@ -186,6 +187,7 @@ cc_test(
         "//mcucore/extras/test_tools:print_to_std_string",
         "//mcucore/extras/test_tools:progmem_string_view_utils",
         "//mcucore/extras/test_tools:string_view_utils",
+        "//mcucore/extras/test_tools:test_strings",
         "//mcucore/src:hex_escape",
         "//mcucore/src:mcucore_platform",
         "//mcucore/src:o_print_stream",
@@ -237,6 +239,7 @@ cc_test(
     deps = [
         "//glog:logging",
         "//googletest:gunit_main",
+        "//mcucore/extras/test_tools:print_to_std_string",
         "//mcucore/extras/test_tools:string_view_utils",
         "//mcucore/src:string_view",
     ],
@@ -248,5 +251,16 @@ cc_test(
     deps = [
         "//googletest:gunit_main",
         "//mcucore/src:type_traits",
+    ],
+)
+
+cc_test(
+    name = "string_compare_test",
+    srcs = ["string_compare_test.cc"],
+    deps = [
+        "//googletest:gunit_main",
+        "//mcucore/extras/test_tools:print_to_std_string",
+        "//mcucore/extras/test_tools:sample_printable",
+        "//mcucore/src:string_compare",
     ],
 )

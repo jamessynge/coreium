@@ -1,5 +1,7 @@
 #include "string_view.h"
 
+#include "extras/test_tools/print_to_std_string.h"
+
 // Author: james.synge@gmail.com
 
 #include <limits.h>
@@ -189,6 +191,7 @@ TEST(StringViewTest, Equals) {
   view2 = StringView(kConstStr);
 
   EXPECT_EQ(view1, view2);
+  EXPECT_EQ(view1, kConstStr);
   EXPECT_NE(view1.data(), view2.data());
   EXPECT_EQ(view1.size(), 3);
   EXPECT_EQ(view2.size(), 3);
@@ -197,9 +200,14 @@ TEST(StringViewTest, Equals) {
   view1 = StringView("1234");
   view2 = view1.prefix(3);
   EXPECT_NE(view1, view2);  // Tests operator!=
+  EXPECT_FALSE(view2 == view1.data());
   EXPECT_EQ(view1.data(), view2.data());
   EXPECT_EQ(view1.size(), 4);
   EXPECT_EQ(view2.size(), 3);
+
+  // Case: same length, different values.
+  EXPECT_NE(StringView("123"), StringView("abc"));
+  EXPECT_NE(StringView("123"), "abc");
 }
 
 TEST(StringViewTest, ContainsChar) {
@@ -321,8 +329,8 @@ TEST(StringViewTest, ToUint32Fails) {
            "+1",          // Explicitly positive number.
            "",            // Empty string
            "123,456",     // Number with non-digit.
-           "4294967296",  // One too large.
-           "4294967300"   // 5 too large, hits a different case.
+           "4294967296",  // One too high.
+           "4294967300"   // 5 too high, hits a different case.
        }) {
     StringView view = MakeStringView(not_a_uint32);
     uint32_t out = tester;
@@ -365,14 +373,15 @@ TEST(StringViewTest, ToInt32) {
 TEST(StringViewTest, ToInt32Fails) {
   uint32_t tester = 1734594785;  // Vaguely random, value doesn't really matter.
   for (const std::string not_an_int32 : {
-           "+1",          // Explicitly positive number.
-           "--1",         // Double negative number
-           "-",           // Sign only.
-           "+",           // Sign only.
-           "",            // Empty string
-           "123,456",     // Number with non-digit.
-           "123.456",     // Number with non-digit.
-           "2147483648",  // One too large.
+           "+1",           // Explicitly positive number.
+           "--1",          // Double negative number
+           "-",            // Sign only.
+           "+",            // Sign only.
+           "",             // Empty string
+           "123,456",      // Number with non-digit.
+           "123.456",      // Number with non-digit.
+           "2147483648",   // One too high.
+           "-2147483649",  // One too low.
        }) {
     StringView view = MakeStringView(not_an_int32);
     int32_t out = tester;
@@ -508,6 +517,14 @@ TEST(StringViewTest, ToInt32All) {
 #endif  // 0
 #endif  // MCU_ENABLED_VLOG_LEVEL < 1
 #endif  // NDEBUG
+
+TEST(StringViewTest, PrintTo) {
+  PrintToStdString p2ss;
+  const std::string s("abc'\"\t\r\e");
+  const StringView view = MakeStringView(s);
+  view.printTo(p2ss);
+  EXPECT_EQ(p2ss.str(), s);
+}
 
 TEST(StringViewTest, StreamOutOperator) {
   std::ostringstream oss;

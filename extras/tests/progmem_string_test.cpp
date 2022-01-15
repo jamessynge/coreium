@@ -48,6 +48,7 @@ TEST(ProgmemStringTest, Comparison) {
   EXPECT_EQ(PrintValueToStdString(ps2), "foobar");
   EXPECT_EQ(ps1, ps2);
   EXPECT_EQ(ps1.ToFlashStringHelper(), ps2.ToFlashStringHelper());
+  EXPECT_NE(ps1, FLASHSTR(nullptr));
 
   // Test that the fallback to comparing bytes works. Note that this could be
   // undercut if the compiler+linker collapsed strings that are a suffix of

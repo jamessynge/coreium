@@ -42,10 +42,11 @@ class ProgmemStringView {
   // on other CPU types).
   //
   // NOTE: The length of a C++ string literal includes the NUL (\0) at the end,
-  // so we subtract one from N to get the length of the string before that.
-  template <size_type N>
+  // so we subtract one from N to get the length of the string before that, and
+  // that value, M, must be be representable with ProgmemStringView::size_type.
+  template <size_t N, size_type M = N - 1>
   explicit constexpr ProgmemStringView(const char (&buf)[N] PROGMEM)
-      : ptr_(buf), size_(N - 1) {}
+      : ptr_(buf), size_(M) {}
 
   // Constructs from the value returned by the `progmem_char_array` member
   // function of the arg.

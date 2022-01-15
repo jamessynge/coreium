@@ -38,6 +38,10 @@ bool StringView::operator!=(const StringView& other) const {
   return !(*this == other);
 }
 
+bool StringView::operator!=(const char* other) const {
+  return !(*this == other);
+}
+
 namespace {
 constexpr uint32_t kMaxUInt = 0xFFFFFFFF;
 constexpr uint32_t kMaxUIntDiv10 = kMaxUInt / 10;

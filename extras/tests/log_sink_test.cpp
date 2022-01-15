@@ -145,6 +145,17 @@ TEST_F(CheckSinkTest, InsertIntoTemporarySink) {
   EXPECT_EQ(out_.str(), absl::StrCat(common, "abc1.20!\n"));
 }
 
+// Since this is slow (needs to fork the process), I don't want to run it all
+// the time. Given that I usually run tests with debugging enabled, only run it
+// when debugging is not enabled or it is requested via a macro.
+#if defined(NDEBUG) || defined(MCUCORE_EXECUTE_DEATH_TESTS)
+TEST(CheckSinkDeathTest, CreateAndDelete) {
+  EXPECT_DEATH(
+      { CheckSink sink(FLASHSTR("my-file.cc"), 213, FLASHSTR("1!=2")); },
+      "MCU_CHECK FAILED: my-file.cc:213] 1!=2");
+}
+#endif  // NDEBUG || MCUCORE_EXECUTE_DEATH_TESTS
+
 }  // namespace
 }  // namespace test
 }  // namespace mcucore

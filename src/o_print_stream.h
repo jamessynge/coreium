@@ -115,7 +115,7 @@ class OPrintStream {
   // Print::print(value, HEX)).
   template <typename T>
   void do_print_b(const T value, true_type /*is_integral*/) {
-    if (base_ == 10 || (base_ != 2 && base_ != 16)) {
+    if (base_ == 10) {
       out_.print(value, base_);
     } else if (base_ == 16) {
       print_hex(value);
@@ -124,7 +124,6 @@ class OPrintStream {
       out_.print('b');
       out_.print(value, base_);
     } else {
-      // Should be unreachable, unless a bogus base is passed to set_base.
       out_.print(value, base_);
     }
   }

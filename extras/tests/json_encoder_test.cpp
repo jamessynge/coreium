@@ -5,8 +5,10 @@
 #include <cmath>
 #include <limits>
 #include <string>
+#include <string_view>
 
 #include "absl/strings/str_cat.h"
+#include "extras/host/arduino/print.h"
 #include "extras/test_tools/json_test_utils.h"
 #include "extras/test_tools/print_to_std_string.h"
 #include "extras/test_tools/sample_printable.h"
@@ -22,6 +24,22 @@
 namespace mcucore {
 namespace test {
 namespace {
+
+class PrintOneCharacterAtATime : public Printable {
+ public:
+  explicit PrintOneCharacterAtATime(std::string_view str) : str_(str) {}
+
+  size_t printTo(Print& out) const override {
+    size_t count = 0;
+    for (const char c : str_) {
+      count += out.write(static_cast<uint8_t>(c));
+    }
+    return count;
+  }
+
+ private:
+  std::string str_;
+};
 
 class JsonEncodersTest : public testing::Test {
  protected:
@@ -87,6 +105,24 @@ TEST_F(JsonEncodersTest, ObjectWithStringValues) {
                   "\"a\": \"some text\", "
                   "\"b\": \"with \\\" quotes and \\\\ backslashes\", "
                   "\"c\": \"with controls \\r\\n\"}");
+}
+
+TEST_F(JsonEncodersTest, ObjectWithEscapedStrings) {
+  // Note that the leading \001 (Ctrl-A) is not a valid character in a JSON
+  // string, so is omitted when encoding.
+  constexpr char kSomeTextStr[] = "\001\b\f\n\r\t";
+  const ProgmemStringView kSomeText(kSomeTextStr);
+  const PrintOneCharacterAtATime a_printable(kSomeTextStr);
+
+  auto func = [&](JsonObjectEncoder& object_encoder) {
+    object_encoder.AddStringProperty(kSomeText, StringView("v"));
+    object_encoder.AddStringProperty(ProgmemStringView("k"), kSomeText);
+    object_encoder.AddStringProperty(ProgmemStringView("K"), a_printable);
+  };
+  ConfirmEncoding(func,
+                  "{\"\\b\\f\\n\\r\\t\": \"v\", "
+                  "\"k\": \"\\b\\f\\n\\r\\t\", "
+                  "\"K\": \"\\b\\f\\n\\r\\t\"}");
 }
 
 TEST_F(JsonEncodersTest, ObjectWithBooleanValues) {

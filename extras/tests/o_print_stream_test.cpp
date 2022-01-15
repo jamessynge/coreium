@@ -94,11 +94,23 @@ TEST(OPrintStreamTest, ConstPrintable) {
 }
 
 TEST(OPrintStreamTest, ChangeBase) {
-  mcucore::test::PrintToStdString p2ss;
-  OPrintStream out(p2ss);
+  {
+    mcucore::test::PrintToStdString p2ss;
+    OPrintStream out(p2ss);
 
-  out << 127 << " " << BaseHex << 127 << ' ' << BaseTwo << 127;
-  EXPECT_EQ(p2ss.str(), "127 0x7F 0b1111111");
+    out << 127 << " " << BaseHex << 127 << ' ' << BaseTwo << 127;
+    EXPECT_EQ(p2ss.str(), "127 0x7F 0b1111111");
+  }
+  // Print supports bases from 2 to 36.
+  {
+    mcucore::test::PrintToStdString p2ss;
+    OPrintStream out(p2ss);
+    out.set_base(3);
+    for (int i = 0; i <= 10; ++i) {
+      out << ' ' << i;
+    }
+    EXPECT_EQ(p2ss.str(), " 0 1 2 10 11 12 20 21 22 100 101");
+  }
 }
 
 }  // namespace

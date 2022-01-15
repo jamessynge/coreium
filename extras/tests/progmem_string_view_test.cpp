@@ -8,6 +8,7 @@
 #include "extras/test_tools/print_to_std_string.h"
 #include "extras/test_tools/progmem_string_view_utils.h"
 #include "extras/test_tools/string_view_utils.h"
+#include "extras/test_tools/test_strings.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "hex_escape.h"
@@ -184,10 +185,18 @@ TEST(ProgmemStringViewTest, Copy) {
 }
 
 TEST(ProgmemStringViewTest, PrintTo) {
-  ProgmemStringView psv(kMixedStr);
-  mcucore::test::PrintToStdString out;
-  EXPECT_EQ(psv.printTo(out), psv.size());
-  EXPECT_EQ(out.str(), kMixedStr);
+  {
+    ProgmemStringView psv(kMixedStr);
+    mcucore::test::PrintToStdString out;
+    EXPECT_EQ(psv.printTo(out), psv.size());
+    EXPECT_EQ(out.str(), kMixedStr);
+  }
+  {
+    ProgmemStringView psv(TEST_STR_255);
+    mcucore::test::PrintToStdString out;
+    EXPECT_EQ(psv.printTo(out), psv.size());
+    EXPECT_EQ(out.str(), TEST_STR_255);
+  }
 }
 
 TEST(ProgmemStringViewTest, StreamMixed) {
@@ -241,12 +250,35 @@ TEST(ProgmemStringViewTest, Equality) {
 }
 
 TEST(ProgmemStringViewTest, Inequality) {
-  ProgmemStringView psv1("aBC");
-  ProgmemStringView psv2("abc");
-  EXPECT_NE(psv1, psv2);
+  // Same length, different values, but not in the first character.
+  EXPECT_NE(ProgmemStringView("aBc"), ProgmemStringView("abc"));
+  EXPECT_NE(ProgmemStringView("abc"), ProgmemStringView("aBc"));
 
-  ProgmemStringView psv3("");
-  EXPECT_NE(psv1, psv3);
+  // Same length, different values, in the first character.
+  EXPECT_NE(ProgmemStringView("abc"), ProgmemStringView("Abc"));
+
+  // Different length.
+  EXPECT_NE(ProgmemStringView("abc"), ProgmemStringView("ab"));
+  EXPECT_NE(ProgmemStringView("ab"), ProgmemStringView("abc"));
+
+  // One empty.
+  EXPECT_NE(ProgmemStringView("abc"), ProgmemStringView(""));
+  EXPECT_NE(ProgmemStringView(""), ProgmemStringView("abc"));
+}
+
+TEST(ProgmemStringViewTest, LoweredEqual) {
+  EXPECT_TRUE(ProgmemStringView(TEST_STR_32).LoweredEqual(TEST_STR_32, 32));
+  EXPECT_FALSE(ProgmemStringView(TEST_STR_32).LoweredEqual(TEST_STR_31, 31));
+  EXPECT_FALSE(ProgmemStringView(TEST_STR_32).LoweredEqual(TEST_STR_33, 33));
+}
+
+TEST(ProgmemStringViewTest, IsPrefixOf) {
+  EXPECT_FALSE(ProgmemStringView(TEST_STR_32).IsPrefixOf(TEST_STR_31, 31));
+  EXPECT_TRUE(ProgmemStringView(TEST_STR_32).IsPrefixOf(TEST_STR_32, 32));
+  EXPECT_TRUE(ProgmemStringView(TEST_STR_32).IsPrefixOf(TEST_STR_33, 33));
+
+  // Same length, different values.
+  EXPECT_FALSE(ProgmemStringView("ab").IsPrefixOf("cd", 2));
 }
 
 }  // namespace
