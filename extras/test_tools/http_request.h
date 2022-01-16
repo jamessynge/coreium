@@ -1,7 +1,9 @@
 #ifndef MCUCORE_EXTRAS_TEST_TOOLS_HTTP_REQUEST_H_
 #define MCUCORE_EXTRAS_TEST_TOOLS_HTTP_REQUEST_H_
 
-// Provides a simple
+// Provides a simple class for building an HTTP request start line and headers.
+//
+// Author: james.synge@gmail.com
 
 #include <map>
 #include <string>

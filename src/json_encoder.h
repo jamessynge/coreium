@@ -1,8 +1,14 @@
 #ifndef MCUCORE_SRC_JSON_ENCODER_H_
 #define MCUCORE_SRC_JSON_ENCODER_H_
 
-// Supports writing a JSON object, with values that are numbers, bools, strings,
-// and arrays of the same. Usage examples can be found in the test file.
+// Supports writing a JSON Structure (i.e. an Object or an Array), with values
+// that are numbers, bools, strings or JSON structures. To avoid allocation of
+// memory for storing a serialized JSON structure, we don't add properties and
+// elements before serializing. Instead we depend on calling JsonPropertySource
+// and JsonElementSource instances that are created by the caller, which puts
+// the caller in control of where the items in the structures come from.
+//
+// Usage examples can be found in the test file.
 //
 // Author: james.synge@gmail.com
 
@@ -17,15 +23,23 @@ namespace mcucore {
 class JsonArrayEncoder;
 class JsonObjectEncoder;
 
+// API of classes that supply the elements of a JSON Array.
 class JsonElementSource {
  public:
   virtual ~JsonElementSource();
+
+  // Provides the elements of the JSON Array by calling the appropriate
+  // AddXyzElement method of `encoder`.
   virtual void AddTo(JsonArrayEncoder& encoder) const = 0;
 };
 
+// API of classes that supply the elements of a JSON Object.
 class JsonPropertySource {
  public:
   virtual ~JsonPropertySource();
+
+  // Provides the properties of the JSON Object by calling the appropriate
+  // AddXyzProperty method of `encoder`.
   virtual void AddTo(JsonObjectEncoder& encoder) const = 0;
 };
 
@@ -38,12 +52,8 @@ class AbstractJsonEncoder {
  protected:
   explicit AbstractJsonEncoder(Print& out);
 
-  AbstractJsonEncoder(const AbstractJsonEncoder&) = delete;
-  AbstractJsonEncoder(AbstractJsonEncoder&&) = delete;
-  AbstractJsonEncoder& operator=(const AbstractJsonEncoder&) = delete;
-  AbstractJsonEncoder& operator=(AbstractJsonEncoder&&) = delete;
-
-  // Prints the comma between elements in an array or properties in an object.
+  // Prints the comma between elements in an array and between properties in an
+  // object.
   void StartItem();
 
   void EncodeChildArray(const JsonElementSource& source);
@@ -54,6 +64,12 @@ class AbstractJsonEncoder {
   Print& out_;
 
  private:
+  // Make AbstractJsonEncoder non-copyable; also makes it non-moveable.
+  AbstractJsonEncoder(const AbstractJsonEncoder&) = delete;
+  AbstractJsonEncoder& operator=(const AbstractJsonEncoder&) = delete;
+
+  // True if we've not yet encoded the first item in the array or object; false
+  // after that.
   bool first_;
 };
 
@@ -76,11 +92,8 @@ class JsonArrayEncoder : public AbstractJsonEncoder {
  private:
   friend class AbstractJsonEncoder;
 
+  // Called from Encode or EncodeSize.
   explicit JsonArrayEncoder(Print& out);
-  JsonArrayEncoder(const JsonArrayEncoder&) = delete;
-  JsonArrayEncoder(JsonArrayEncoder&&) = delete;
-  JsonArrayEncoder& operator=(const JsonArrayEncoder&) = delete;
-  JsonArrayEncoder& operator=(JsonArrayEncoder&&) = delete;
 
   ~JsonArrayEncoder();
 };
@@ -106,11 +119,8 @@ class JsonObjectEncoder : public AbstractJsonEncoder {
  private:
   friend class AbstractJsonEncoder;
 
+  // Called from Encode or EncodeSize.
   explicit JsonObjectEncoder(Print& out);
-  JsonObjectEncoder(const JsonObjectEncoder&) = delete;
-  JsonObjectEncoder(JsonObjectEncoder&&) = delete;
-  JsonObjectEncoder& operator=(const JsonObjectEncoder&) = delete;
-  JsonObjectEncoder& operator=(JsonObjectEncoder&&) = delete;
 
   ~JsonObjectEncoder();
 

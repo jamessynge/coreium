@@ -7,6 +7,8 @@
 // digits 1 to 9. These support tests in which we want to test the behavior of
 // printing functions and of the template meta-programming support for storing
 // string literals in program memory on AVR devices.
+//
+// Author: james.synge@gmail.com
 
 #include <string>
 

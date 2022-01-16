@@ -1,8 +1,10 @@
 #ifndef MCUCORE_EXTRAS_TEST_TOOLS_HTTP_RESPONSE_H_
 #define MCUCORE_EXTRAS_TEST_TOOLS_HTTP_RESPONSE_H_
 
-// Provides a trivial parsing of HTTP responses. There is no validation that the
-// strings make sense, only that the delimiters are in the right places.
+// Provides a trivial parser of HTTP/1 responses. There is no validation that
+// the strings make sense, only that the delimiters are in the right places.
+//
+// Author: james.synge@gmail.com
 
 #include <stddef.h>
 

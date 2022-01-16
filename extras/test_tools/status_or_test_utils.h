@@ -1,6 +1,11 @@
 #ifndef MCUCORE_EXTRAS_TEST_TOOLS_STATUS_OR_TEST_UTILS_H_
 #define MCUCORE_EXTRAS_TEST_TOOLS_STATUS_OR_TEST_UTILS_H_
 
+// Insert operator for formatting a StatusOr<T> value and inserting that text
+// into a std::ostream.
+//
+// Author: james.synge@gmail.com
+
 #include <ostream>
 
 #include "extras/test_tools/print_value_to_std_string.h"

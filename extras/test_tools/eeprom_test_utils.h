@@ -5,6 +5,8 @@
 // the methods it exposes for that. Note that it would be nice if these methods
 // worked with const EEPROMClass instances, but the Arduino definition has the
 // read-only methods declared as non-const.
+//
+// Author: james.synge@gmail.com
 
 #include <cstdint>
 #include <unordered_map>

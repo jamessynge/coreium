@@ -1,10 +1,6 @@
 #ifndef MCUCORE_SRC_CRC32_H_
 #define MCUCORE_SRC_CRC32_H_
 
-#include "mcucore_platform.h"
-
-namespace mcucore {
-
 // Class for computing a 32-bit Cyclic Redundancy Check. Used for verifying that
 // the EEPROM is uncorrupted. To learn more about these, see:
 //
@@ -18,6 +14,12 @@ namespace mcucore {
 //     https://www.nongnu.org/avr-libc/user-manual/group__util__crc.html
 //
 //   * https://tools.ietf.org/id/draft-ietf-tsvwg-sctpcsum-00.txt
+//
+// Author: james.synge@gmail.com
+
+#include "mcucore_platform.h"
+
+namespace mcucore {
 
 class Crc32 {
  public:

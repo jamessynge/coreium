@@ -1,8 +1,10 @@
 #ifndef MCUCORE_EXTRAS_TEST_TOOLS_JSON_DECODER_H_
 #define MCUCORE_EXTRAS_TEST_TOOLS_JSON_DECODER_H_
 
-// A trivial JSON decoder, intended only to support testing whether the
-// responses from Tiny Alpaca Server are correct.
+// JsonValue::Parse is a trivial JSON decoder, intended only to support testing
+// whether the responses from Tiny Alpaca Server are correct.
+//
+// Author: james.synge@gmail.com
 
 #include <stdint.h>
 
@@ -92,8 +94,9 @@ class JsonValue {
   bool is_object() const { return type() == kObject; }
   bool is_array() const { return type() == kArray; }
 
-  // The as_X methods will raise an exception if the wrong method is called, so
-  // be sure to use type() first.
+  // The as_X methods will raise an exception (from std::get) if the wrong
+  // method is called, so be sure to use type() or the corresponding is_<type>()
+  // method first.
   bool as_bool() const;
   int64_t as_integer() const;
   double as_double() const;
@@ -123,6 +126,8 @@ class JsonValue {
   // JsonValue of type kUnset.
   JsonValue GetElement(size_t index) const;
 
+  // Returns the size of the value, if the value is a string, an array or an
+  // object.
   size_t size() const;
 
   std::string ToDebugString() const;

@@ -8,6 +8,8 @@
 //
 // Given that this is for testing Arduino related code, a uint32_t is plenty big
 // enough as the size of our seed and the generated random values.
+//
+// Author: james.synge@gmail.com
 
 #include <cstdint>
 
