@@ -73,6 +73,14 @@ class OPrintStream {
     return *this;
   }
 
+  // Specialization for char (but not signed char or unsigned char) so that
+  // chars don't get treated as integers.
+  template <>
+  inline OPrintStream& operator<<(char value) {
+    out_.print(value);
+    return *this;
+  }
+
   // Set the base in which numbers are printed.
   inline void set_base(uint8_t base) { base_ = base; }
 
@@ -83,12 +91,20 @@ class OPrintStream {
     do_print_a(value, has_print_to<T>{});
   }
 
+  // Specialization for char (but not signed char or unsigned char) so that
+  // chars don't get treated as integers.
+  template <>
+  inline void printValue(char value) {
+    out_.print(value);
+  }
+
   Print& out_;
   uint8_t base_;
 
  private:
   // I'm using type traits to steer the call to the appropriate method or
-  // function for printing a value of type T.
+  // function for printing a value of type T. This could probably be done with
+  // fewer levels of nesting, and maybe without the function second arg.
 
   // T is a class with a printTo function.
   template <typename T>
