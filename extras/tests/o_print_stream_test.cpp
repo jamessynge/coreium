@@ -8,6 +8,8 @@
 #include "extras/test_tools/sample_printable.h"
 #include "gtest/gtest.h"
 
+// DO NOT SUBMIT until a test for enums with PrintValueTo is added.
+
 namespace mcucore {
 namespace test {
 namespace {
@@ -111,6 +113,41 @@ TEST(OPrintStreamTest, ChangeBase) {
     }
     EXPECT_EQ(p2ss.str(), " 0 1 2 10 11 12 20 21 22 100 101");
   }
+}
+
+TEST(OPrintStreamTest, Enum) {
+  // OPrintStream::set_base (as called by BaseHex) doesn't apply to enum as they
+  // aren't matched by is_integral, so all the numbers are printed as the
+  // decimal values that we converted to the enum type.
+  {
+    enum ScopeLess { kV = 0 };
+    mcucore::test::PrintToStdString p2ss;
+    OPrintStream out(p2ss);
+    out << ScopeLess(127) << " " << BaseHex << ScopeLess(127) << ' ' << BaseTwo
+        << ScopeLess(127);
+    EXPECT_EQ(p2ss.str(), "127 127 127");
+  }
+  {
+    enum EUnderlying : int16_t { kV = -1 };
+    mcucore::test::PrintToStdString p2ss;
+    OPrintStream out(p2ss);
+    out << EUnderlying(127) << " " << BaseHex << EUnderlying(127) << ' '
+        << BaseTwo << EUnderlying(127);
+    EXPECT_EQ(p2ss.str(), "127 127 127");
+  }
+
+  // Scoped enums don't implicitly convert to integers, so this doesn't work
+  // without the addition of support for is_enum<T>. TBD.
+
+  //   {
+  //     enum class Scoped {};
+  //     mcucore::test::PrintToStdString p2ss;
+  //     OPrintStream out(p2ss);
+
+  //     out << Scoped(127) << " " << BaseHex << Scoped(127) << ' ' << BaseTwo
+  //         << Scoped(127);
+  //     EXPECT_EQ(p2ss.str(), "127 127 127");
+  //   }
 }
 
 }  // namespace
