@@ -102,4 +102,13 @@ constexpr size_t MaxOf4(size_t a, size_t b, size_t c, size_t d) {
   (reinterpret_cast<const __FlashStringHelper *>(PSTR(string_literal)))
 #endif  // ARDUINO
 
+// Test for the has_feature intrinsic offered by some compilers.
+#ifdef __has_feature
+#define MCU_HAS_FEATURE(x) __has_feature(x)
+#elif defined(__has_extension)
+#define MCU_HAS_FEATURE(x) __has_extension(x)
+#else
+#define MCU_HAS_FEATURE(x) 0
+#endif
+
 #endif  // MCUCORE_SRC_MCUCORE_PLATFORM_H_

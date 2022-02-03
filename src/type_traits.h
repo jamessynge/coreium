@@ -11,6 +11,10 @@
 // they're unlikely to be supported by the compiler and don't make much sense in
 // the typical microcontroller setting.
 //
+// FYI, another interesting implementation of <type_traits> can be found here:
+//
+//    https://github.com/Quuxplusone/from-scratch/blob/master/include/scratch/bits/type-traits
+//
 // Author: james.synge@gmail.com (with plenty of material copied from elsewhere,
 // see below for details)
 
@@ -41,6 +45,31 @@ struct integral_constant {
 
 using true_type = integral_constant<bool, true>;
 using false_type = integral_constant<bool, false>;
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// is_const<typename T>
+//
+// If T is a const-qualified type (that is, const, or const volatile), provides
+// the member constant value equal to true. For any other type, value is false.
+//
+// Notes: If T is a reference type then is_const<T>::value is always false. The
+// proper way to check a potentially-reference type for const-ness is to remove
+// the reference: is_const<typename remove_reference<T>::type>
+//
+// Based on https://en.cppreference.com/w/cpp/types/is_const
+
+template <class T>
+struct is_const : false_type {};
+
+template <class T>
+struct is_const<const T> : true_type {};
+
+#if __cplusplus > 201103L
+// C++ 17 feature, and relies on features of C++ 17.
+template <class T>
+inline constexpr bool is_const_v = is_const<T>::value;
+#endif  // At least C++ 2017
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -147,6 +176,69 @@ template <class T>
 using remove_const_t = typename remove_const<T>::type;
 template <class T>
 using remove_volatile_t = typename remove_volatile<T>::type;
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// is_void<typename T>
+//
+// Checks whether T is a void type. Provides the member constant value that is
+// equal to true, if T is the type void, const void, volatile void, or const
+// volatile void. Otherwise, value is equal to false.
+//
+// Based on https://en.cppreference.com/w/cpp/types/is_void
+
+template <typename T>
+struct is_void : is_same<void, typename remove_cv<T>::type> {};
+
+#if __cplusplus > 201103L
+// C++ 17 feature, and relies on features of C++ 17.
+template <typename T>
+inline constexpr bool is_void_v = is_void<T>::value;
+#endif  // At least C++ 2017
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// is_null_pointer<typename T>
+//
+// Checks whether T is the type nullptr_t. Provides the member constant value
+// that is equal to true, if T is the type nullptr_t, const nullptr_t, volatile
+// nullptr_t, or const volatile nullptr_t. Otherwise, value is equal to false.
+//
+// Based on https://en.cppreference.com/w/cpp/types/is_void
+
+template <typename T>
+struct is_null_pointer : is_same<nullptr_t, remove_cv_t<T>> {};
+
+#if __cplusplus > 201103L
+// C++ 17 feature, and relies on features of C++ 17.
+template <typename T>
+inline constexpr bool is_null_pointer_v = is_null_pointer<T>::value;
+#endif  // At least C++ 2017
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// remove_reference<typename T>
+//
+// If the type T is a reference type, provides the member typedef type which is
+// the type referred to by T. Otherwise type is T.
+//
+// Based on https://en.cppreference.com/w/cpp/types/remove_reference
+
+template <typename T>
+struct remove_reference {
+  typedef T type;
+};
+template <typename T>
+struct remove_reference<T&> {
+  typedef T type;
+};
+template <typename T>
+struct remove_reference<T&&> {
+  typedef T type;
+};
+
+template <typename T>
+using remove_reference_t = typename remove_reference<T>::type;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -445,6 +537,154 @@ struct is_signed : tt_internal::is_signed<T>::type {};
 // C++ 17 feature, and relies on features of C++ 17.
 template <class T>
 inline constexpr bool is_signed_v = is_signed<T>::value;
+#endif  // At least C++ 2017
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// is_array<typename T>
+//
+// Checks whether T is an array type. Provides the member constant value which
+// is equal to true, if T is an array type. Otherwise, value is equal to false.
+
+template <class T>
+struct is_array : false_type {};
+
+template <class T>
+struct is_array<T[]> : true_type{};
+
+template <class T, size_t N>
+struct is_array<T[N]> : true_type{};
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// is_reference<typename T>
+//
+// If T is a reference type (lvalue reference or rvalue reference), provides the
+// member constant value equal true. For any other type, value is false.
+
+template <class T>
+struct is_reference : false_type {};
+template <class T>
+struct is_reference<T&> : true_type {};
+template <class T>
+struct is_reference<T&&> : true_type {};
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// is_function<typename T>
+//
+// Checks whether T is a function type. Types like std::function, lambdas,
+// classes with overloaded operator() and pointers to functions don't count as
+// function types. Provides the member constant value which is equal to true, if
+// T is a function type. Otherwise, value is equal to false.
+//
+// Discussion here: https://stackoverflow.com/q/59654482
+//
+// Based on https://en.cppreference.com/w/cpp/types/is_function
+
+template <class T>
+struct is_function : integral_constant<bool, !is_const<const T>::value &&
+                                                 !is_reference<T>::value> {};
+
+#if __cplusplus > 201103L
+// C++ 17 feature, and relies on features of C++ 17.
+template <class T>
+inline constexpr bool is_function_v = is_function<T>::value;
+#endif  // At least C++ 2017
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// is_member_pointer<typename T>
+//
+// If T is pointer to non-static member object or a pointer to non-static member
+// function, provides the member constant value equal true. For any other type,
+// value is false.
+//
+// Based on https://en.cppreference.com/w/cpp/types/is_member_pointer
+
+namespace tt_internal {
+template <class T>
+struct is_member_pointer_helper : false_type {};
+
+template <class T, class U>
+struct is_member_pointer_helper<T U::*> : true_type {};
+}  // namespace tt_internal
+
+template <class T>
+struct is_member_pointer
+    : tt_internal::is_member_pointer_helper<typename remove_cv<T>::type> {};
+
+#if __cplusplus > 201103L
+// C++ 17 feature, and relies on features of C++ 17.
+template <class T>
+inline constexpr bool is_member_pointer_v = is_member_pointer<T>::value;
+#endif  // At least C++ 2017
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// is_union_or_class<typename T>
+//
+// This is non-standard, but doesn't require compiler intrinsics, and is useful
+// below for implementing is_enum without the need for compiler intrinsics.
+// Based on discussions on stackoverflow, including:
+// https://stackoverflow.com/a/45000642
+
+namespace tt_internal {
+
+template <class T, typename P = int T::*>
+struct is_union_or_class_helper : true_type {};
+
+template <class T, typename P = int T::*>
+auto test_is_union_or_class(int) -> is_union_or_class_helper<T, P>;
+
+template <class T>
+auto test_is_union_or_class(...) -> false_type;
+
+}  // namespace tt_internal
+
+template <typename T>
+struct is_union_or_class : decltype(tt_internal::test_is_union_or_class<T>(0)) {
+};
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// is_enum<typename T>
+//
+// Checks whether T is an enumeration type. Provides the member constant value
+// which is equal to true, if T is an enumeration type. Otherwise, value is
+// equal to false.
+//
+// std::is_enum<T> depends on compiler intrinsics, i.e. non-standardized
+// features. If those features are available, this code uses them, but it falls
+// back to an approach found here: https://stackoverflow.com/a/11317409
+
+#if MCU_HAS_FEATURE(is_enum)
+
+template <typename T>
+struct is_enum : integral_constant<bool, __is_enum(T)> {};
+
+#else
+
+template <typename T>
+struct is_enum
+    : public integral_constant<bool,
+                               !is_void<T>::value                   //
+                                   && !is_null_pointer<T>::value    //
+                                   && !is_integral<T>::value        //
+                                   && !is_floating_point<T>::value  //
+                                   && !is_array<T>::value           //
+                                   && !is_pointer<T>::value         //
+                                   && !is_reference<T>::value       //
+                                   && !is_member_pointer<T>::value  //
+                                   && !is_union_or_class<T>::value  //
+                                   && !is_function<T>::value> {};
+
+#endif
+
+#if __cplusplus > 201103L
+// C++ 17 feature, and relies on features of C++ 17.
+template <typename T>
+inline constexpr bool is_enum_v = is_enum<T>::value;
 #endif  // At least C++ 2017
 
 }  // namespace mcucore
