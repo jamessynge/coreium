@@ -136,18 +136,26 @@ TEST(OPrintStreamTest, Enum) {
     EXPECT_EQ(p2ss.str(), "127 127 127");
   }
 
-  // Scoped enums don't implicitly convert to integers, so this doesn't work
-  // without the addition of support for is_enum<T>. TBD.
+  {
+    enum class Scoped { kV };
+    mcucore::test::PrintToStdString p2ss;
+    OPrintStream out(p2ss);
 
-  //   {
-  //     enum class Scoped {};
-  //     mcucore::test::PrintToStdString p2ss;
-  //     OPrintStream out(p2ss);
+    out << Scoped(127) << " " << BaseHex << Scoped(127) << ' ' << BaseTwo
+        << Scoped(127);
+    EXPECT_EQ(p2ss.str(), "127 127 127");
+  }
 
-  //     out << Scoped(127) << " " << BaseHex << Scoped(127) << ' ' << BaseTwo
-  //         << Scoped(127);
-  //     EXPECT_EQ(p2ss.str(), "127 127 127");
-  //   }
+  {
+    enum class ScopedAndUnderlying { kV };
+    mcucore::test::PrintToStdString p2ss;
+    OPrintStream out(p2ss);
+
+    out << ScopedAndUnderlying(127) << " " << BaseHex
+        << ScopedAndUnderlying(127) << ' ' << BaseTwo
+        << ScopedAndUnderlying(127);
+    EXPECT_EQ(p2ss.str(), "127 127 127");
+  }
 }
 
 }  // namespace

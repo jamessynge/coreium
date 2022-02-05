@@ -687,6 +687,106 @@ template <typename T>
 inline constexpr bool is_enum_v = is_enum<T>::value;
 #endif  // At least C++ 2017
 
+////////////////////////////////////////////////////////////////////////////////
+//
+// underlying_type<typename T>
+//
+// If T is a complete enumeration (enum) type, provides a member typedef type
+// that names the underlying type of T. Otherwise, if T is not an enumeration
+// type, there is no member type. Otherwise (T is an incomplete enumeration
+// type), the program is ill-formed.
+//
+// std::underlying_type<T> depends on compiler intrinsics, i.e. non-standardized
+// features. If those features are available, this code uses them; if not, this
+// code provides an approximation of the intended behavior: it produces an
+// integer type which has correct size for storing the enum, and *probably* the
+// correct sign. For example:
+//
+// * On a system where int is 32-bits, underlying_type will return uint32_t for
+//   an enum whose underlying type is explicitly specified as unsigned.
+//
+// * If the underlying type is not explicitly specified in the enum declaration,
+//   and none of the enumerator values is negative, the compiler may choose an
+//   underlying type of `unsigned`, yet the is_signed_enum template below may
+//   still determine that the type is signed. Sigh.
+
+namespace tt_underlying_type {
+
+template <typename T, bool IsSigned, int Size>
+struct get_underlying_type {};
+
+template <typename T>
+struct get_underlying_type<T, true, 1> {
+  using type = int8_t;
+};
+
+template <typename T>
+struct get_underlying_type<T, false, 1> {
+  using type = uint8_t;
+};
+
+template <typename T>
+struct get_underlying_type<T, true, 2> {
+  using type = int16_t;
+};
+
+template <typename T>
+struct get_underlying_type<T, false, 2> {
+  using type = uint16_t;
+};
+
+template <typename T>
+struct get_underlying_type<T, true, 4> {
+  using type = int32_t;
+};
+
+template <typename T>
+struct get_underlying_type<T, false, 4> {
+  using type = uint32_t;
+};
+
+template <typename T>
+struct get_underlying_type<T, true, 8> {
+  using type = int64_t;
+};
+
+template <typename T>
+struct get_underlying_type<T, false, 8> {
+  using type = uint64_t;
+};
+
+// This doesn't work (portably?) for implicitly unsigned enums; it may determine
+// that they are signed.
+template <typename T>
+struct is_signed_enum
+    : integral_constant<bool, (static_cast<T>(-1) < static_cast<T>(0))> {};
+
+template <typename T, bool Condition>
+struct maybe_underlying_type {};
+
+#if MCU_HAS_FEATURE(underlying_type)
+
+template <typename T>
+struct maybe_underlying_type<T, true> {
+  using type = __underlying_type(T);
+};
+
+#else  // !MCU_HAS_FEATURE(underlying_type)
+template <typename T>
+struct maybe_underlying_type<T, true>
+    : get_underlying_type<T, is_signed_enum<T>::value, sizeof(T)> {};
+
+#endif  // MCU_HAS_FEATURE(underlying_type)
+
+}  // namespace tt_underlying_type
+
+template <typename T>
+struct underlying_type
+    : tt_underlying_type::maybe_underlying_type<T, is_enum<T>::value> {};
+
+template <class T>
+using underlying_type_t = typename underlying_type<T>::type;
+
 }  // namespace mcucore
 
 #endif  // MCUCORE_SRC_TYPE_TRAITS_H_

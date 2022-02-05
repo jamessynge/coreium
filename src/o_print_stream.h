@@ -157,6 +157,14 @@ class OPrintStream {
     PrintPointer(value);
   }
 
+  // The value is an enumerator, for which there is not a PrintValueTo function.
+  template <typename Enum, enable_if_t<is_enum<Enum>::value &&
+                                           !has_print_value_to<Enum>::value,
+                                       int> = 6>
+  inline void PrintValue(const Enum value) {
+    out_.print(static_cast<underlying_type_t<Enum>>(value), 10);
+  }
+
   // Finally a fallback for other types, for which there must be a
   // Print::print(Others) method.
   template <
@@ -164,8 +172,9 @@ class OPrintStream {
       enable_if_t<!has_print_to<Others>::value && !is_pointer<Others>::value &&
                       !is_integral<Others>::value &&
                       !is_floating_point<Others>::value &&
-                      !has_print_value_to<Others>::value,
-                  int> = 6>
+                      !has_print_value_to<Others>::value &&
+                      !is_enum<Others>::value,
+                  int> = 7>
   inline void PrintValue(const Others value) {
     out_.print(value);
   }

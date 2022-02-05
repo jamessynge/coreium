@@ -10,6 +10,7 @@
 
 #include <cstddef>
 #include <map>
+#include <ostream>
 #include <type_traits>
 #include <vector>
 
@@ -910,7 +911,51 @@ static_assert(!is_enum<float*>::value);
 static_assert(!is_enum<nullptr_t>::value);
 static_assert(!is_enum<int[]>::value);
 
+static_assert(
+    is_same<__underlying_type(EnumWithUnderlyingType), int8_t>::value);
+
+static_assert(!is_signed<EnumWithUnderlyingType>::value);
+
 }  // namespace test_is_enum
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// underlying_type<typename T>
+
+namespace test_underlying_type {
+//
+
+enum Enum { kA };
+enum NegativeEnum { kB = -1, kC = 1 };
+enum EnumWithUnderlyingType : int8_t { kD = -1 };
+enum class ScopedEnum { kA };
+enum class ScopedEnumWithUnderlyingType : uint64_t { kA };
+
+static_assert(sizeof(underlying_type<Enum>::type) == sizeof(Enum));
+static_assert(sizeof(underlying_type<NegativeEnum>::type) ==
+              sizeof(NegativeEnum));
+static_assert(sizeof(underlying_type<EnumWithUnderlyingType>::type) ==
+              sizeof(EnumWithUnderlyingType));
+static_assert(sizeof(underlying_type<ScopedEnum>::type) == sizeof(ScopedEnum));
+static_assert(sizeof(underlying_type<ScopedEnumWithUnderlyingType>::type) ==
+              sizeof(ScopedEnumWithUnderlyingType));
+
+static_assert(is_signed<underlying_type<NegativeEnum>::type>::value);
+static_assert(is_signed<underlying_type<EnumWithUnderlyingType>::type>::value);
+static_assert(
+    !is_signed<underlying_type<ScopedEnumWithUnderlyingType>::type>::value);
+
+// If the underlying_type might be unsigned or unsigned, we can't say for
+// certain what the compiler might pick.
+//   static_assert(is_signed<underlying_type<Enum>::type>::value);
+//   static_assert(is_signed<underlying_type<ScopedEnum>::type>::value);
+
+static_assert(
+    is_same<underlying_type<EnumWithUnderlyingType>::type, int8_t>::value);
+static_assert(is_same<underlying_type<ScopedEnumWithUnderlyingType>::type,
+                      uint64_t>::value);
+
+}  // namespace test_underlying_type
 
 }  // namespace test
 }  // namespace mcucore
