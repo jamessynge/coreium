@@ -114,6 +114,21 @@ cc_library(
 )
 
 cc_library(
+    name = "pretty_type_name",
+    srcs = ["pretty_type_name.cc"],
+    hdrs = ["pretty_type_name.h"],
+)
+
+cc_test(
+    name = "pretty_type_name_test",
+    srcs = ["pretty_type_name_test.cc"],
+    deps = [
+        ":pretty_type_name",
+        "//googletest:gunit_main",
+    ],
+)
+
+cc_library(
     name = "print_to_std_string",
     testonly = 0,
     hdrs = ["print_to_std_string.h"],

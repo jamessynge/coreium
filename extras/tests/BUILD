@@ -156,6 +156,7 @@ cc_test(
     srcs = ["progmem_string_data_test.cc"],
     deps = [
         "//googletest:gunit_main",
+        "//mcucore/extras/test_tools:pretty_type_name",
         "//mcucore/extras/test_tools:print_to_std_string",
         "//mcucore/extras/test_tools:print_value_to_std_string",
         "//mcucore/extras/test_tools:test_strings",

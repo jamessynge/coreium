@@ -10,6 +10,7 @@
 #include <string>
 #include <string_view>
 
+#include "extras/test_tools/pretty_type_name.h"
 #include "extras/test_tools/print_to_std_string.h"
 #include "extras/test_tools/print_value_to_std_string.h"
 #include "extras/test_tools/test_strings.h"
@@ -43,31 +44,8 @@ TEST(GenerateTestStringsTest, DISABLED_GenerateThreeStrings) {
 }
 
 template <typename T>
-constexpr std::string_view PrettyFunctionName() {
-#if defined(__clang__) || defined(__GNUC__)
-  return std::string_view{__PRETTY_FUNCTION__};
-#elif defined(__MSC_VER)
-  return std::string_view{__FUNCSIG__};
-#else
-#error Unsupported compiler
-#endif
-}
-
-// Outside of the template so its computed once
-struct PrettyFunctionNameOffsets {
-  static constexpr auto kSentinalName = PrettyFunctionName<double>();
-  static constexpr auto kPrefixSize = kSentinalName.find("double");
-  static constexpr auto kSuffixSize =
-      kSentinalName.size() - kSentinalName.rfind("double") - 6;
-};
-
-template <typename T>
-std::string PrettyTypeName() {
-  auto this_function_name = PrettyFunctionName<T>();
-  auto without_prefix =
-      this_function_name.substr(PrettyFunctionNameOffsets::kPrefixSize);
-  std::string pretty_type_name(without_prefix.substr(
-      0, without_prefix.size() - PrettyFunctionNameOffsets::kSuffixSize));
+std::string PSDPrettyTypeName() {
+  std::string pretty_type_name(mcucore::test::PrettyTypeName<T>());
   static std::regex null_char_re("'\\\\x00'");  // NOLINT
   pretty_type_name = std::regex_replace(pretty_type_name, null_char_re, "NUL");
   static std::regex ns_re("(::)?mcucore::progmem_string_data::");  // NOLINT
@@ -104,8 +82,8 @@ TEST(ProgmemStringDataTest, Phase1StringFragmentHasNulls) {
   // because otherwise the preprocessor interprets the comma as separating two
   // arguments to EXPECT_TRUE.
   EXPECT_TRUE((std::is_same<Type, ExpectedType>::value))
-      << "\n         Type: " << PrettyTypeName<Type>()
-      << "\n ExpectedType: " << PrettyTypeName<ExpectedType>();
+      << "\n         Type: " << PSDPrettyTypeName<Type>()
+      << "\n ExpectedType: " << PSDPrettyTypeName<ExpectedType>();
 }
 
 template <typename PSD>
@@ -114,7 +92,7 @@ void ValidateProgmemStrData(std::string_view sv, std::string_view expected,
   VLOG(1) << "len(sv)=" << sv.size()
           << (sv.size() > expected.size() ? " (truncated), sv: " : ", sv: ")
           << sv << std::endl;
-  VLOG(1) << "PSD: " << PrettyTypeName<PSD>() << std::endl;
+  VLOG(1) << "PSD: " << PSDPrettyTypeName<PSD>() << std::endl;
   EXPECT_EQ((sizeof PSD::kData) - 1, expected.size()) << "Lineno=" << lineno;
   EXPECT_EQ(PSD::kData[sizeof PSD::kData - 1], '\0') << "Lineno=" << lineno;
   auto actual = std::string_view(PSD::kData, sizeof PSD::kData - 1);
@@ -263,7 +241,7 @@ TEST(ProgmemStringDataTest, McuPsvToProgmemStringView) {
 
 TEST(ProgmemStringDataTest, StreamMcuLit) {
   auto literal = MCU_LIT("Echo, echo, etc");
-  VLOG(1) << "decltype(literal): " << PrettyTypeName<decltype(literal)>()
+  VLOG(1) << "decltype(literal): " << PSDPrettyTypeName<decltype(literal)>()
           << std::endl;
   EXPECT_EQ(literal.size(), 15);
   mcucore::test::PrintToStdString out;
