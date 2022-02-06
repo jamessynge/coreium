@@ -71,8 +71,6 @@
 // Author: james.synge@gmail.com
 
 #include "mcucore_platform.h"
-#include "progmem_string_view.h"  // IWYU pragma: export
-#include "type_traits.h"
 
 namespace mcucore {
 namespace progmem_string_data {
@@ -105,19 +103,11 @@ struct ProgmemStringData final {
   static constexpr char const kData[1 + sizeof...(C)] AVR_PROGMEM = {C..., 0};
 };
 
+// 'Define' the storage for the kData array, though in fact that won't happen
+// until the template is instantiated.
 template <char... C>
 constexpr char const
     ProgmemStringData<C...>::kData[1 + sizeof...(C)] AVR_PROGMEM;
-
-// Note: It's a bit awkward for this file to have to depend on
-// ProgmemStringView, instead of just producing ProgmemStringData types that can
-// be used in various places to produce instances of the necessary types. In
-// particular, the fact that ProgmemStringView is limited to 255 characters
-// isn't something that this file should have to worry about.
-template <class PSS>
-constexpr ProgmemStringView MakeProgmemStringView() {
-  return ProgmemStringView(PSS::kData, (sizeof PSS::kData) - 1);
-}
 
 // Phase1StringFragment is a fragment of a string literal AND of the trailing
 // nulls used to pad it out to the fixed length supported by the macros below;
@@ -512,6 +502,12 @@ auto ProvideStorage(LengthCheck<LengthOk>, PathFragment<FoundSlash, C...>)
 
 #define _PSD_TYPE_128(fragtype, x) _MAKE_PSD_TYPE_nnn(128, fragtype, x)
 
+// Special case: length 255, for those cases below where the string length must
+// be encoded in a uint8.
+#define _PSD_TYPE_255(fragtype, x)                            \
+  decltype(_PSD_NS::ProvideStorage(_PSD_LENGTH_CHECK(x, 255), \
+                                   _PSD_CONCAT_256_TYPE(fragtype, 0, x)()))
+
 /* 2^8 = 256 */
 #define _PSD_CONCAT_256_TYPE(fragtype, n, x)                                   \
   _PSD_CONCAT_TYPE(                                                            \
@@ -527,12 +523,6 @@ auto ProvideStorage(LengthCheck<LengthOk>, PathFragment<FoundSlash, C...>)
                            _PSD_CONCAT_FRAGMENTS_TYPE(fragtype, n, E, F, x))))
 
 #define _PSD_TYPE_256(fragtype, x) _MAKE_PSD_TYPE_nnn(256, fragtype, x)
-
-// Special case: length 255, for those cases below where the string length must
-// be encoded in a uint8.
-#define _PSD_TYPE_255(fragtype, x)                            \
-  decltype(_PSD_NS::ProvideStorage(_PSD_LENGTH_CHECK(x, 255), \
-                                   _PSD_CONCAT_256_TYPE(fragtype, 0, x)()))
 
 /* 2^9 = 512 */
 #define _PSD_CONCAT_512_TYPE(fragtype, n, x)                       \
@@ -555,18 +545,15 @@ auto ProvideStorage(LengthCheck<LengthOk>, PathFragment<FoundSlash, C...>)
 #define _PSD_TYPE_1024(fragtype, x) _MAKE_PSD_TYPE_nnn(1024, fragtype, x)
 
 ////////////////////////////////////////////////////////////////////////////////
-// We define below macros PSV_nnn (PSV==ProgmemStringView), MCU_FLASHSTR_nnn,
-// and MCU_BASENAME_nnn for various values of nnn, which represents the maximum
-// length of string literal (not including the terminating null character)
-// supported by the macro. These produce *values* that can be printed or
-// otherwise operated upon at runtime.
+// We define below macros MCU_PSD_nnn (PSD==ProgmemStringData),
+// MCU_FLASHSTR_nnn, and MCU_BASENAME_nnn for various values of nnn, which
+// represents the maximum length of string literal (not including the
+// terminating null character) supported by the macro. These produce *values*
+// that can be printed or otherwise operated upon at runtime.
 
 // Max length 32:
 
-#define PSD_32(x) (_PSD_TYPE_32(_PSD_STRFRAG_TYPE, x)())
-
-#define PSV_32(x) \
-  (_PSD_NS::MakeProgmemStringView<_PSD_TYPE_32(_PSD_STRFRAG_TYPE, x)>())
+#define MCU_PSD_32(x) (_PSD_TYPE_32(_PSD_STRFRAG_TYPE, x)())
 
 #define MCU_FLASHSTR_32(x)                       \
   (reinterpret_cast<const __FlashStringHelper*>( \
@@ -578,10 +565,7 @@ auto ProvideStorage(LengthCheck<LengthOk>, PathFragment<FoundSlash, C...>)
 
 // Max length 64 (not including trailing NUL).
 
-#define PSD_64(x) (_PSD_TYPE_64(_PSD_STRFRAG_TYPE, x)())
-
-#define PSV_64(x) \
-  (_PSD_NS::MakeProgmemStringView<_PSD_TYPE_64(_PSD_STRFRAG_TYPE, x)>())
+#define MCU_PSD_64(x) (_PSD_TYPE_64(_PSD_STRFRAG_TYPE, x)())
 
 #define MCU_FLASHSTR_64(x)                       \
   (reinterpret_cast<const __FlashStringHelper*>( \
@@ -593,10 +577,7 @@ auto ProvideStorage(LengthCheck<LengthOk>, PathFragment<FoundSlash, C...>)
 
 // Max length 128 (not including trailing NUL).
 
-#define PSD_128(x) (_PSD_TYPE_128(_PSD_STRFRAG_TYPE, x)())
-
-#define PSV_128(x) \
-  (_PSD_NS::MakeProgmemStringView<_PSD_TYPE_128(_PSD_STRFRAG_TYPE, x)>())
+#define MCU_PSD_128(x) (_PSD_TYPE_128(_PSD_STRFRAG_TYPE, x)())
 
 #define MCU_FLASHSTR_128(x)                      \
   (reinterpret_cast<const __FlashStringHelper*>( \
@@ -606,17 +587,13 @@ auto ProvideStorage(LengthCheck<LengthOk>, PathFragment<FoundSlash, C...>)
   (reinterpret_cast<const __FlashStringHelper*>( \
       _PSD_TYPE_128(_PSD_PATHFRAG_TYPE, x)::kData))
 
-// Max length 255 (not including trailing NUL). This is not a power of two
-// because ProgmemStringView uses a uint8 to record the size of the string, and
-// can't represent 256.
+// Max length 255 (not including trailing NUL).
 
-#define PSV_255(x) \
-  (_PSD_NS::MakeProgmemStringView<_PSD_TYPE_255(_PSD_STRFRAG_TYPE, x)>())
+#define MCU_PSD_255(x) (_PSD_TYPE_255(_PSD_STRFRAG_TYPE, x)())
 
-// Max length 256 (not including trailing NUL). There is no support here for
-// ProgmemStringView because it can't support such a long string.
+// Max length 256 (not including trailing NUL).
 
-#define PSD_256(x) (_PSD_TYPE_256(_PSD_STRFRAG_TYPE, x)())
+#define MCU_PSD_256(x) (_PSD_TYPE_256(_PSD_STRFRAG_TYPE, x)())
 
 #define MCU_FLASHSTR_256(x)                      \
   (reinterpret_cast<const __FlashStringHelper*>( \
@@ -629,7 +606,7 @@ auto ProvideStorage(LengthCheck<LengthOk>, PathFragment<FoundSlash, C...>)
 // Max length 512 (not including trailing NUL). There is no support here for
 // ProgmemStringView because it can't support such a long string.
 
-#define PSD_512(x) (_PSD_TYPE_512(_PSD_STRFRAG_TYPE, x)())
+#define MCU_PSD_512(x) (_PSD_TYPE_512(_PSD_STRFRAG_TYPE, x)())
 
 #define MCU_FLASHSTR_512(x)                      \
   (reinterpret_cast<const __FlashStringHelper*>( \
@@ -642,7 +619,7 @@ auto ProvideStorage(LengthCheck<LengthOk>, PathFragment<FoundSlash, C...>)
 // Max length 1024 (not including trailing NUL). There is no support here for
 // ProgmemStringView because it can't support such a long string.
 
-#define PSD_1024(x) (_PSD_TYPE_1024(_PSD_STRFRAG_TYPE, x)())
+#define MCU_PSD_1024(x) (_PSD_TYPE_1024(_PSD_STRFRAG_TYPE, x)())
 
 #define MCU_FLASHSTR_1024(x)                     \
   (reinterpret_cast<const __FlashStringHelper*>( \
@@ -659,13 +636,12 @@ auto ProvideStorage(LengthCheck<LengthOk>, PathFragment<FoundSlash, C...>)
 // required, use the appropriate macro defined above whose name specifies the
 // next larger size limit.
 
-#define MCU_PSD(x) PSD_64(x)
-#define MCU_PSV(x) PSV_64(x)
+#define MCU_PSD(x) MCU_PSD_64(x)
 #define MCU_FLASHSTR(x) MCU_FLASHSTR_64(x)
-#define MCU_LIT(x) PSV_128(x)
 
-// We provide a default for file paths that should work in most circumstances.
-// If necessary, change the supported length to a higher power of two.
+// We provide a default MCU_BASENAME for file paths that should work in most
+// circumstances. If necessary, change the supported length to a higher power of
+// two.
 //
 // Note that the length of __FILE__ is a function of the file relative file path
 // of the file being compiled relative to the root of the build tree, where in

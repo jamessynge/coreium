@@ -23,6 +23,7 @@
 
 #include "has_progmem_char_array.h"
 #include "mcucore_platform.h"
+#include "progmem_string_data.h"
 
 namespace mcucore {
 
@@ -110,6 +111,36 @@ class ProgmemStringView {
   size_type size_;
 };
 
+template <class PSD, typename = enable_if_t<has_progmem_char_array<PSD>::value>>
+constexpr ProgmemStringView MakeProgmemStringView() {
+  return ProgmemStringView(PSD::kData, (sizeof PSD::kData) - 1);
+}
+
 }  // namespace mcucore
+
+////////////////////////////////////////////////////////////////////////////////
+// We define below macros MCU_PSV_nnn (PSV==ProgmemStringView) for various
+// values of nnn, which represents the maximum length of string literal (not
+// including the terminating null character) supported by the macro. These
+// produce *values* of type ProgmemStringView that can be printed or otherwise
+// operated upon at runtime.
+
+#define MCU_PSV_32(x) \
+  (::mcucore::MakeProgmemStringView<decltype(MCU_PSD_32(x))>())
+
+#define MCU_PSV_64(x) \
+  (::mcucore::MakeProgmemStringView<decltype(MCU_PSD_64(x))>())
+
+#define MCU_PSV_128(x) \
+  (::mcucore::MakeProgmemStringView<decltype(MCU_PSD_128(x))>())
+
+// Max length 255 (not including trailing NUL). This is not a power of two
+// because ProgmemStringView uses a uint8 to record the size of the string, and
+// can't represent 256.
+
+#define MCU_PSV_255(x) \
+  (::mcucore::MakeProgmemStringView<decltype(MCU_PSD_255(x))>())
+
+#define MCU_PSV(x) MCU_PSV_64(x)
 
 #endif  // MCUCORE_SRC_PROGMEM_STRING_VIEW_H_

@@ -78,6 +78,7 @@ cc_test(
         "//mcucore/extras/test_tools:print_to_std_string",
         "//mcucore/extras/test_tools:sample_printable",
         "//mcucore/src:hex_escape",
+        "//mcucore/src:progmem_string_view",
         "//mcucore/src:string_view",
         "//util/gtl:map_util",
     ],

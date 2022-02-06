@@ -1,7 +1,5 @@
 #include "string_view.h"
 
-#include "extras/test_tools/print_to_std_string.h"
-
 // Author: james.synge@gmail.com
 
 #include <limits.h>
@@ -11,6 +9,7 @@
 #include <string_view>
 #include <vector>
 
+#include "extras/test_tools/print_to_std_string.h"
 #include "extras/test_tools/string_view_utils.h"
 #include "glog/logging.h"
 #include "gmock/gmock.h"

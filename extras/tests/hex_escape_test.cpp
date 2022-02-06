@@ -14,6 +14,7 @@
 #include "extras/test_tools/sample_printable.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "progmem_string_view.h"
 #include "string_view.h"
 #include "util/gtl/map_util.h"
 

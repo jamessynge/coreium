@@ -240,11 +240,7 @@ cc_library(
 cc_library(
     name = "progmem_string_data",
     hdrs = ["progmem_string_data.h"],
-    deps = [
-        ":mcucore_platform",
-        ":progmem_string_view",
-        ":type_traits",
-    ],
+    deps = [":mcucore_platform"],
 )
 
 cc_library(
@@ -255,6 +251,7 @@ cc_library(
         ":has_print_to",
         ":has_progmem_char_array",
         ":mcucore_platform",
+        ":progmem_string_data",
     ],
 )
 

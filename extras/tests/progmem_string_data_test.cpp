@@ -217,39 +217,6 @@ TEST(ProgmemStringDataTest, EmbeddedNullsAreIncludedInProgmem) {
   EXPECT_EQ(out.str(), "");
 }
 
-TEST(ProgmemStringDataTest, McuPsvPrintTo) {
-  mcucore::test::PrintToStdString out;
-  EXPECT_EQ(MCU_PSV("Hey There").printTo(out), 9);
-  EXPECT_EQ(out.str(), "Hey There");
-  EXPECT_EQ(MCU_PSV("Hey There").size(), 9);
-}
-
-TEST(ProgmemStringDataTest, StreamMcuPsv) {
-  mcucore::test::PrintToStdString out;
-  OPrintStream strm(out);
-  strm << MCU_PSV("Hey There");
-  EXPECT_EQ(out.str(), "Hey There");
-}
-
-TEST(ProgmemStringDataTest, McuPsvToProgmemStringView) {
-  ProgmemStringView progmem_string_view = MCU_PSV("Hey There");
-  EXPECT_EQ(progmem_string_view.size(), 9);
-  mcucore::test::PrintToStdString out;
-  EXPECT_EQ(progmem_string_view.printTo(out), 9);
-  EXPECT_EQ(out.str(), "Hey There");
-}
-
-TEST(ProgmemStringDataTest, StreamMcuLit) {
-  auto literal = MCU_LIT("Echo, echo, etc");
-  VLOG(1) << "decltype(literal): " << PSDPrettyTypeName<decltype(literal)>()
-          << std::endl;
-  EXPECT_EQ(literal.size(), 15);
-  mcucore::test::PrintToStdString out;
-  OPrintStream strm(out);
-  strm << MCU_LIT("Echo, echo, etc");
-  EXPECT_EQ(out.str(), "Echo, echo, etc");
-}
-
 TEST(ProgmemStringDataTest, StringLiteralIsTooLong) {
   // Test that when too long a string is used, the type deduction produces the
   // type StringLiteralIsTooLong, rather than a ProgmemStringData.
