@@ -84,9 +84,10 @@
 // MCU_DCHECK_NE, MCU_DCHECK_EQ, etc. expand to a MCU_DCHECK macro with the
 // named comparison.
 
-#include "log_sink.h"
+#include "log_sink.h"  // IWYU pragma: keep
 #include "mcucore_config.h"
-#include "progmem_string_data.h"
+#include "o_print_stream.h"       // IWYU pragma: export
+#include "progmem_string_data.h"  // IWYU pragma: export
 
 // If explicitly requested, we disable certain features. This allows a single
 // .cc file to disable logging. For example, request_decoder has lots of

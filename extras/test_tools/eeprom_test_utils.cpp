@@ -1,6 +1,7 @@
 #include "extras/test_tools/eeprom_test_utils.h"
 
 #include <cstdint>
+#include <map>
 #include <string>
 
 #include "absl/strings/str_cat.h"

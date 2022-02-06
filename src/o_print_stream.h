@@ -30,7 +30,8 @@
 #include "type_traits.h"
 
 #if MCU_HOST_TARGET
-#include <string>  // pragma: keep standard include
+#include <string>       // pragma: keep standard include
+#include <string_view>  // pragma: keep standard include
 #endif
 
 namespace mcucore {

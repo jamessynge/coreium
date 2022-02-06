@@ -1,6 +1,6 @@
 #include "hex_escape.h"
 
-#include "logging.h"
+#include "mcucore_platform.h"
 
 namespace mcucore {
 

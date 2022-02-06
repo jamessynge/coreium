@@ -48,6 +48,7 @@ cc_test(
     name = "crc32_test",
     srcs = ["crc32_test.cc"],
     deps = [
+        "//absl/strings",
         "//googletest:gunit_main",
         "//mcucore/extras/test_tools:print_to_std_string",
         "//mcucore/extras/test_tools:random_utils",
@@ -147,6 +148,7 @@ cc_test(
         "//mcucore/src:any_printable",
         "//mcucore/src:printable_cat",
         "//mcucore/src:progmem_string",
+        "//mcucore/src:progmem_string_data",
         "//mcucore/src:progmem_string_view",
         "//mcucore/src:string_view",
     ],
@@ -156,6 +158,7 @@ cc_test(
     name = "progmem_string_data_test",
     srcs = ["progmem_string_data_test.cc"],
     deps = [
+        "//glog:logging",
         "//googletest:gunit_main",
         "//mcucore/extras/test_tools:pretty_type_name",
         "//mcucore/extras/test_tools:print_to_std_string",
@@ -205,6 +208,8 @@ cc_test(
     deps = [
         "//googletest:gunit_main",
         "//mcucore/extras/test_tools:status_or_test_utils",
+        "//mcucore/extras/test_tools:status_test_utils",
+        "//mcucore/src:progmem_string_view",
         "//mcucore/src:status",
         "//mcucore/src:status_or",
         "//mcucore/src:string_view",
@@ -218,6 +223,7 @@ cc_test(
         "//googletest:gunit_main",
         "//mcucore/extras/test_tools:print_to_std_string",
         "//mcucore/extras/test_tools:progmem_string_view_utils",
+        "//mcucore/src:progmem_string_view",
         "//mcucore/src:status",
     ],
 )
@@ -263,6 +269,8 @@ cc_test(
         "//googletest:gunit_main",
         "//mcucore/extras/test_tools:print_to_std_string",
         "//mcucore/extras/test_tools:sample_printable",
+        "//mcucore/src:progmem_string_view",
         "//mcucore/src:string_compare",
+        "//mcucore/src:string_view",
     ],
 )

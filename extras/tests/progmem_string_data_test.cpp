@@ -5,15 +5,18 @@
 #include "progmem_string_data.h"
 
 #include <cstddef>
+#include <iostream>
 #include <ostream>
 #include <regex>  // NOLINT
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 #include "extras/test_tools/pretty_type_name.h"
 #include "extras/test_tools/print_to_std_string.h"
 #include "extras/test_tools/print_value_to_std_string.h"
 #include "extras/test_tools/test_strings.h"
+#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "mcucore_platform.h"

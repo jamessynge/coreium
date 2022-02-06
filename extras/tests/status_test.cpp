@@ -7,6 +7,7 @@
 #include "extras/test_tools/print_to_std_string.h"
 #include "extras/test_tools/progmem_string_view_utils.h"
 #include "gtest/gtest.h"
+#include "progmem_string_view.h"
 
 namespace mcucore {
 namespace test {

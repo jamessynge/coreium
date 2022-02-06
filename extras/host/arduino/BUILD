@@ -84,7 +84,6 @@ cc_library(
     name = "pgmspace",
     srcs = ["pgmspace.cc"],
     hdrs = ["pgmspace.h"],
-    deps = ["//absl/strings"],
 )
 
 cc_library(
@@ -93,8 +92,6 @@ cc_library(
     hdrs = ["print.h"],
     deps = [
         ":wstring",
-        "//absl/strings",
-        "//absl/strings:str_format",
         "//glog:logging",
     ],
 )
@@ -105,6 +102,7 @@ cc_library(
     hdrs = ["random.h"],
     deps = [
         "//absl/random",
+        "//absl/random:distributions",
         "//absl/time",
     ],
 )
@@ -113,10 +111,7 @@ cc_library(
     name = "serial",
     srcs = ["serial.cc"],
     hdrs = ["serial.h"],
-    deps = [
-        ":print",
-        "//absl/strings",
-    ],
+    deps = [":print"],
 )
 
 cc_library(

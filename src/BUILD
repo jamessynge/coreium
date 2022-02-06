@@ -6,8 +6,10 @@ cc_library(
         ":array",
         ":array_view",
         ":counting_print",
+        ":crc32",
         ":eeprom_io",
         ":has_print_to",
+        ":has_progmem_char_array",
         ":hex_escape",
         ":json_encoder",
         ":json_encoder_helpers",
@@ -47,7 +49,6 @@ cc_library(
     name = "array",
     hdrs = ["array.h"],
     deps = [
-        ":array_view",
         ":logging",
         ":mcucore_platform",
     ],
@@ -59,7 +60,6 @@ cc_library(
     deps = [
         ":logging",
         ":mcucore_platform",
-        ":type_traits",
     ],
 )
 
@@ -86,11 +86,8 @@ cc_library(
     hdrs = ["eeprom_io.h"],
     deps = [
         ":crc32",
-        ":hex_escape",
         ":logging",
         ":mcucore_platform",
-        ":o_print_stream",
-        ":progmem_string_data",
         ":progmem_string_view",
     ],
 )
@@ -107,20 +104,14 @@ cc_library(
 cc_library(
     name = "has_progmem_char_array",
     hdrs = ["has_progmem_char_array.h"],
-    deps = [
-        ":mcucore_platform",
-        ":type_traits",
-    ],
+    deps = [":type_traits"],
 )
 
 cc_library(
     name = "hex_escape",
     srcs = ["hex_escape.cc"],
     hdrs = ["hex_escape.h"],
-    deps = [
-        ":logging",
-        ":mcucore_platform",
-    ],
+    deps = [":mcucore_platform"],
 )
 
 cc_library(
@@ -129,12 +120,10 @@ cc_library(
     hdrs = ["json_encoder.h"],
     deps = [
         ":any_printable",
-        ":array_view",
         ":counting_print",
+        ":logging",
         ":mcucore_platform",
         ":o_print_stream",
-        ":progmem_string",
-        ":progmem_string_data",
         ":progmem_string_view",
     ],
 )
@@ -144,6 +133,7 @@ cc_library(
     srcs = ["json_encoder_helpers.cc"],
     hdrs = ["json_encoder_helpers.h"],
     deps = [
+        ":array_view",
         ":counting_print",
         ":json_encoder",
         ":logging",
@@ -158,9 +148,9 @@ cc_library(
     deps = [
         ":mcucore_platform",
         ":o_print_stream",
+        ":progmem_string_data",
         "//base:logging_extensions",
         "//glog:logging",
-        "//mcucore/extras/host/arduino:serial",
         "//mcucore/extras/test_tools:print_to_std_string",
     ],
 )
@@ -171,6 +161,7 @@ cc_library(
     deps = [
         ":log_sink",
         ":mcucore_config",
+        ":o_print_stream",
         ":progmem_string_data",
     ],
 )
@@ -234,6 +225,7 @@ cc_library(
     deps = [
         ":has_progmem_char_array",
         ":mcucore_platform",
+        ":type_traits",
     ],
 )
 
@@ -252,6 +244,7 @@ cc_library(
         ":has_progmem_char_array",
         ":mcucore_platform",
         ":progmem_string_data",
+        ":type_traits",
     ],
 )
 
@@ -274,7 +267,6 @@ cc_library(
     hdrs = ["status_or.h"],
     deps = [
         ":logging",
-        ":mcucore_platform",
         ":status",
     ],
 )
@@ -293,7 +285,6 @@ cc_library(
     srcs = ["string_compare.cc"],
     hdrs = ["string_compare.h"],
     deps = [
-        ":mcucore_platform",
         ":progmem_string_view",
         ":string_view",
     ],

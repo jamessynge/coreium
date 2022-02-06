@@ -3,7 +3,9 @@
 #include <stdint.h>
 
 #include "extras/test_tools/status_or_test_utils.h"
+#include "extras/test_tools/status_test_utils.h"
 #include "gtest/gtest.h"
+#include "progmem_string_view.h"
 #include "status.h"
 #include "string_view.h"
 

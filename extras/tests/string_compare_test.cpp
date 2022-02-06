@@ -5,14 +5,12 @@
 #include "extras/test_tools/sample_printable.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "progmem_string_view.h"
+#include "string_view.h"
 
 namespace mcucore {
 namespace test {
 namespace {
-
-// TODO(jamessynge): Trim down the using declarations after writing tests.
-using ::mcucore::test::PrintToStdString;
-using ::mcucore::test::SamplePrintable;
 
 TEST(StringCompareTest, EqualValues) {
   ProgmemStringView psv("abc");

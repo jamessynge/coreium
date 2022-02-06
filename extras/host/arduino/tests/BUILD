@@ -4,7 +4,6 @@ cc_test(
     name = "pgmspace_test",
     srcs = ["pgmspace_test.cc"],
     deps = [
-        "//absl/strings",
         "//googletest:gunit_main",
         "//mcucore/extras/host/arduino:pgmspace",
     ],

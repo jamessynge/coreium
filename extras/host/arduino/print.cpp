@@ -2,17 +2,12 @@
 
 #include <stdint.h>
 
-#include <bitset>
+#include <cmath>
 #include <cstdio>
 #include <cstring>
-#include <limits>
-#include <ostream>
-#include <sstream>
+#include <string>
 #include <type_traits>
 
-#include "absl/strings/ascii.h"
-#include "absl/strings/str_cat.h"
-#include "absl/strings/str_format.h"
 #include "glog/logging.h"
 
 namespace {

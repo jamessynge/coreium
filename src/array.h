@@ -7,7 +7,6 @@
 //
 // Author: james.synge@gmail.com
 
-#include "array_view.h"
 #include "logging.h"
 #include "mcucore_platform.h"
 

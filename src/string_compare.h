@@ -8,7 +8,6 @@
 //
 // Author: james.synge@gmail.com
 
-#include "mcucore_platform.h"
 #include "progmem_string_view.h"
 #include "string_view.h"
 

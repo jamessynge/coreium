@@ -6,6 +6,7 @@
 //
 // Author: james.synge@gmail.com
 
+#include "array_view.h"
 #include "json_encoder.h"
 #include "mcucore_platform.h"
 

@@ -5,11 +5,15 @@
 #include <math.h>
 
 #include "counting_print.h"
+#include "logging.h"
 #include "o_print_stream.h"
-#include "progmem_string_data.h"
+#include "progmem_string_view.h"
 
 namespace mcucore {
 namespace {
+
+// TODO(jamessynge): Stop returning the count of output characters (bytes), as
+// this isn't exposed by this module (IIRC).
 
 size_t PrintCharJsonEscaped(Print& out, const char c) {
   size_t total = 0;
@@ -85,9 +89,9 @@ size_t PrintJsonEscapedStringTo(const Printable& value, Print& raw_output) {
 
 void PrintBoolean(Print& out, const bool value) {
   if (value) {
-    out.print(MCU_FLASHSTR("true"));
+    MCU_PSV("true").printTo(out);
   } else {
-    out.print(MCU_FLASHSTR("false"));
+    MCU_PSV("false").printTo(out);
   }
 }
 
@@ -106,12 +110,12 @@ void PrintFloatingPoint(Print& out, const T value) {
   // Haven't got std::isnan or std::isfinite in the Arduino environment, so
   // using the C versions in <math.h>.
   if (isnan(value)) {
-    PrintJsonEscapedStringTo(AnyPrintable(MCU_FLASHSTR("NaN")), out);
+    PrintJsonEscapedStringTo(AnyPrintable(MCU_PSV("NaN")), out);
   } else if (!isfinite(value)) {
     if (value > 0) {
-      PrintJsonEscapedStringTo(AnyPrintable(MCU_FLASHSTR("Inf")), out);
+      PrintJsonEscapedStringTo(AnyPrintable(MCU_PSV("Inf")), out);
     } else {
-      PrintJsonEscapedStringTo(AnyPrintable(MCU_FLASHSTR("-Inf")), out);
+      PrintJsonEscapedStringTo(AnyPrintable(MCU_PSV("-Inf")), out);
     }
   } else {
     // We're assuming that the Print object is configured to match JSON

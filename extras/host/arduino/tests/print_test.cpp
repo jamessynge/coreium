@@ -4,6 +4,7 @@
 
 #include <limits>
 #include <sstream>
+#include <string_view>
 
 #include "absl/strings/str_cat.h"
 #include "extras/host/arduino/wstring.h"

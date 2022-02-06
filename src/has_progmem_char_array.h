@@ -7,7 +7,6 @@
 //
 // Author: james.synge@gmail.com
 
-#include "mcucore_platform.h"
 #include "type_traits.h"
 
 namespace mcucore {

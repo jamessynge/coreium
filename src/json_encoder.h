@@ -13,10 +13,7 @@
 // Author: james.synge@gmail.com
 
 #include "any_printable.h"
-#include "array_view.h"
 #include "mcucore_platform.h"
-#include "progmem_string.h"
-#include "progmem_string_view.h"
 
 namespace mcucore {
 

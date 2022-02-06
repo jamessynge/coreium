@@ -1,9 +1,6 @@
 #include "extras/host/arduino/serial.h"
 
 #include <iostream>
-#include <string_view>
-
-#include "absl/strings/match.h"
 
 FakeSerial::FakeSerial() : out_(std::cout) {}
 FakeSerial::FakeSerial(bool) : out_(std::cerr) {}

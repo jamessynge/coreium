@@ -5,6 +5,7 @@
 #include "extras/test_tools/print_value_to_std_string.h"
 #include "gtest/gtest.h"
 #include "progmem_string.h"
+#include "progmem_string_data.h"
 #include "progmem_string_view.h"
 #include "string_view.h"
 

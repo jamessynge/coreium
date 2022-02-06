@@ -24,6 +24,7 @@
 #include "has_progmem_char_array.h"
 #include "mcucore_platform.h"
 #include "progmem_string_data.h"
+#include "type_traits.h"
 
 namespace mcucore {
 

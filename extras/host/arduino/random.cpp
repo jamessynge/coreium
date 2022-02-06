@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "absl/random/random.h"
+#include "absl/random/uniform_int_distribution.h"
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
 

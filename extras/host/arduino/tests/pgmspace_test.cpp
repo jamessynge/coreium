@@ -1,6 +1,8 @@
 #include "extras/host/arduino/pgmspace.h"
 
-#include "absl/strings/string_view.h"
+#include <cstring>
+#include <string_view>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
@@ -49,9 +51,9 @@ TEST(ProgramSpace, memcpy_P) {
   constexpr char from_buffer[] = "123 abc";
   char to_buffer[sizeof from_buffer] = "";
 
-  EXPECT_NE(absl::string_view(to_buffer, sizeof to_buffer), "123 abc");
+  EXPECT_NE(std::string_view(to_buffer, sizeof to_buffer), "123 abc");
   EXPECT_EQ(memcpy_P(to_buffer, from_buffer, sizeof from_buffer), to_buffer);
-  EXPECT_EQ(absl::string_view(to_buffer, std::strlen("123 abc")), "123 abc");
+  EXPECT_EQ(std::string_view(to_buffer, std::strlen("123 abc")), "123 abc");
 }
 
 }  // namespace

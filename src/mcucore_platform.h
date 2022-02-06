@@ -66,7 +66,7 @@ using MicrosT = uint32_t;
   } while (0)
 #endif
 
-// If a function contains a MCU_DLOG, et al (e.g. when compiled for debugging),
+// If a function contains a MCU_VLOG, et al (e.g. when compiled for debugging),
 // then the function can't be a constexpr. To allow for including these macros
 // in such functions, we use these macros to choose whether it is a constexpr or
 // not based on whether we've compiled it for debugging or not.

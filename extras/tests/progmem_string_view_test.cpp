@@ -169,19 +169,19 @@ TEST(ProgmemStringViewTest, Copy) {
   char buffer[sizeof kMixedStr] = "";
   buffer[kMixedView.size()] = 0;
   EXPECT_EQ(psv.size() + 1, sizeof buffer);
-  EXPECT_THAT(absl::string_view(buffer), IsEmpty());
+  EXPECT_THAT(std::string_view(buffer), IsEmpty());
 
   // Can't copy if the destination size is too small.
   EXPECT_FALSE(psv.CopyTo(buffer, 0));
-  EXPECT_THAT(absl::string_view(buffer), IsEmpty());
+  EXPECT_THAT(std::string_view(buffer), IsEmpty());
   EXPECT_FALSE(psv.CopyTo(buffer, psv.size() - 1));
-  EXPECT_THAT(absl::string_view(buffer), IsEmpty());
+  EXPECT_THAT(std::string_view(buffer), IsEmpty());
 
   // And can copy if the destination is the right size or larger.
   EXPECT_TRUE(psv.CopyTo(buffer, psv.size()));
-  EXPECT_EQ(absl::string_view(buffer), kMixedStr);
+  EXPECT_EQ(std::string_view(buffer), kMixedStr);
   EXPECT_TRUE(psv.CopyTo(buffer, sizeof buffer));
-  EXPECT_EQ(absl::string_view(buffer), kMixedStr);
+  EXPECT_EQ(std::string_view(buffer), kMixedStr);
 }
 
 TEST(ProgmemStringViewTest, PrintTo) {

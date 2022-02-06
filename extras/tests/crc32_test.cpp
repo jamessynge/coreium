@@ -1,9 +1,5 @@
 #include "crc32.h"
 
-#include <algorithm>
-#include <random>
-#include <string>
-
 // Given that a CRC algorithm appears to output a psuedo-random value given some
 // input, how should it be tested? Some possibilities:
 //
@@ -22,6 +18,15 @@
 // appear to be producing CRC values, but they don't match the values produced
 // by online CRC calculators.
 
+#include <algorithm>
+#include <random>
+#include <set>
+#include <string>
+#include <string_view>
+#include <vector>
+
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
 #include "extras/test_tools/print_to_std_string.h"
 #include "extras/test_tools/random_utils.h"
 #include "extras/test_tools/sample_printable.h"

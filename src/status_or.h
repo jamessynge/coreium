@@ -7,7 +7,6 @@
 // Author: james.synge@gmail.com
 
 #include "logging.h"
-#include "mcucore_platform.h"
 #include "status.h"
 
 namespace mcucore {

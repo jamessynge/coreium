@@ -1,9 +1,6 @@
 #include "eeprom_io.h"
 
-#include "hex_escape.h"
 #include "logging.h"
-#include "o_print_stream.h"
-#include "progmem_string_data.h"
 
 namespace mcucore {
 namespace eeprom_io {
