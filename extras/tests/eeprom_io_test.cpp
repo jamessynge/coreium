@@ -7,8 +7,6 @@
 #include <vector>
 
 #include "crc32.h"
-
-// TODO(jamessynge): Trim down the includes after writing tests.
 #include "extras/host/eeprom/eeprom.h"
 #include "extras/test_tools/eeprom_test_utils.h"
 #include "extras/test_tools/print_value_to_std_string.h"
@@ -25,26 +23,6 @@ using ::mcucore::PrintValueToStdString;
 using ::mcucore::test::ExpectHasValues;
 using ::mcucore::test::RandomizeEeprom;
 using ::mcucore::test::ReadAllBytesAllWaysAndVerify;
-
-// TODO(jamessynge): Trim down the using declarations after writing tests.
-// using ::testing::AnyNumber;
-// using ::testing::Contains;
-// using ::testing::ContainsRegex;
-// using ::testing::ElementsAre;
-// using ::testing::EndsWith;
-// using ::testing::Eq;
-// using ::testing::HasSubstr;
-// using ::testing::InSequence;
-// using ::testing::IsEmpty;
-// using ::testing::Mock;
-// using ::testing::NiceMock;
-// using ::testing::Not;
-// using ::testing::Ref;
-// using ::testing::Return;
-// using ::testing::ReturnRef;
-// using ::testing::SizeIs;
-// using ::testing::StartsWith;
-// using ::testing::StrictMock;
 
 template <class C>
 void UpdateCollection(std::string_view str, size_t pos, C& collection) {

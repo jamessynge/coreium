@@ -33,6 +33,11 @@ bool LoweredEqual(const ProgmemStringView& a, const StringView& b);
 
 // Returns true if text starts with prefix.
 bool StartsWith(const StringView& text, const ProgmemStringView& prefix);
+bool StartsWith(const ProgmemStringView& text, const StringView& prefix);
+
+// Returns true if text starts with prefix, in which case it skips over that
+// prefix in text.
+bool SkipPrefix(StringView& text, const ProgmemStringView& prefix);
 
 }  // namespace mcucore
 

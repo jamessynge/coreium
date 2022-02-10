@@ -12,7 +12,7 @@
 // spaces design is known as Harvard Architecture.
 //
 // So, ProgmemStringView has support for using alternate instructions (via AVR
-// Libc's progmem library) to access tye characters in a string.
+// Libc's progmem library) to access the characters in a string.
 //
 // NOTE: So far I've written this using PGM_P pointers, which, IIUC, are limited
 // to the first 64KB of flash. I don't know what guarantees there are about the
@@ -22,6 +22,7 @@
 // Author: james.synge@gmail.com
 
 #include "has_progmem_char_array.h"
+#include "logging.h"
 #include "mcucore_platform.h"
 #include "progmem_string_data.h"
 #include "type_traits.h"
@@ -106,6 +107,16 @@ class ProgmemStringView {
 
   // Returns the number of characters in the string.
   constexpr size_type size() const { return size_; }
+
+  // Returns a view of a portion of this view (at offset `pos` and length `n`)
+  // as another StringView. Does NOT validate the parameters, so pos+n must not
+  // be greater than size(). This is currently only used for non-embedded
+  // code, hence the DCHECKs instead of ensuring that the result is valid.
+  ProgmemStringView substr(size_type pos, size_type n) const {
+    MCU_DCHECK_LE(pos, size_);
+    MCU_DCHECK_LE(pos + n, size_);
+    return ProgmemStringView(ptr_ + pos, n);
+  }
 
  private:
   PGM_P ptr_;

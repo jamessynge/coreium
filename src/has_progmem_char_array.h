@@ -36,7 +36,19 @@ static auto test_progmem_array(long) -> false_type;  // NOLINT
 // whether T has a progmem_char_array() member function.
 template <typename T>
 struct has_progmem_char_array
-    : decltype(has_progmem_char_array_internal::test_progmem_array<T>(0)) {};
+    : decltype(has_progmem_char_array_internal::test_progmem_array<
+               remove_cv_t<T> >(0)) {};
+
+// Since a common use case for has_progmem_char_array is to limit application
+// of a template function to types with a progmem_char_array, this helper
+// combines enable_if and has_progmem_char_array.
+template <typename T>
+struct enable_if_has_progmem_char_array
+    : enable_if_t<has_progmem_char_array<T>::value> {};
+
+template <typename T>
+using enable_if_has_progmem_char_array_t =
+    typename enable_if_has_progmem_char_array<T>::type;
 
 }  // namespace mcucore
 

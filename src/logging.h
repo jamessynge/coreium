@@ -167,10 +167,11 @@
 
 #endif
 
-// TODO(jamessynge): Consider adding MCU_ENABLE_NO_LOG_CHECK, which would log
-// just the line number of a failed CHECK, rather than the full message, thus
-// saving (a lot of?) PROGMEM used for storing message strings. This will make
-// it harder to track down a failure, but not impossible.
+// Note that if we wanted optional support for further reducing the program
+// memory used by logging after development (maybe for the purpose of concealing
+// details found via strings), we could add an additional LogSink (e.g.
+// LocationOnlyCheckSink), and enable its use via a macro (e.g.
+// MCU_ENABLE_LOCATION_ONLY_CHECK).
 
 #ifdef MCU_ENABLE_CHECK
 

@@ -59,8 +59,6 @@ bool ProgmemStringView::Equal(const char* other, size_type other_size) const {
   return 0 == memcmp_P(other, ptr_, size_);
 }
 
-// Returns true if the two strings are equal, with case insensitive comparison
-// of characters. other points to a string in RAM, not PROGMEM.
 bool ProgmemStringView::CaseEqual(const char* other,
                                   size_type other_size) const {
   if (size_ != other_size) {
@@ -69,9 +67,6 @@ bool ProgmemStringView::CaseEqual(const char* other,
   return 0 == strncasecmp_P(other, ptr_, size_);
 }
 
-// TODO(jamessynge): Use this to save memory by allowing mixed case strings to
-// be used for output (e.g. AveragePeriod), and to also be compared against
-// strings that are required to be lower-case.
 bool ProgmemStringView::LoweredEqual(const char* other,
                                      size_type other_size) const {
   if (size_ != other_size) {

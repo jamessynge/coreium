@@ -21,10 +21,10 @@
 //
 // Author: james.synge@gmail.com
 
+#include "has_progmem_char_array.h"
 #include "logging.h"
 #include "mcucore_platform.h"
 #include "o_print_stream.h"
-#include "progmem_string_data.h"
 
 namespace mcucore {
 
@@ -69,8 +69,6 @@ class StringView {
   // instance can never grow to a larger size.
   StringView& operator=(const StringView& other) = default;
 
-  // Returns true if this starts with prefix, in which case it removes that
-  // prefix.
   bool match_and_consume(const StringView& prefix) {
     if (!starts_with(prefix)) {
       return false;

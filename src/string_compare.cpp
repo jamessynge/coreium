@@ -29,5 +29,23 @@ bool LoweredEqual(const ProgmemStringView& a, const StringView& b) {
 bool StartsWith(const StringView& text, const ProgmemStringView& prefix) {
   return prefix.IsPrefixOf(text.data(), text.size());
 }
+bool StartsWith(const ProgmemStringView& text, const StringView& prefix) {
+  // text will typically be bigger than prefix, at least when called by
+  // RequestDecoder.
+  if (text.size() > prefix.size()) {
+    return prefix.empty() || text.substr(0, prefix.size()) == prefix;
+  } else if (text.size() == prefix.size()) {
+    return text == prefix;
+  } else {
+    return false;
+  }
+}
+bool SkipPrefix(StringView& text, const ProgmemStringView& prefix) {
+  if (StartsWith(text, prefix)) {
+    text.remove_prefix(prefix.size());
+    return true;
+  }
+  return false;
+}
 
 }  // namespace mcucore

@@ -12,48 +12,44 @@
 namespace mcucore {
 namespace {
 
-// TODO(jamessynge): Stop returning the count of output characters (bytes), as
-// this isn't exposed by this module (IIRC).
-
-size_t PrintCharJsonEscaped(Print& out, const char c) {
-  size_t total = 0;
+void PrintCharJsonEscaped(Print& out, const char c) {
   if (isPrintable(c)) {
     if (c == '"') {
-      total += out.print('\\');
-      total += out.print('"');
+      out.print('\\');
+      out.print('"');
     } else if (c == '\\') {
-      total += out.print('\\');
-      total += out.print('\\');
+      out.print('\\');
+      out.print('\\');
     } else {
-      total += out.print(c);
+      out.print(c);
     }
   } else if (c == '\b') {
-    total += out.print('\\');
-    total += out.print('b');
+    out.print('\\');
+    out.print('b');
   } else if (c == '\f') {
-    total += out.print('\\');
-    total += out.print('f');
+    out.print('\\');
+    out.print('f');
   } else if (c == '\n') {
-    total += out.print('\\');
-    total += out.print('n');
+    out.print('\\');
+    out.print('n');
   } else if (c == '\r') {
-    total += out.print('\\');
-    total += out.print('r');
+    out.print('\\');
+    out.print('r');
   } else if (c == '\t') {
-    total += out.print('\\');
-    total += out.print('t');
+    out.print('\\');
+    out.print('t');
   } else {
     // This used to be a DCHECK, but a VLOG is better because the character
     // could come from client input.
     MCU_VLOG(4) << MCU_FLASHSTR("Unsupported JSON character: ") << BaseHex
                 << (c + 0);
   }
-  return total;
 }
 
 // Wraps a Print instance, forwards output to that instance with JSON escaping
 // applied. Note that this does NOT add double quotes before and after the
-// output.
+// output. This class also does NOT count the length of strings because the
+// callers don't need that, so we don't waste the time or space doing so.
 class PrintJsonEscaped : public Print {
  public:
   explicit PrintJsonEscaped(Print& wrapped) : wrapped_(wrapped) {}
@@ -61,15 +57,15 @@ class PrintJsonEscaped : public Print {
   // These are the two abstract virtual methods in Arduino's Print class. I'm
   // treating the uint8_t 'b' as an ASCII char.
   size_t write(uint8_t b) override {
-    return PrintCharJsonEscaped(wrapped_, static_cast<char>(b));
+    PrintCharJsonEscaped(wrapped_, static_cast<char>(b));
+    return 1;  // Not necessarily correct.
   }
 
   size_t write(const uint8_t* buffer, size_t size) override {
-    size_t count = 0;
     for (size_t ndx = 0; ndx < size; ++ndx) {
-      count += PrintCharJsonEscaped(wrapped_, static_cast<char>(buffer[ndx]));
+      PrintCharJsonEscaped(wrapped_, static_cast<char>(buffer[ndx]));
     }
-    return count;
+    return size;  // Not necessarily correct.
   }
 
   // Export the other write methods.
@@ -79,12 +75,11 @@ class PrintJsonEscaped : public Print {
   Print& wrapped_;
 };
 
-size_t PrintJsonEscapedStringTo(const Printable& value, Print& raw_output) {
+void PrintJsonEscapedStringTo(const Printable& value, Print& raw_output) {
   PrintJsonEscaped out(raw_output);
-  size_t count = raw_output.print('"');
-  count += value.printTo(out);
-  count += raw_output.print('"');
-  return count;
+  raw_output.print('"');
+  value.printTo(out);
+  raw_output.print('"');
 }
 
 void PrintBoolean(Print& out, const bool value) {

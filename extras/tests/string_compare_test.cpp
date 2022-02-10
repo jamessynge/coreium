@@ -1,6 +1,5 @@
 #include "string_compare.h"
 
-// TODO(jamessynge): Trim down the includes after writing tests.
 #include "extras/test_tools/print_to_std_string.h"
 #include "extras/test_tools/sample_printable.h"
 #include "gmock/gmock.h"

@@ -242,6 +242,7 @@ cc_library(
     deps = [
         ":has_print_to",
         ":has_progmem_char_array",
+        ":logging",
         ":mcucore_platform",
         ":progmem_string_data",
         ":type_traits",
@@ -296,11 +297,11 @@ cc_library(
     hdrs = ["string_view.h"],
     deps = [
         ":has_print_to",
+        ":has_progmem_char_array",
         ":hex_escape",
         ":logging",
         ":mcucore_platform",
         ":o_print_stream",
-        ":progmem_string_data",
     ],
 )
 

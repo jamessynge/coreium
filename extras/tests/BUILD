@@ -242,6 +242,19 @@ cc_test(
 )
 
 cc_test(
+    name = "string_compare_test",
+    srcs = ["string_compare_test.cc"],
+    deps = [
+        "//googletest:gunit_main",
+        "//mcucore/extras/test_tools:print_to_std_string",
+        "//mcucore/extras/test_tools:sample_printable",
+        "//mcucore/src:progmem_string_view",
+        "//mcucore/src:string_compare",
+        "//mcucore/src:string_view",
+    ],
+)
+
+cc_test(
     name = "string_view_test",
     srcs = ["string_view_test.cc"],
     deps = [
@@ -259,18 +272,5 @@ cc_test(
     deps = [
         "//googletest:gunit_main",
         "//mcucore/src:type_traits",
-    ],
-)
-
-cc_test(
-    name = "string_compare_test",
-    srcs = ["string_compare_test.cc"],
-    deps = [
-        "//googletest:gunit_main",
-        "//mcucore/extras/test_tools:print_to_std_string",
-        "//mcucore/extras/test_tools:sample_printable",
-        "//mcucore/src:progmem_string_view",
-        "//mcucore/src:string_compare",
-        "//mcucore/src:string_view",
     ],
 )
