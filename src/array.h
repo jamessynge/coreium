@@ -85,24 +85,14 @@ Array<T, SIZE> MakeFromArray(const T (&data)[SIZE]) {
   return array;
 }
 
+template <typename... Ts, typename U>
+constexpr auto MakeArray(U u, Ts... ts) {
+  return Array<U, 1 + sizeof...(Ts)>{u, ts...};
+}
+
 template <typename T>
 constexpr Array<T, 1> MakeArray(T a) {
   return {a};
-}
-
-template <typename T>
-constexpr Array<T, 2> MakeArray(T a, T b) {
-  return {a, b};
-}
-
-template <typename T>
-constexpr Array<T, 3> MakeArray(T a, T b, T c) {
-  return {a, b, c};
-}
-
-template <typename T>
-constexpr Array<T, 4> MakeArray(T a, T b, T c, T d) {
-  return {a, b, c, d};
 }
 
 }  // namespace mcucore

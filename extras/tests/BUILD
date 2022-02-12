@@ -142,7 +142,6 @@ cc_test(
     name = "printable_cat_test",
     srcs = ["printable_cat_test.cc"],
     deps = [
-        "//absl/strings",
         "//googletest:gunit_main",
         "//mcucore/extras/test_tools:print_value_to_std_string",
         "//mcucore/src:any_printable",

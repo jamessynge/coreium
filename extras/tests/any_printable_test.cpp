@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include <cstring>
+#include <limits>
 #include <string>
 
 #include "extras/host/arduino/print.h"
@@ -17,6 +18,11 @@
 namespace mcucore {
 namespace test {
 namespace {
+
+enum class SomeEnum : int16_t {
+  kNeg = std::numeric_limits<int16_t>::min(),
+  kPos = std::numeric_limits<int16_t>::max(),
+};
 
 #ifdef TEST_TEMPORARY_PRINTABLE
 // For testing that we can't pass temporary Printable instances into an
@@ -153,9 +159,10 @@ TEST(AnyPrintableTest, ManyTypes) {
 
   {
     int16_t v = -32768;
-    EXPECT_EQ(PrintRefViaAnyPrintable<int16_t>(v), "-32768");
-    EXPECT_EQ(PrintValueViaAnyPrintable<int16_t>(v), "-32768");
-    EXPECT_EQ(PrintValueViaAnyPrintable<int16_t>(-32768), "-32768");
+    const char kExpected[] = "-32768";
+    EXPECT_EQ(PrintRefViaAnyPrintable<int16_t>(v), kExpected);
+    EXPECT_EQ(PrintValueViaAnyPrintable<int16_t>(v), kExpected);
+    EXPECT_EQ(PrintValueViaAnyPrintable<int16_t>(-32768), kExpected);
   }
 
   {
@@ -208,6 +215,13 @@ TEST(AnyPrintableTest, ManyTypes) {
     EXPECT_EQ(PrintRefViaAnyPrintable(v), "some_text");
     EXPECT_EQ(PrintValueViaAnyPrintable(v), "some_text");
     EXPECT_EQ(PrintValueViaAnyPrintable(AnyPrintable(v)), "some_text");
+  }
+
+  {
+    SomeEnum v = SomeEnum::kNeg;
+    const char kExpected[] = "-32768";
+    EXPECT_EQ(PrintRefViaAnyPrintable(v), kExpected);
+    EXPECT_EQ(PrintValueViaAnyPrintable(SomeEnum::kNeg), kExpected);
   }
 }
 

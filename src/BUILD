@@ -42,6 +42,7 @@ cc_library(
         ":progmem_string",
         ":progmem_string_view",
         ":string_view",
+        ":type_traits",
     ],
 )
 

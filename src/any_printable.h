@@ -16,6 +16,7 @@
 #include "progmem_string.h"
 #include "progmem_string_view.h"
 #include "string_view.h"
+#include "type_traits.h"
 
 namespace mcucore {
 
@@ -52,6 +53,12 @@ class AnyPrintable : public Printable {
   explicit AnyPrintable(uint32_t value);
   explicit AnyPrintable(float value);
   explicit AnyPrintable(double value);
+
+  // If the value is an enum, convert it to an integral type.
+  template <typename T, enable_if_t<is_enum<T>::value, bool> = true>
+  explicit AnyPrintable(T value)
+      : AnyPrintable(static_cast<underlying_type_t<T>>(value)) {}
+
   // We can't copy a Printable instance, so we prevent temporaries from being
   // passed in.
   AnyPrintable(Printable&& value) = delete;

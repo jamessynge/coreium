@@ -53,6 +53,26 @@ TEST(ArrayTest, Size3Array) {
   EXPECT_THAT(larger, ElementsAre(9, 8, 7, 6, 5, 4));
 }
 
+TEST(ArrayTest, Size9Array) {
+  int smaller[] = {1, 1, 2, 3};
+  auto array = MakeArray(10, 20, 30, 40, 50, 60, 70, 80, 90);
+  int larger[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
+  EXPECT_EQ(array.size(), 9);
+  EXPECT_THAT(array, ElementsAre(10, 20, 30, 40, 50, 60, 70, 80, 90));
+
+  array.copy(smaller);
+  EXPECT_EQ(array.size(), 9);
+  EXPECT_THAT(array, ElementsAre(1, 1, 2, 3, 50, 60, 70, 80, 90));
+
+  array.copy(larger);
+  EXPECT_EQ(array.size(), 9);
+  EXPECT_THAT(array, ElementsAre(10, 9, 8, 7, 6, 5, 4, 3, 2));
+
+  // Make sure that adjacent elements have not been overwritten.
+  EXPECT_THAT(smaller, ElementsAre(1, 1, 2, 3));
+  EXPECT_THAT(larger, ElementsAre(10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0));
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace mcucore
