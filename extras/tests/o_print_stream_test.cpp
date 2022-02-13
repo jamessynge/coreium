@@ -8,15 +8,65 @@
 #include "extras/test_tools/sample_printable.h"
 #include "gtest/gtest.h"
 
-// DO NOT SUBMIT until a test for enums with PrintValueTo is added.
+// It is deliberate that these tests are defined outside of the mcucore
+// namespace, as a test of whether OPrintStream can use ADL to locate the
+// PrintValueTo function defined for a type (enums in these examples).
 
-namespace mcucore {
-namespace test {
+namespace ns1 {
+enum EScopeLess { kSixteen = 16 };
+size_t PrintValueTo(EScopeLess v, Print& out) {
+  size_t count = 0;
+  if (v == kSixteen) {
+    count += out.print("kSixteen");
+  } else {
+    count += out.print("Unknown: EScopeLess(");
+    count += out.print(static_cast<int>(v), 10);
+    count += out.print(')');
+  }
+  return count;
+}
+}  // namespace ns1
+
+namespace ns2 {
+enum ESignedInt16 : int16_t { kMinusOne = -1 };
+}
+
+namespace ns3 {
+enum class EScoped { kTwenty = 20 };
+}
+
+namespace ns4 {
+enum class EScopedUnsignedInt8 : uint8_t { kOne = 1, kMax = 255 };
+size_t PrintValueTo(EScopedUnsignedInt8 v, Print& out) {
+  size_t count = 0;
+  if (v == EScopedUnsignedInt8::kOne) {
+    count += out.print("kOne");
+  } else if (v == EScopedUnsignedInt8::kMax) {
+    count += out.print("kMax");
+  } else {
+    count += out.print("Unknown: EScopedUnsignedInt8(");
+    count += out.print(static_cast<int>(v), 10);
+    count += out.print(')');
+  }
+  return count;
+}
+}  // namespace ns4
+
+namespace o_print_stream_tests {
 namespace {
+using ::mcucore::BaseHex;
+using ::mcucore::BaseTwo;
+using ::mcucore::OPrintStream;
+using ::mcucore::test::PrintToStdString;
+using ::mcucore::test::SamplePrintable;
+using ::ns1::EScopeLess;
+using ::ns2::ESignedInt16;
+using ::ns3::EScoped;
+using ::ns4::EScopedUnsignedInt8;
 
 template <typename T>
 void VerifyOPrintStream(const T value, std::string_view expected) {
-  mcucore::test::PrintToStdString p2ss;
+  PrintToStdString p2ss;
   OPrintStream out(p2ss);
   out << value;
   EXPECT_EQ(p2ss.str(), expected) << "Value: " << value;
@@ -55,23 +105,23 @@ TEST(OPrintStreamTest, BuiltInTypes) {
 }
 
 TEST(OPrintStreamTest, StringLiteral) {
-  mcucore::test::PrintToStdString p2ss;
+  PrintToStdString p2ss;
   OPrintStream out(p2ss);
   out << "abc";
   EXPECT_EQ(p2ss.str(), "abc");
 }
 
 TEST(OPrintStreamTest, Printable) {
-  mcucore::test::SamplePrintable value("abc");
+  SamplePrintable value("abc");
   {
-    mcucore::test::PrintToStdString p2ss;
+    PrintToStdString p2ss;
     OPrintStream out(p2ss);
     out << value;
     EXPECT_EQ(p2ss.str(), "abc");
   }
   {
     auto& value_ref = value;
-    mcucore::test::PrintToStdString p2ss;
+    PrintToStdString p2ss;
     OPrintStream out(p2ss);
     out << value_ref;
     EXPECT_EQ(p2ss.str(), "abc");
@@ -79,16 +129,16 @@ TEST(OPrintStreamTest, Printable) {
 }
 
 TEST(OPrintStreamTest, ConstPrintable) {
-  const mcucore::test::SamplePrintable value("abc");
+  const SamplePrintable value("abc");
   {
-    mcucore::test::PrintToStdString p2ss;
+    PrintToStdString p2ss;
     OPrintStream out(p2ss);
     out << value;
     EXPECT_EQ(p2ss.str(), "abc");
   }
   {
     auto& value_ref = value;
-    mcucore::test::PrintToStdString p2ss;
+    PrintToStdString p2ss;
     OPrintStream out(p2ss);
     out << value_ref;
     EXPECT_EQ(p2ss.str(), "abc");
@@ -97,7 +147,7 @@ TEST(OPrintStreamTest, ConstPrintable) {
 
 TEST(OPrintStreamTest, ChangeBase) {
   {
-    mcucore::test::PrintToStdString p2ss;
+    PrintToStdString p2ss;
     OPrintStream out(p2ss);
 
     out << 127 << " " << BaseHex << 127 << ' ' << BaseTwo << 127;
@@ -105,7 +155,7 @@ TEST(OPrintStreamTest, ChangeBase) {
   }
   // Print supports bases from 2 to 36.
   {
-    mcucore::test::PrintToStdString p2ss;
+    PrintToStdString p2ss;
     OPrintStream out(p2ss);
     out.set_base(3);
     for (int i = 0; i <= 10; ++i) {
@@ -115,49 +165,89 @@ TEST(OPrintStreamTest, ChangeBase) {
   }
 }
 
-TEST(OPrintStreamTest, Enum) {
+TEST(OPrintStreamTest, ValidEnum) {
   // OPrintStream::set_base (as called by BaseHex) doesn't apply to enum as they
   // aren't matched by is_integral, so all the numbers are printed as the
-  // decimal values that we converted to the enum type.
+  // decimal values that we converted to the enum type, unless there is a
+  // PrintValueTo function that takes over.
   {
-    enum ScopeLess { kV = 0 };
-    mcucore::test::PrintToStdString p2ss;
+    PrintToStdString p2ss;
     OPrintStream out(p2ss);
-    out << ScopeLess(127) << " " << BaseHex << ScopeLess(127) << ' ' << BaseTwo
-        << ScopeLess(127);
-    EXPECT_EQ(p2ss.str(), "127 127 127");
-  }
-  {
-    enum EUnderlying : int16_t { kV = -1 };
-    mcucore::test::PrintToStdString p2ss;
-    OPrintStream out(p2ss);
-    out << EUnderlying(127) << " " << BaseHex << EUnderlying(127) << ' '
-        << BaseTwo << EUnderlying(127);
-    EXPECT_EQ(p2ss.str(), "127 127 127");
+    out << EScopeLess::kSixteen << " " << BaseHex << EScopeLess::kSixteen << ' '
+        << BaseTwo << EScopeLess::kSixteen;
+    EXPECT_EQ(p2ss.str(), "kSixteen kSixteen kSixteen");
   }
 
   {
-    enum class Scoped { kV };
-    mcucore::test::PrintToStdString p2ss;
+    PrintToStdString p2ss;
     OPrintStream out(p2ss);
+    out << ESignedInt16::kMinusOne << " " << BaseHex << ESignedInt16::kMinusOne
+        << ' ' << BaseTwo << ESignedInt16::kMinusOne;
+    EXPECT_EQ(p2ss.str(), "-1 -1 -1");
+  }
 
-    out << Scoped(127) << " " << BaseHex << Scoped(127) << ' ' << BaseTwo
-        << Scoped(127);
+  {
+    PrintToStdString p2ss;
+    OPrintStream out(p2ss);
+    out << EScoped::kTwenty << " " << BaseHex << EScoped::kTwenty << ' '
+        << BaseTwo << EScoped::kTwenty;
+    EXPECT_EQ(p2ss.str(), "20 20 20");
+  }
+
+  {
+    PrintToStdString p2ss;
+    OPrintStream out(p2ss);
+    out << EScopedUnsignedInt8::kOne << " " << EScopedUnsignedInt8::kMax;
+    out << " " << BaseHex;
+    out << EScopedUnsignedInt8::kOne << " " << EScopedUnsignedInt8::kMax;
+    out << " " << BaseTwo;
+    out << EScopedUnsignedInt8::kOne << " " << EScopedUnsignedInt8::kMax;
+    EXPECT_EQ(p2ss.str(), "kOne kMax kOne kMax kOne kMax");
+  }
+}
+
+TEST(OPrintStreamTest, BogusEnum) {
+  // OPrintStream::set_base (as called by BaseHex) doesn't apply to enum as they
+  // aren't matched by is_integral, so all the numbers are printed as the
+  // decimal values that we converted to the enum type, unless there is a
+  // PrintValueTo function that takes over.
+  {
+    PrintToStdString p2ss;
+    OPrintStream out(p2ss);
+    out << EScopeLess(0) << " " << BaseHex << EScopeLess(-99) << ' ' << BaseTwo
+        << EScopeLess(127);
+    EXPECT_EQ(p2ss.str(),
+              "Unknown: EScopeLess(0) Unknown: EScopeLess(-99) Unknown: "
+              "EScopeLess(127)");
+  }
+
+  {
+    PrintToStdString p2ss;
+    OPrintStream out(p2ss);
+    out << ESignedInt16(-32768) << " " << BaseHex << ESignedInt16(-32768) << ' '
+        << BaseTwo << ESignedInt16(-32768);
+    EXPECT_EQ(p2ss.str(), "-32768 -32768 -32768");
+  }
+
+  {
+    PrintToStdString p2ss;
+    OPrintStream out(p2ss);
+    out << EScoped(127) << " " << BaseHex << EScoped(127) << ' ' << BaseTwo
+        << EScoped(127);
     EXPECT_EQ(p2ss.str(), "127 127 127");
   }
 
   {
-    enum class ScopedAndUnderlying { kV };
-    mcucore::test::PrintToStdString p2ss;
+    PrintToStdString p2ss;
     OPrintStream out(p2ss);
-
-    out << ScopedAndUnderlying(127) << " " << BaseHex
-        << ScopedAndUnderlying(127) << ' ' << BaseTwo
-        << ScopedAndUnderlying(127);
-    EXPECT_EQ(p2ss.str(), "127 127 127");
+    out << EScopedUnsignedInt8(127) << " " << BaseHex
+        << EScopedUnsignedInt8(127) << ' ' << BaseTwo
+        << EScopedUnsignedInt8(127);
+    EXPECT_EQ(p2ss.str(),
+              "Unknown: EScopedUnsignedInt8(127) Unknown: "
+              "EScopedUnsignedInt8(127) Unknown: EScopedUnsignedInt8(127)");
   }
 }
 
 }  // namespace
-}  // namespace test
-}  // namespace mcucore
+}  // namespace o_print_stream_tests
