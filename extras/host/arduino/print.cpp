@@ -22,6 +22,7 @@ size_t printIntegerWithBaseTo(T value, const int base, Print& out) {
     return out.write(s.data(), s.size());
   }
 
+  // Everything except base 10 is printed as if the value were unsigned.
   using UT = typename std::make_unsigned<T>::type;
   UT v2 = static_cast<UT>(value);
 

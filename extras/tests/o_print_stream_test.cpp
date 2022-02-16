@@ -54,10 +54,12 @@ size_t PrintValueTo(EScopedUnsignedInt8 v, Print& out) {
 
 namespace o_print_stream_tests {
 namespace {
+using ::mcucore::BaseDec;
 using ::mcucore::BaseHex;
 using ::mcucore::BaseTwo;
 using ::mcucore::OPrintStream;
 using ::mcucore::test::PrintToStdString;
+using ::mcucore::test::SampleHasPrintTo;
 using ::mcucore::test::SamplePrintable;
 using ::ns1::EScopeLess;
 using ::ns2::ESignedInt16;
@@ -129,19 +131,53 @@ TEST(OPrintStreamTest, Printable) {
 }
 
 TEST(OPrintStreamTest, ConstPrintable) {
-  const SamplePrintable value("abc");
+  const SamplePrintable value("def");
   {
     PrintToStdString p2ss;
     OPrintStream out(p2ss);
     out << value;
-    EXPECT_EQ(p2ss.str(), "abc");
+    EXPECT_EQ(p2ss.str(), "def");
   }
   {
     auto& value_ref = value;
     PrintToStdString p2ss;
     OPrintStream out(p2ss);
     out << value_ref;
-    EXPECT_EQ(p2ss.str(), "abc");
+    EXPECT_EQ(p2ss.str(), "def");
+  }
+}
+
+TEST(OPrintStreamTest, HasPrintTo) {
+  SampleHasPrintTo value("ghi");
+  {
+    PrintToStdString p2ss;
+    OPrintStream out(p2ss);
+    out << value;
+    EXPECT_EQ(p2ss.str(), "ghi");
+  }
+  {
+    auto& value_ref = value;
+    PrintToStdString p2ss;
+    OPrintStream out(p2ss);
+    out << value_ref;
+    EXPECT_EQ(p2ss.str(), "ghi");
+  }
+}
+
+TEST(OPrintStreamTest, ConstHasPrintTo) {
+  const SampleHasPrintTo value("jkl");
+  {
+    PrintToStdString p2ss;
+    OPrintStream out(p2ss);
+    out << value;
+    EXPECT_EQ(p2ss.str(), "jkl");
+  }
+  {
+    auto& value_ref = value;
+    PrintToStdString p2ss;
+    OPrintStream out(p2ss);
+    out << value_ref;
+    EXPECT_EQ(p2ss.str(), "jkl");
   }
 }
 
@@ -166,10 +202,6 @@ TEST(OPrintStreamTest, ChangeBase) {
 }
 
 TEST(OPrintStreamTest, ValidEnum) {
-  // OPrintStream::set_base (as called by BaseHex) doesn't apply to enum as they
-  // aren't matched by is_integral, so all the numbers are printed as the
-  // decimal values that we converted to the enum type, unless there is a
-  // PrintValueTo function that takes over.
   {
     PrintToStdString p2ss;
     OPrintStream out(p2ss);
@@ -183,7 +215,7 @@ TEST(OPrintStreamTest, ValidEnum) {
     OPrintStream out(p2ss);
     out << ESignedInt16::kMinusOne << " " << BaseHex << ESignedInt16::kMinusOne
         << ' ' << BaseTwo << ESignedInt16::kMinusOne;
-    EXPECT_EQ(p2ss.str(), "-1 -1 -1");
+    EXPECT_EQ(p2ss.str(), "-1 0xFFFF 0b1111111111111111");
   }
 
   {
@@ -191,7 +223,7 @@ TEST(OPrintStreamTest, ValidEnum) {
     OPrintStream out(p2ss);
     out << EScoped::kTwenty << " " << BaseHex << EScoped::kTwenty << ' '
         << BaseTwo << EScoped::kTwenty;
-    EXPECT_EQ(p2ss.str(), "20 20 20");
+    EXPECT_EQ(p2ss.str(), "20 0x14 0b10100");
   }
 
   {
@@ -207,10 +239,6 @@ TEST(OPrintStreamTest, ValidEnum) {
 }
 
 TEST(OPrintStreamTest, BogusEnum) {
-  // OPrintStream::set_base (as called by BaseHex) doesn't apply to enum as they
-  // aren't matched by is_integral, so all the numbers are printed as the
-  // decimal values that we converted to the enum type, unless there is a
-  // PrintValueTo function that takes over.
   {
     PrintToStdString p2ss;
     OPrintStream out(p2ss);
@@ -226,7 +254,7 @@ TEST(OPrintStreamTest, BogusEnum) {
     OPrintStream out(p2ss);
     out << ESignedInt16(-32768) << " " << BaseHex << ESignedInt16(-32768) << ' '
         << BaseTwo << ESignedInt16(-32768);
-    EXPECT_EQ(p2ss.str(), "-32768 -32768 -32768");
+    EXPECT_EQ(p2ss.str(), "-32768 0x8000 0b1000000000000000");
   }
 
   {
@@ -234,7 +262,7 @@ TEST(OPrintStreamTest, BogusEnum) {
     OPrintStream out(p2ss);
     out << EScoped(127) << " " << BaseHex << EScoped(127) << ' ' << BaseTwo
         << EScoped(127);
-    EXPECT_EQ(p2ss.str(), "127 127 127");
+    EXPECT_EQ(p2ss.str(), "127 0x7F 0b1111111");
   }
 
   {

@@ -159,11 +159,12 @@ class OPrintStream {
   }
 
   // The value is an enumerator, for which there is not a PrintValueTo function.
+  // Print it as an integer of the underlying type.
   template <typename Enum, enable_if_t<is_enum<Enum>::value &&
                                            !has_print_value_to<Enum>::value,
                                        int> = 6>
   inline void PrintValue(const Enum value) {
-    out_.print(static_cast<underlying_type_t<Enum>>(value), 10);
+    PrintInteger(static_cast<underlying_type_t<Enum>>(value));
   }
 
   // Finally a fallback for other types, for which there must be a
