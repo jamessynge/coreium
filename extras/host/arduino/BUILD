@@ -58,26 +58,8 @@ cc_library(
 )
 
 cc_library(
-    name = "client",
-    hdrs = ["client.h"],
-    deps = [
-        ":ip_address",
-        ":stream",
-    ],
-)
-
-cc_library(
     name = "int_types",
     hdrs = ["int_types.h"],
-)
-
-cc_library(
-    name = "ip_address",
-    hdrs = ["ip_address.h"],
-    deps = [
-        ":int_types",
-        ":print",
-    ],
 )
 
 cc_library(
