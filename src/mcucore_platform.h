@@ -111,4 +111,23 @@ constexpr size_t MaxOf4(size_t a, size_t b, size_t c, size_t d) {
 #define MCU_HAS_FEATURE(x) 0
 #endif
 
+#ifndef __cplusplus
+#define __cplusplus 0
+#endif
+
+// For now, C++ 14 features are not enabled.
+#ifdef MCU_HAS_CXX14_FEATURES
+
+// Adapted from boost's gcc_xml.hpp, providing a straight forward check for
+// whether the specified feature is available.
+#if defined(__cpp_return_type_deduction) && \
+    (__cpp_return_type_deduction >= 201304)
+#define MCU_CXX14_RETURN_TYPE_DEDUCTION
+#endif
+#if defined(__cpp_variable_templates) && (__cpp_variable_templates >= 201304)
+#define MCU_CXX14_VARIABLE_TEMPLATES
+#endif
+
+#endif  // MCU_HAS_CXX14_FEATURES
+
 #endif  // MCUCORE_SRC_MCUCORE_PLATFORM_H_

@@ -77,19 +77,24 @@ struct Array {
   value_type elems_[SIZE];  // NOLINT
 };
 
-// Helpers to build an Array from some values.
-template <typename T, int SIZE>
-Array<T, SIZE> MakeFromArray(const T (&data)[SIZE]) {
-  Array<T, SIZE> array;
+// Returns an Array with the size and values of the array passed as the single
+// argument to MakeArray.
+template <typename T, int SIZE, typename A = Array<T, SIZE>>
+A MakeFromArray(const T (&data)[SIZE]) {
+  A array;
   array.copy(data);
   return array;
 }
 
-template <typename... Ts, typename U>
-constexpr auto MakeArray(U u, Ts... ts) {
-  return Array<U, 1 + sizeof...(Ts)>{u, ts...};
+// Returns an Array whose values are those of the arguments to MakeArray; the
+// second and later arguments must all be implicitly convertible to the type of
+// the first argument as that is the type used for the Array's elements.
+template <typename... Ts, typename U, typename A = Array<U, 1 + sizeof...(Ts)>>
+constexpr A MakeArray(U u, Ts... ts) {
+  return A{u, ts...};
 }
 
+// Make an Array of one element.
 template <typename T>
 constexpr Array<T, 1> MakeArray(T a) {
   return {a};

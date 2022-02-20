@@ -65,8 +65,8 @@ struct is_const : false_type {};
 template <class T>
 struct is_const<const T> : true_type {};
 
-#if __cplusplus > 201103L
-// C++ 17 feature, and relies on features of C++ 17.
+#ifdef MCU_CXX14_VARIABLE_TEMPLATES
+// C++ 17 feature, and relies on features of C++ 14.
 template <class T>
 inline constexpr bool is_const_v = is_const<T>::value;
 #endif  // At least C++ 2017
@@ -87,8 +87,8 @@ struct is_same : false_type {};
 template <class T>
 struct is_same<T, T> : true_type {};
 
-#if __cplusplus > 201103L
-// C++ 17 feature, and relies on features of C++ 17.
+#ifdef MCU_CXX14_VARIABLE_TEMPLATES
+// C++ 17 feature, and relies on features of C++ 14.
 template <class T, class U>
 inline constexpr bool is_same_v = is_same<T, U>::value;
 #endif  // At least C++ 2017
@@ -190,8 +190,8 @@ using remove_volatile_t = typename remove_volatile<T>::type;
 template <typename T>
 struct is_void : is_same<void, typename remove_cv<T>::type> {};
 
-#if __cplusplus > 201103L
-// C++ 17 feature, and relies on features of C++ 17.
+#ifdef MCU_CXX14_VARIABLE_TEMPLATES
+// C++ 17 feature, and relies on features of C++ 14.
 template <typename T>
 inline constexpr bool is_void_v = is_void<T>::value;
 #endif  // At least C++ 2017
@@ -209,8 +209,8 @@ inline constexpr bool is_void_v = is_void<T>::value;
 template <typename T>
 struct is_null_pointer : is_same<nullptr_t, remove_cv_t<T>> {};
 
-#if __cplusplus > 201103L
-// C++ 17 feature, and relies on features of C++ 17.
+#ifdef MCU_CXX14_VARIABLE_TEMPLATES
+// C++ 17 feature, and relies on features of C++ 14.
 template <typename T>
 inline constexpr bool is_null_pointer_v = is_null_pointer<T>::value;
 #endif  // At least C++ 2017
@@ -303,8 +303,8 @@ template <class T>
 struct is_integral
     : tt_internal::is_integral_helper<typename remove_cv<T>::type> {};
 
-#if __cplusplus > 201103L
-// C++ 17 feature, and relies on features of C++ 17.
+#ifdef MCU_CXX14_VARIABLE_TEMPLATES
+// C++ 17 feature, and relies on features of C++ 14.
 template <typename T>
 inline constexpr bool is_integral_v = is_integral<T>::value;
 #endif  // At least C++ 2017
@@ -340,8 +340,8 @@ template <typename T>
 struct is_floating_point
     : decltype(tt_internal::test_is_floating_point<remove_cv_t<T>>()) {};
 
-#if __cplusplus > 201103L
-// C++ 17 feature, and relies on features of C++ 17.
+#ifdef MCU_CXX14_VARIABLE_TEMPLATES
+// C++ 17 feature, and relies on features of C++ 14.
 template <typename T>
 inline constexpr bool is_floating_point_v = is_floating_point<T>::value;
 #endif  // At least C++ 2017
@@ -364,8 +364,8 @@ struct is_arithmetic
     : integral_constant<bool, is_integral<T>::value ||
                                   is_floating_point<T>::value> {};
 
-#if __cplusplus > 201103L
-// C++ 17 feature, and relies on features of C++ 17.
+#ifdef MCU_CXX14_VARIABLE_TEMPLATES
+// C++ 17 feature, and relies on features of C++ 14.
 template <typename T>
 inline constexpr bool is_arithmetic_v = is_arithmetic<T>::value;
 #endif  // At least C++ 2017
@@ -462,8 +462,8 @@ template <class T>
 struct is_pointer
     : tt_internal::is_pointer_helper<typename remove_cv<T>::type> {};
 
-#if __cplusplus > 201103L
-// C++ 17 feature, and relies on features of C++ 17.
+#ifdef MCU_CXX14_VARIABLE_TEMPLATES
+// C++ 17 feature, and relies on features of C++ 14.
 template <class T>
 inline constexpr bool is_pointer_v = is_pointer<T>::value;
 #endif  // At least C++ 2017
@@ -533,8 +533,8 @@ struct is_signed<T, false> : false_type {};
 template <typename T>
 struct is_signed : tt_internal::is_signed<T>::type {};
 
-#if __cplusplus > 201103L
-// C++ 17 feature, and relies on features of C++ 17.
+#ifdef MCU_CXX14_VARIABLE_TEMPLATES
+// C++ 17 feature, and relies on features of C++ 14.
 template <class T>
 inline constexpr bool is_signed_v = is_signed<T>::value;
 #endif  // At least C++ 2017
@@ -586,8 +586,8 @@ template <class T>
 struct is_function : integral_constant<bool, !is_const<const T>::value &&
                                                  !is_reference<T>::value> {};
 
-#if __cplusplus > 201103L
-// C++ 17 feature, and relies on features of C++ 17.
+#ifdef MCU_CXX14_VARIABLE_TEMPLATES
+// C++ 17 feature, and relies on features of C++ 14.
 template <class T>
 inline constexpr bool is_function_v = is_function<T>::value;
 #endif  // At least C++ 2017
@@ -614,8 +614,8 @@ template <class T>
 struct is_member_pointer
     : tt_internal::is_member_pointer_helper<typename remove_cv<T>::type> {};
 
-#if __cplusplus > 201103L
-// C++ 17 feature, and relies on features of C++ 17.
+#ifdef MCU_CXX14_VARIABLE_TEMPLATES
+// C++ 17 feature, and relies on features of C++ 14.
 template <class T>
 inline constexpr bool is_member_pointer_v = is_member_pointer<T>::value;
 #endif  // At least C++ 2017
@@ -681,8 +681,8 @@ struct is_enum
 
 #endif
 
-#if __cplusplus > 201103L
-// C++ 17 feature, and relies on features of C++ 17.
+#ifdef MCU_CXX14_VARIABLE_TEMPLATES
+// C++ 17 feature, and relies on features of C++ 14.
 template <typename T>
 inline constexpr bool is_enum_v = is_enum<T>::value;
 #endif  // At least C++ 2017

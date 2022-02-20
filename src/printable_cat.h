@@ -42,10 +42,10 @@ struct AnyPrintableArray : public Printable {
 // Note that we don't support PrintableCat for a single value because that is
 // just a Printable. If your single value isn't already a Printable subclass,
 // try AnyPrintable.
-template <typename... Ts, typename U>
-constexpr auto PrintableCat(U u, Ts... ts) {
-  return AnyPrintableArray<1 + sizeof...(ts)>(
-      MakeArray(AnyPrintable(u), AnyPrintable(ts)...));
+template <typename... Ts, typename U,
+          typename A = AnyPrintableArray<1 + sizeof...(Ts)>>
+constexpr A PrintableCat(U u, Ts... ts) {
+  return A(MakeArray(AnyPrintable(u), AnyPrintable(ts)...));
 }
 
 }  // namespace mcucore
