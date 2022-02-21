@@ -2,6 +2,8 @@
 
 #include <stdint.h>
 
+#include <iostream>
+#include <limits>
 #include <string_view>
 
 #include "extras/test_tools/print_to_std_string.h"
@@ -74,36 +76,85 @@ void VerifyOPrintStream(const T value, std::string_view expected) {
   EXPECT_EQ(p2ss.str(), expected) << "Value: " << value;
 }
 
+template <typename T>
+void VerifyOPrintStreamManipulator(
+    OPrintStream::OPrintStreamManipulator manipulator, const T value,
+    std::string_view expected) {
+  PrintToStdString p2ss;
+  OPrintStream out(p2ss);
+  out << manipulator << value;
+  EXPECT_EQ(p2ss.str(), expected) << "Value: " << value;
+}
+
+template <typename T>
+void VerifyOPrintStreamBases(const T value, std::string_view decimal_expected,
+                             std::string_view hexadecimal_expected,
+                             std::string_view binary_expected) {
+  std::cerr << "VerifyOPrintStreamBases " << value << std::endl;
+  VerifyOPrintStreamManipulator<T>(BaseDec, value, decimal_expected);
+  VerifyOPrintStreamManipulator<T>(BaseHex, value, hexadecimal_expected);
+  VerifyOPrintStreamManipulator<T>(BaseTwo, value, binary_expected);
+}
+
+template <typename T>
+void VerifyOPrintStreamBaseless(const T value, std::string_view expected) {
+  std::cerr << "VerifyOPrintStreamBaseless " << value << std::endl;
+  VerifyOPrintStreamManipulator<T>(BaseDec, value, expected);
+  VerifyOPrintStreamManipulator<T>(BaseHex, value, expected);
+  VerifyOPrintStreamManipulator<T>(BaseTwo, value, expected);
+}
+
 TEST(OPrintStreamTest, BuiltInTypes) {
-  VerifyOPrintStream<char>('a', "a");
-  VerifyOPrintStream<char>('\0', std::string_view("\0", 1));
+  VerifyOPrintStreamBaseless<char>('a', "a");
+  VerifyOPrintStreamBaseless<char>('\0', std::string_view("\0", 1));
 
-  VerifyOPrintStream<unsigned char>(0, "0");
-  VerifyOPrintStream<unsigned char>(255, "255");
+  VerifyOPrintStreamBases<unsigned char>(0, "0", "0x0", "0b0");
+  VerifyOPrintStreamBases<unsigned char>(255, "255", "0xFF", "0b11111111");
 
-  VerifyOPrintStream<int16_t>(-32768, "-32768");
-  VerifyOPrintStream<int16_t>(0, "0");
-  VerifyOPrintStream<int16_t>(32767, "32767");
+  VerifyOPrintStreamBases<signed char>(-128, "-128", "0x80", "0b10000000");
+  VerifyOPrintStreamBases<signed char>(0, "0", "0x0", "0b0");
+  VerifyOPrintStreamBases<signed char>(127, "127", "0x7F", "0b1111111");
 
-  VerifyOPrintStream<uint16_t>(0, "0");
-  VerifyOPrintStream<uint16_t>(65535, "65535");
+  VerifyOPrintStreamBases<int16_t>(-32768, "-32768", "0x8000",
+                                   "0b1000000000000000");
+  VerifyOPrintStreamBases<int16_t>(0, "0", "0x0", "0b0");
+  VerifyOPrintStreamBases<int16_t>(32767, "32767", "0x7FFF",
+                                   "0b111111111111111");
 
-  VerifyOPrintStream<int32_t>(-2147483648, "-2147483648");
-  VerifyOPrintStream<int32_t>(0, "0");
-  VerifyOPrintStream<int32_t>(2147483647, "2147483647");
+  VerifyOPrintStreamBases<uint16_t>(0, "0", "0x0", "0b0");
+  VerifyOPrintStreamBases<uint16_t>(65535, "65535", "0xFFFF",
+                                    "0b1111111111111111");
 
-  VerifyOPrintStream<uint32_t>(0, "0");
-  VerifyOPrintStream<uint32_t>(4294967295, "4294967295");
+  VerifyOPrintStreamBases<int32_t>(-2147483648, "-2147483648", "0x80000000",
+                                   "0b10000000000000000000000000000000");
+  VerifyOPrintStreamBases<int32_t>(0, "0", "0x0", "0b0");
+  VerifyOPrintStreamBases<int32_t>(2147483647, "2147483647", "0x7FFFFFFF",
+                                   "0b1111111111111111111111111111111");
 
-  VerifyOPrintStream<int64_t>(0, "0");
-  VerifyOPrintStream<uint64_t>(0, "0");
+  VerifyOPrintStreamBases<uint32_t>(0, "0", "0x0", "0b0");
+  VerifyOPrintStreamBases<uint32_t>(4294967295, "4294967295", "0xFFFFFFFF",
+                                    "0b11111111111111111111111111111111");
+
+  VerifyOPrintStreamBases<int64_t>(0, "0", "0x0", "0b0");
+  VerifyOPrintStreamBases<int64_t>(
+      std::numeric_limits<int64_t>::max(), "9223372036854775807",
+      "0x7FFFFFFFFFFFFFFF",
+      "0b111111111111111111111111111111111111111111111111111111111111111");
+
+  VerifyOPrintStreamBases<uint64_t>(
+      std::numeric_limits<uint64_t>::max(), "18446744073709551615",
+      "0xFFFFFFFFFFFFFFFF",
+      "0b1111111111111111111111111111111111111111111111111111111111111111");
 
   // 2 digits to the right of the decimal point, unless more features are added
   // to OPrintStream to allow specifying these values, as std::basic_ostream
   // does via std::hex, etc.
-  VerifyOPrintStream<float>(-1, "-1.00");
-  VerifyOPrintStream<float>(0, "0.00");
-  VerifyOPrintStream<float>(0.99999, "1.00");
+  VerifyOPrintStreamBaseless<float>(-1, "-1.00");
+  VerifyOPrintStreamBaseless<float>(0, "0.00");
+  VerifyOPrintStreamBaseless<float>(0.99999, "1.00");
+  VerifyOPrintStreamBaseless<double>(-1, "-1.00");
+  VerifyOPrintStreamBaseless<double>(0, "0.00");
+  VerifyOPrintStreamBaseless<double>(0.99999, "1.00");
 }
 
 TEST(OPrintStreamTest, StringLiteral) {
