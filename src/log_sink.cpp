@@ -32,7 +32,7 @@ inline void CheckSinkExit(std::string_view message) {
   if (the_check_sink_exit_fn != nullptr) {
     (*the_check_sink_exit_fn)(message);
   } else {
-    CHECK(false) << message;
+    LOG(FATAL) << message;
   }
 }
 

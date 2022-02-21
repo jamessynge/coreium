@@ -92,7 +92,6 @@ class CheckSinkTest : public testing::Test {
 
   PrintToStdString out_;
   testing::MockFunction<void(std::string_view)> mock_exit_fn_;
-  std::function<void(std::string_view)> std_exit_fn_;
 };
 
 TEST_F(CheckSinkTest, CreateAndDelete) {

@@ -26,6 +26,9 @@
 // "file.cpp:123] "), followed by the string representations of val1, val2, and
 // val3 concatenated together, and terminated by a newline.
 //
+// level must be one of 1, 2, 3, 4, 5, 6, 7, 8, or 9, and not a calculated value
+// nor a value in a base other than 10.
+//
 // If the level is greater than the value of MCU_ENABLED_VLOG_LEVEL, or if
 // MCU_ENABLED_VLOG_LEVEL is undefined, then no message is emitted, and if the
 // compiler and linker are working as expected, the entire logging statement
@@ -138,32 +141,62 @@
 
 #define MCU_VOID_SINK ::mcucore::VoidSink()
 
+// As a check that the VLOG value is one of the allowed values (1-9), we use
+// token concatenation to verify a match to one of these tokens.
+#define _MCU_VLOG_LEVEL_1_IS_VALID_ 1
+#define _MCU_VLOG_LEVEL_2_IS_VALID_ 2
+#define _MCU_VLOG_LEVEL_3_IS_VALID_ 3
+#define _MCU_VLOG_LEVEL_4_IS_VALID_ 4
+#define _MCU_VLOG_LEVEL_5_IS_VALID_ 5
+#define _MCU_VLOG_LEVEL_6_IS_VALID_ 6
+#define _MCU_VLOG_LEVEL_7_IS_VALID_ 7
+#define _MCU_VLOG_LEVEL_8_IS_VALID_ 8
+#define _MCU_VLOG_LEVEL_9_IS_VALID_ 9
+
 #if defined(MCU_ENABLED_VLOG_LEVEL) && MCU_ENABLED_VLOG_LEVEL > 0
+
+#if 9 < MCU_ENABLED_VLOG_LEVEL
+#error "MCU_ENABLED_VLOG_LEVEL is out of range"
+#endif
+
+#define MCU_VLOG_IS_ON(level) \
+  (MCU_ENABLED_VLOG_LEVEL >= (_MCU_VLOG_LEVEL_##level##_IS_VALID_))
 
 #define MCU_VLOG(level)                  \
   switch (0)                             \
   default:                               \
-    (MCU_ENABLED_VLOG_LEVEL < level)     \
+    (!MCU_VLOG_IS_ON(level))             \
         ? (void)0                        \
         : ::mcucore::LogSinkVoidify() && \
               ::mcucore::LogSink(MCU_VLOG_LOCATION(__FILE__), __LINE__)
 
-#define MCU_VLOG_IS_ON(level) (MCU_ENABLED_VLOG_LEVEL >= (level))
+#define MCU_VLOG_IF(level, expression)         \
+  switch (0)                                   \
+  default:                                     \
+    (!(MCU_VLOG_IS_ON(level) && (expression))) \
+        ? (void)0                              \
+        : ::mcucore::LogSinkVoidify() &&       \
+              ::mcucore::LogSink(MCU_VLOG_LOCATION(__FILE__), __LINE__)
 
-#else
+#else  // !(MCU_ENABLED_VLOG_LEVEL > 0)
 
-#ifdef MCU_ENABLED_VLOG_LEVEL
-#if MCU_ENABLED_VLOG_LEVEL < 0 || 9 < MCU_ENABLED_VLOG_LEVEL
+#if defined(MCU_ENABLED_VLOG_LEVEL) && MCU_ENABLED_VLOG_LEVEL < 0
 #error "MCU_ENABLED_VLOG_LEVEL is out of range"
-#endif
-#endif  // MCU_ENABLED_VLOG_LEVEL
+#endif  // MCU_ENABLED_VLOG_LEVEL < 0
+
+#define MCU_VLOG_IS_ON(level) (false)
 
 #define MCU_VLOG(level) \
   switch (0)            \
   default:              \
     (true) ? (void)0 : ::mcucore::LogSinkVoidify() && MCU_VOID_SINK
 
-#define MCU_VLOG_IS_ON(level) (false)
+#define MCU_VLOG_IF(level, expression)      \
+  switch (0)                                \
+  default:                                  \
+    (true) ? (void)0                        \
+           : ::mcucore::LogSinkVoidify() && \
+                 ::mcucore::LogSink(MCU_VLOG_LOCATION(__FILE__), __LINE__)
 
 #endif
 
@@ -196,8 +229,8 @@
 #define MCU_CHECK(expression) MCU_CHECK_INTERNAL_(expression, #expression)
 #define MCU_CHECK_EQ(a, b) MCU_CHECK_INTERNAL_((a) == (b), #a " == " #b)
 #define MCU_CHECK_NE(a, b) MCU_CHECK_INTERNAL_((a) != (b), #a " != " #b)
-#define MCU_CHECK_LE(a, b) MCU_CHECK_INTERNAL_((a) <= (b), #a " <= " #b)
 #define MCU_CHECK_LT(a, b) MCU_CHECK_INTERNAL_((a) < (b), #a " < " #b)
+#define MCU_CHECK_LE(a, b) MCU_CHECK_INTERNAL_((a) <= (b), #a " <= " #b)
 #define MCU_CHECK_GE(a, b) MCU_CHECK_INTERNAL_((a) >= (b), #a " >= " #b)
 #define MCU_CHECK_GT(a, b) MCU_CHECK_INTERNAL_((a) > (b), #a " > " #b)
 
@@ -233,8 +266,8 @@
 #define MCU_DCHECK(expression) MCU_DCHECK_INTERNAL_(expression, #expression)
 #define MCU_DCHECK_EQ(a, b) MCU_DCHECK_INTERNAL_((a) == (b), #a " == " #b)
 #define MCU_DCHECK_NE(a, b) MCU_DCHECK_INTERNAL_((a) != (b), #a " != " #b)
-#define MCU_DCHECK_LE(a, b) MCU_DCHECK_INTERNAL_((a) <= (b), #a " <= " #b)
 #define MCU_DCHECK_LT(a, b) MCU_DCHECK_INTERNAL_((a) < (b), #a " < " #b)
+#define MCU_DCHECK_LE(a, b) MCU_DCHECK_INTERNAL_((a) <= (b), #a " <= " #b)
 #define MCU_DCHECK_GE(a, b) MCU_DCHECK_INTERNAL_((a) >= (b), #a " >= " #b)
 #define MCU_DCHECK_GT(a, b) MCU_DCHECK_INTERNAL_((a) > (b), #a " > " #b)
 

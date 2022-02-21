@@ -117,6 +117,18 @@ cc_test(
 )
 
 cc_test(
+    name = "logging_test",
+    srcs = ["logging_test.cc"],
+    deps = [
+        "//absl/strings",
+        "//googletest:gunit_main",
+        "//mcucore/extras/test_tools:print_to_std_string",
+        "//mcucore/src:logging",
+        "//mcucore/src:progmem_string_view",
+    ],
+)
+
+cc_test(
     name = "mcucore_config_test",
     srcs = ["mcucore_config_test.cc"],
     deps = [
