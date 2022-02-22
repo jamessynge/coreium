@@ -108,34 +108,34 @@ TEST(OPrintStreamTest, BuiltInTypes) {
   VerifyOPrintStreamBaseless<char>('a', "a");
   VerifyOPrintStreamBaseless<char>('\0', std::string_view("\0", 1));
 
-  VerifyOPrintStreamBases<unsigned char>(0, "0", "0x0", "0b0");
+  VerifyOPrintStreamBases<unsigned char>(0, "0", "0", "0");
   VerifyOPrintStreamBases<unsigned char>(255, "255", "0xFF", "0b11111111");
 
   VerifyOPrintStreamBases<signed char>(-128, "-128", "0x80", "0b10000000");
-  VerifyOPrintStreamBases<signed char>(0, "0", "0x0", "0b0");
+  VerifyOPrintStreamBases<signed char>(0, "0", "0", "0");
   VerifyOPrintStreamBases<signed char>(127, "127", "0x7F", "0b1111111");
 
   VerifyOPrintStreamBases<int16_t>(-32768, "-32768", "0x8000",
                                    "0b1000000000000000");
-  VerifyOPrintStreamBases<int16_t>(0, "0", "0x0", "0b0");
+  VerifyOPrintStreamBases<int16_t>(0, "0", "0", "0");
   VerifyOPrintStreamBases<int16_t>(32767, "32767", "0x7FFF",
                                    "0b111111111111111");
 
-  VerifyOPrintStreamBases<uint16_t>(0, "0", "0x0", "0b0");
+  VerifyOPrintStreamBases<uint16_t>(0, "0", "0", "0");
   VerifyOPrintStreamBases<uint16_t>(65535, "65535", "0xFFFF",
                                     "0b1111111111111111");
 
   VerifyOPrintStreamBases<int32_t>(-2147483648, "-2147483648", "0x80000000",
                                    "0b10000000000000000000000000000000");
-  VerifyOPrintStreamBases<int32_t>(0, "0", "0x0", "0b0");
+  VerifyOPrintStreamBases<int32_t>(0, "0", "0", "0");
   VerifyOPrintStreamBases<int32_t>(2147483647, "2147483647", "0x7FFFFFFF",
                                    "0b1111111111111111111111111111111");
 
-  VerifyOPrintStreamBases<uint32_t>(0, "0", "0x0", "0b0");
+  VerifyOPrintStreamBases<uint32_t>(0, "0", "0", "0");
   VerifyOPrintStreamBases<uint32_t>(4294967295, "4294967295", "0xFFFFFFFF",
                                     "0b11111111111111111111111111111111");
 
-  VerifyOPrintStreamBases<int64_t>(0, "0", "0x0", "0b0");
+  VerifyOPrintStreamBases<int64_t>(0, "0", "0", "0");
   VerifyOPrintStreamBases<int64_t>(
       std::numeric_limits<int64_t>::max(), "9223372036854775807",
       "0x7FFFFFFFFFFFFFFF",

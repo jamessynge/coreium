@@ -26,6 +26,7 @@
 // Author: james.synge@gmail.com
 
 #include "has_print_to.h"
+#include "int_helpers.h"
 #include "mcucore_platform.h"
 #include "type_traits.h"
 
@@ -182,6 +183,7 @@ class OPrintStream {
   }
 
   //////////////////////////////////////////////////////////////////////////////
+  // Handle various types of pointers.
 
   inline void PrintPointer(const char* value) { out_.print(value); }
 
@@ -201,44 +203,33 @@ class OPrintStream {
   }
 
   //////////////////////////////////////////////////////////////////////////////
+  // Print integers.
 
-  template <typename T, enable_if_t<sizeof(T) == sizeof(uint8_t), int> = 1>
-  uint8_t ToUnsigned(T value) {
-    return static_cast<uint8_t>(value);
-  }
-
-  template <typename T, enable_if_t<sizeof(T) == sizeof(uint16_t), int> = 2>
-  uint16_t ToUnsigned(T value) {
-    return static_cast<uint16_t>(value);
-  }
-
-  template <typename T, enable_if_t<sizeof(T) == sizeof(uint32_t), int> = 3>
-  uint32_t ToUnsigned(T value) {
-    return static_cast<uint32_t>(value);
-  }
-
-  template <typename T, enable_if_t<sizeof(T) == sizeof(uint64_t), int> = 4>
-  uint64_t ToUnsigned(T value) {
-    return static_cast<uint64_t>(value);
-  }
-
-  // Print an integer.
   template <typename T>
   void PrintInteger(const T value) {
     // Print.print(T value, int base) can print integer values of type T in any
     // base in the range [2, 36]; if the base is outside of that range, it
     // prints in base 10. Only base 10 is printed in a signed fashion; all other
-    // bases are treated as unsigned T.
-    if (base_ == 10 || base_ < 2 || base_ > 36) {
+    // bases are treated as unsigned T. Note that we don't include the base
+    // prefix if the value is zero, which is matches the behavior of
+    // std::basic_ostream.
+    if (value == 0 || base_ == 10 || base_ < 2 || base_ > 36) {
       out_.print(value, 10);
-    } else if (base_ == 16) {
-      PrintHex(ToUnsigned(value));
-    } else if (base_ == 2) {
-      out_.print('0');
-      out_.print('b');
-      out_.print(ToUnsigned(value), base_);
     } else {
-      out_.print(ToUnsigned(value), base_);
+      const auto unsigned_value = ToUnsigned(value);
+      // There are standard prefixes for base-2, base-8 and base-16, but not
+      // for the other bases.
+      if (base_ == 16) {
+        PrintHex(unsigned_value);
+      } else {
+        if (base_ == 2) {
+          out_.print('0');
+          out_.print('b');
+        } else if (base_ == 8) {
+          out_.print('0');
+        }
+        out_.print(unsigned_value, base_);
+      }
     }
   }
 

@@ -200,6 +200,7 @@ cc_library(
     hdrs = ["o_print_stream.h"],
     deps = [
         ":has_print_to",
+        ":int_helpers",
         ":mcucore_platform",
         ":type_traits",
     ],
@@ -328,4 +329,13 @@ cc_library(
     name = "type_traits",
     hdrs = ["type_traits.h"],
     deps = [":mcucore_platform"],
+)
+
+cc_library(
+    name = "int_helpers",
+    hdrs = ["int_helpers.h"],
+    deps = [
+        ":mcucore_platform",
+        ":type_traits",
+    ],
 )
