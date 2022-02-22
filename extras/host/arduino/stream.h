@@ -7,11 +7,20 @@
 
 class Stream : public Print {
  public:
+  // Returns the number of bytes available to read currently.
   virtual int available() = 0;
+
+  // Reads (consumes from the stream) and returns the first byte of incoming
+  // data available, or -1 if no data is available currently (i.e. this is a
+  // non-blocking method).
   virtual int read() = 0;
+
+  // Returns, but does not consume, the first byte of incoming data available,
+  // or -1 if no data is available currently (i.e. this is a
+  // non-blocking method).
   virtual int peek() = 0;
 
-  // Many other methods omitted that are in Arduino's Stream.
+  // Many other non-virtual methods omitted that are in Arduino's Stream.
 };
 
 #endif  // MCUCORE_EXTRAS_HOST_ARDUINO_STREAM_H_
