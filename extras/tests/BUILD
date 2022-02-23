@@ -86,6 +86,16 @@ cc_test(
 )
 
 cc_test(
+    name = "int_helpers_test",
+    srcs = ["int_helpers_test.cc"],
+    deps = [
+        "//googletest:gunit_main",
+        "//mcucore/src:int_helpers",
+        "//mcucore/src:type_traits",
+    ],
+)
+
+cc_test(
     name = "json_encoder_test",
     srcs = ["json_encoder_test.cc"],
     deps = [
