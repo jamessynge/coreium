@@ -202,6 +202,7 @@ cc_library(
         ":has_print_to",
         ":int_helpers",
         ":mcucore_platform",
+        ":progmem_string_data",
         ":type_traits",
     ],
 )

@@ -28,6 +28,7 @@
 #include "has_print_to.h"
 #include "int_helpers.h"
 #include "mcucore_platform.h"
+#include "progmem_string_data.h"
 #include "type_traits.h"
 
 #if MCU_HOST_TARGET
@@ -130,13 +131,24 @@ class OPrintStream {
     PrintValueTo(value, out_);
   }
 
-  // The value is of an integral type (including bool), but is not a char, nor
-  // of a type for which there is a PrintValueTo function defined.
+  // The value is a bool and there is no PrintValueTo function defined for bool.
+  template <typename Bool, enable_if_t<is_same<Bool, bool>::value &&
+                                           !has_print_value_to<Bool>::value,
+                                       int> = 4>
+  inline void PrintValue(const Bool value) {
+    out_.print(value ? MCU_FLASHSTR("true") : MCU_FLASHSTR("false"));
+  }
+
+  // The value is of an integral type (excluding bool and char), but is not of a
+  // type for which there is a PrintValueTo function defined. char is excluded
+  // so that it can be used for for characters rather than numbers, and bool is
+  // excluded so that we can print such values as true or false.
   template <
       typename Integer,
       enable_if_t<is_integral<Integer>::value && !is_char<Integer>::value &&
+                      !is_same<Integer, bool>::value &&
                       !has_print_value_to<Integer>::value,
-                  int> = 4>
+                  int> = 5>
   inline void PrintValue(const Integer value) {
     PrintInteger(value);
   }
@@ -145,7 +157,7 @@ class OPrintStream {
   // function.
   template <typename Float, enable_if_t<is_floating_point<Float>::value &&
                                             !has_print_value_to<Float>::value,
-                                        int> = 4>
+                                        int> = 6>
   inline void PrintValue(const Float value) {
     out_.print(value);
   }
@@ -154,7 +166,7 @@ class OPrintStream {
   template <typename Pointer,
             enable_if_t<is_pointer<Pointer>::value &&
                             !has_print_value_to<Pointer>::value,
-                        int> = 5>
+                        int> = 7>
   inline void PrintValue(const Pointer value) {
     PrintPointer(value);
   }
@@ -163,7 +175,7 @@ class OPrintStream {
   // Print it as an integer of the underlying type.
   template <typename Enum, enable_if_t<is_enum<Enum>::value &&
                                            !has_print_value_to<Enum>::value,
-                                       int> = 6>
+                                       int> = 8>
   inline void PrintValue(const Enum value) {
     PrintInteger(static_cast<underlying_type_t<Enum>>(value));
   }
@@ -177,7 +189,7 @@ class OPrintStream {
                       !is_floating_point<Others>::value &&
                       !has_print_value_to<Others>::value &&
                       !is_enum<Others>::value,
-                  int> = 7>
+                  int> = 9>
   inline void PrintValue(const Others value) {
     out_.print(value);
   }
