@@ -178,6 +178,7 @@ cc_library(
 
 cc_library(
     name = "mcucore_config",
+    srcs = ["mcucore_config.cc"],
     hdrs = ["mcucore_config.h"],
 )
 
