@@ -1,4 +1,4 @@
-// If a symbol is disabled via the command-line (e.g. -DMCU_DISABLE_VLOG)
+// Enable all of the logging features before including *any* files.
 #undef MCU_DISABLE_CHECK
 #undef MCU_DISABLE_CHECK_LOCATION
 #undef MCU_DISABLE_DCHECK
@@ -29,32 +29,20 @@ namespace mcucore {
 namespace test {
 namespace {
 
-// TODO(jamessynge): Trim down the using declarations after writing tests.
 using ::mcucore::test::PrintToStdString;
 using ::testing::_;
-using ::testing::AnyNumber;
-using ::testing::Contains;
-using ::testing::ContainsRegex;
-using ::testing::ElementsAre;
-using ::testing::EndsWith;
-using ::testing::Eq;
-using ::testing::HasSubstr;
-using ::testing::InSequence;
 using ::testing::IsEmpty;
-using ::testing::Mock;
-using ::testing::NiceMock;
-using ::testing::Not;
-using ::testing::Ref;
-using ::testing::Return;
-using ::testing::ReturnRef;
-using ::testing::SizeIs;
-using ::testing::StartsWith;
-using ::testing::StrictMock;
 
 class McuVLogTest : public testing::Test {
  protected:
   void SetUp() override { SetPrintForLogSink(&out_); }
   void TearDown() override { SetPrintForLogSink(nullptr); }
+
+  std::string TakeStr() {
+    std::string str = out_.str();
+    out_.reset();
+    return str;
+  }
 
   PrintToStdString out_;
 };
@@ -78,56 +66,124 @@ TEST_F(McuVLogTest, VLogIsOn) {
 TEST_F(McuVLogTest, VLogLevelIsEnabled) {
   int line_before = __LINE__;
   MCU_VLOG(1) << "one";
-  EXPECT_THAT(out_.str(),
+  EXPECT_THAT(TakeStr(),
               absl::StrCat("logging_test.cc:", line_before + 1, "] one\n"));
-  out_.reset();
+
   line_before = __LINE__;
   MCU_VLOG(2) << "two";
-  EXPECT_THAT(out_.str(),
+  EXPECT_THAT(TakeStr(),
               absl::StrCat("logging_test.cc:", line_before + 1, "] two\n"));
-  out_.reset();
+
   line_before = __LINE__;
   MCU_VLOG(3) << "three";
-  EXPECT_THAT(out_.str(),
+  EXPECT_THAT(TakeStr(),
               absl::StrCat("logging_test.cc:", line_before + 1, "] three\n"));
-  out_.reset();
+
   line_before = __LINE__;
   MCU_VLOG(4) << "four";
-  EXPECT_THAT(out_.str(),
+  EXPECT_THAT(TakeStr(),
               absl::StrCat("logging_test.cc:", line_before + 1, "] four\n"));
-  out_.reset();
+
   line_before = __LINE__;
   MCU_VLOG(5) << "five";
-  EXPECT_THAT(out_.str(),
+  EXPECT_THAT(TakeStr(),
               absl::StrCat("logging_test.cc:", line_before + 1, "] five\n"));
 }
 
 TEST_F(McuVLogTest, VLogLevelIsDisabled) {
   MCU_VLOG(6) << 6;
-  EXPECT_THAT(out_.str(), IsEmpty());
+  EXPECT_THAT(TakeStr(), IsEmpty());
+
   MCU_VLOG(7) << 7.0;
-  EXPECT_THAT(out_.str(), IsEmpty());
+  EXPECT_THAT(TakeStr(), IsEmpty());
+
   MCU_VLOG(8) << 0x08;
-  EXPECT_THAT(out_.str(), IsEmpty());
+  EXPECT_THAT(TakeStr(), IsEmpty());
+
   MCU_VLOG(9) << 011;
-  EXPECT_THAT(out_.str(), IsEmpty());
+  EXPECT_THAT(TakeStr(), IsEmpty());
 }
 
 TEST_F(McuVLogTest, NoMessage) {
   MCU_VLOG(9);
-  EXPECT_THAT(out_.str(), IsEmpty());
+  EXPECT_THAT(TakeStr(), IsEmpty());
 
   int line_before = __LINE__;
   MCU_VLOG(1);
-  EXPECT_THAT(out_.str(),
+  EXPECT_THAT(TakeStr(),
               absl::StrCat("logging_test.cc:", line_before + 1, "] \n"));
 }
 
 TEST_F(McuVLogTest, MiscValues) {
   const int line_before = __LINE__;
   MCU_VLOG(1) << 'a' << "b" << MCU_PSV("c");
-  EXPECT_THAT(out_.str(),
+  EXPECT_THAT(TakeStr(),
               absl::StrCat("logging_test.cc:", line_before + 1, "] abc\n"));
+}
+
+TEST_F(McuVLogTest, VLogIfEnabledAndTrue) {
+  auto true_function = [] { return true; };
+  auto false_function = [] { return false; };
+
+  int line_before = __LINE__;
+  MCU_VLOG_IF(1, true) << "literal true";
+  EXPECT_THAT(TakeStr(), absl::StrCat("logging_test.cc:", line_before + 1,
+                                      "] literal true\n"));
+
+  line_before = __LINE__;
+  MCU_VLOG_IF(2, true != false) << "booleans expression";
+  EXPECT_THAT(TakeStr(), absl::StrCat("logging_test.cc:", line_before + 1,
+                                      "] booleans expression\n"));
+
+  line_before = __LINE__;
+  MCU_VLOG_IF(3, true_function()) << "function returning boolean";
+  EXPECT_THAT(TakeStr(), absl::StrCat("logging_test.cc:", line_before + 1,
+                                      "] function returning boolean\n"));
+
+  line_before = __LINE__;
+  MCU_VLOG_IF(4, &line_before) << "ptr is not null";
+  EXPECT_THAT(TakeStr(), absl::StrCat("logging_test.cc:", line_before + 1,
+                                      "] ptr is not null\n"));
+
+  line_before = __LINE__;
+  MCU_VLOG_IF(5, !false_function());
+  EXPECT_THAT(TakeStr(),
+              absl::StrCat("logging_test.cc:", line_before + 1, "] \n"));
+}
+
+TEST_F(McuVLogTest, VLogIfDisabledOrFalse) {
+  auto true_function = [] { return true; };
+  auto false_function = [] { return false; };
+
+  // Through 5 the expression is false...
+  MCU_VLOG_IF(1, false) << "literal false";
+  EXPECT_THAT(TakeStr(), IsEmpty());
+
+  MCU_VLOG_IF(2, true != true) << "booleans expression";
+  EXPECT_THAT(TakeStr(), IsEmpty());
+
+  MCU_VLOG_IF(3, false_function()) << "function returning boolean";
+  EXPECT_THAT(TakeStr(), IsEmpty());
+
+  MCU_VLOG_IF(4, nullptr) << "ptr to boolean";
+  EXPECT_THAT(TakeStr(), IsEmpty());
+
+  MCU_VLOG_IF(5, !true_function()) << "five";
+  EXPECT_THAT(TakeStr(), IsEmpty());
+
+  // From 6 the expression is true or false, but doesn't matter because disabled
+  // at these levels.
+  MCU_VLOG_IF(6, true) << 6;
+  EXPECT_THAT(TakeStr(), IsEmpty());
+
+  MCU_VLOG_IF(7, true) << 7.0;
+  EXPECT_THAT(TakeStr(), IsEmpty());
+
+  MCU_VLOG_IF(8, false) << 0x08;
+  EXPECT_THAT(TakeStr(), IsEmpty());
+
+  MCU_VLOG_IF(9, false) << 011;
+  EXPECT_THAT(TakeStr(), IsEmpty());
 }
 
 class McuCheckTest : public testing::Test {

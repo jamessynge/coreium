@@ -6,10 +6,19 @@
 #include "progmem_string_data.h"
 
 #ifndef ARDUINO
+
+////////////////////////////////////////////////////////////////////////////////
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpre-c++14-compat"
+
 #include "base/logging_extensions.h"
-#include "extras/test_tools/print_to_std_string.h"  // pragma: keep extras include
 #include "glog/logging.h"
-#endif  // !ARDUINO
+
+#pragma clang diagnostic pop
+////////////////////////////////////////////////////////////////////////////////
+
+#include "extras/test_tools/print_to_std_string.h"  // pragma: keep extras include
+#endif                                              // !ARDUINO
 
 #ifdef ARDUINO
 #define DEFAULT_SINK_OUT ::Serial

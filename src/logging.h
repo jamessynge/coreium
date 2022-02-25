@@ -20,11 +20,12 @@
 //
 // MCU_VLOG(level) << val1 << val2 << val3;
 //
-// If level is less than or equal to the value of MCU_ENABLED_VLOG_LEVEL,
-// MCU_VLOG will print a line of text to the debug log sink (e.g. to Serial on
-// Arduino); the text will start with the location of the statement (e.g.
-// "file.cpp:123] "), followed by the string representations of val1, val2, and
-// val3 concatenated together, and terminated by a newline.
+// If level is less than or equal to the value of MCU_ENABLED_VLOG_LEVEL at
+// compile time, then at run time MCU_VLOG will print a line of text to the
+// debug log sink (e.g. to Serial on Arduino); the text will start with the
+// location of the statement (e.g. "file.cpp:123] "), followed by the string
+// representations of val1, val2, and val3 concatenated together, and terminated
+// by a newline.
 //
 // level must be one of 1, 2, 3, 4, 5, 6, 7, 8, or 9, and not a calculated value
 // nor a value in a base other than 10.
@@ -33,6 +34,15 @@
 // MCU_ENABLED_VLOG_LEVEL is undefined, then no message is emitted, and if the
 // compiler and linker are working as expected, the entire logging statement
 // will be omitted from the compiled binary.
+//
+///////////////////////////////////////////////////////////////////////////////
+//
+// MCU_VLOG_IF Usage:
+//
+// MCU_VLOG_IF(level, expression) << message << values;
+//
+// This is like MCU_VLOG, with the addition that the message is only printed if
+// the expression is true at run time.
 //
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -170,12 +180,12 @@
         : ::mcucore::LogSinkVoidify() && \
               ::mcucore::LogSink(MCU_VLOG_LOCATION(__FILE__), __LINE__)
 
-#define MCU_VLOG_IF(level, expression)         \
-  switch (0)                                   \
-  default:                                     \
-    (!(MCU_VLOG_IS_ON(level) && (expression))) \
-        ? (void)0                              \
-        : ::mcucore::LogSinkVoidify() &&       \
+#define MCU_VLOG_IF(level, expression)                          \
+  switch (0)                                                    \
+  default:                                                      \
+    (!(MCU_VLOG_IS_ON(level) && static_cast<bool>(expression))) \
+        ? (void)0                                               \
+        : ::mcucore::LogSinkVoidify() &&                        \
               ::mcucore::LogSink(MCU_VLOG_LOCATION(__FILE__), __LINE__)
 
 #else  // !(MCU_ENABLED_VLOG_LEVEL > 0)
@@ -260,6 +270,12 @@
   default:                                        \
     (true || (expression)) ? (void)0              \
                            : ::mcucore::LogSinkVoidify() && MCU_VOID_SINK
+
+// #ifdef MCU_CONVERT_DISABLED_DCHECK_TO_VLOG_IF
+// #ifdef MCU_ENABLE_DCHECK
+// #undef MCU_ENABLE_DCHECK
+// #endif  // MCU_ENABLE_DCHECK
+// #endif  // MCU_DISABLE_DCHECK
 
 #endif
 
