@@ -5,6 +5,9 @@
 #include "extras/test_tools/mock_print.h"
 #include "gmock/gmock.h"
 
+// Even though Stream is in the root namespace, I've chosen to place MockStream
+// into mcucore::test.
+namespace mcucore {
 namespace test {
 
 class MockStream : public Stream, public MockPrint {
@@ -15,5 +18,6 @@ class MockStream : public Stream, public MockPrint {
 };
 
 }  // namespace test
+}  // namespace mcucore
 
 #endif  // MCUCORE_EXTRAS_TEST_TOOLS_MOCK_STREAM_H_
