@@ -105,6 +105,7 @@ cc_library(
 
 cc_library(
     name = "mock_print",
+    testonly = True,
     hdrs = ["mock_print.h"],
     deps = [
         "//googletest:gunit_headers",
@@ -114,9 +115,9 @@ cc_library(
 
 cc_library(
     name = "mock_stream",
+    testonly = True,
     hdrs = ["mock_stream.h"],
     deps = [
-        ":mock_print",
         "//googletest:gunit_headers",
         "//mcucore/extras/host/arduino:stream",
     ],

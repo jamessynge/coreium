@@ -125,6 +125,15 @@ cc_library(
 )
 
 cc_library(
+    name = "int_helpers",
+    hdrs = ["int_helpers.h"],
+    deps = [
+        ":mcucore_platform",
+        ":type_traits",
+    ],
+)
+
+cc_library(
     name = "json_encoder",
     srcs = ["json_encoder.cc"],
     hdrs = ["json_encoder.h"],
@@ -331,13 +340,4 @@ cc_library(
     name = "type_traits",
     hdrs = ["type_traits.h"],
     deps = [":mcucore_platform"],
-)
-
-cc_library(
-    name = "int_helpers",
-    hdrs = ["int_helpers.h"],
-    deps = [
-        ":mcucore_platform",
-        ":type_traits",
-    ],
 )
