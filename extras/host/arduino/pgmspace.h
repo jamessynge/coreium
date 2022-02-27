@@ -28,6 +28,10 @@ inline uint8_t pgm_read_byte_near(const char* ptr) {
 }
 #define pgm_read_byte(ptr) pgrm_read_byte_near(ptr)
 uint32_t pgm_read_dword_far(const uint32_t* ptr);
+
+const void* pgm_read_ptr_far(const void* ptr);
+const void* pgm_read_ptr_near(const void* ptr);
+
 int memcmp_P(const void* lhs, const void* rhs, size_t count);
 int strncasecmp_P(const char* s1, const char* s2, size_t n);
 void* memcpy_P(void* dest, const void* src, size_t n);

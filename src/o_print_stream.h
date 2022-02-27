@@ -197,13 +197,21 @@ class OPrintStream {
   //////////////////////////////////////////////////////////////////////////////
   // Handle various types of pointers.
 
-  inline void PrintPointer(const char* value) { out_.print(value); }
+  inline void PrintPointer(const char* value) {
+    if (value != nullptr) {
+      out_.print(value);
+    }
+  }
 
   inline void PrintPointer(const __FlashStringHelper* value) {
-    out_.print(value);
+    if (value != nullptr) {
+      out_.print(value);
+    }
   }
 
   inline void PrintPointer(OPrintStreamManipulator manipulator) {
+    // Can't say this here: MCU_DCHECK_NE(manipulator, nullptr);
+    // because it would introduce a cycle.
     (*manipulator)(*this);
   }
 

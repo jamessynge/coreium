@@ -8,6 +8,14 @@ uint8_t pgm_read_byte_near(const uint8_t* ptr) { return *ptr; }
 
 uint32_t pgm_read_dword_far(const uint32_t* ptr) { return *ptr; }
 
+const void* pgm_read_ptr_far(const void* ptr) {
+  void* non_const_void_ptr = const_cast<void*>(ptr);
+  void** void_ptr_ptr = reinterpret_cast<void**>(non_const_void_ptr);
+  return *void_ptr_ptr;
+}
+
+const void* pgm_read_ptr_near(const void* ptr) { return pgm_read_ptr_far(ptr); }
+
 int memcmp_P(const void* lhs, const void* rhs, size_t count) {
   return std::memcmp(lhs, rhs, count);
 }
