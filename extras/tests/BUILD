@@ -295,3 +295,15 @@ cc_test(
         "//mcucore/src:type_traits",
     ],
 )
+
+cc_test(
+    name = "flash_string_table_test",
+    srcs = ["flash_string_table_test.cc"],
+    deps = [
+        "//googletest:gunit_main",
+        "//mcucore/extras/test_tools:print_to_std_string",
+        "//mcucore/extras/test_tools:sample_printable",
+        "//mcucore/src:flash_string_table",
+        "//mcucore/src:progmem_string_data",
+    ],
+)

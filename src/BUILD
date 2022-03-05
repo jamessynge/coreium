@@ -103,6 +103,16 @@ cc_library(
 )
 
 cc_library(
+    name = "flash_string_table",
+    srcs = ["flash_string_table.cc"],
+    hdrs = ["flash_string_table.h"],
+    deps = [
+        ":logging",
+        ":mcucore_platform",
+    ],
+)
+
+cc_library(
     name = "has_print_to",
     hdrs = ["has_print_to.h"],
     deps = [
