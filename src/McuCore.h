@@ -7,9 +7,11 @@
 #include "counting_print.h"          // IWYU pragma: export
 #include "crc32.h"                   // IWYU pragma: export
 #include "eeprom_io.h"               // IWYU pragma: export
+#include "flash_string_table.h"      // IWYU pragma: export
 #include "has_print_to.h"            // IWYU pragma: export
 #include "has_progmem_char_array.h"  // IWYU pragma: export
 #include "hex_escape.h"              // IWYU pragma: export
+#include "int_helpers.h"             // IWYU pragma: export
 #include "json_encoder.h"            // IWYU pragma: export
 #include "json_encoder_helpers.h"    // IWYU pragma: export
 #include "log_sink.h"                // IWYU pragma: export

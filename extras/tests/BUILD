@@ -72,6 +72,16 @@ cc_test(
 )
 
 cc_test(
+    name = "flash_string_table_test",
+    srcs = ["flash_string_table_test.cc"],
+    deps = [
+        "//googletest:gunit_main",
+        "//mcucore/src:flash_string_table",
+        "//mcucore/src:progmem_string_data",
+    ],
+)
+
+cc_test(
     name = "hex_escape_test",
     srcs = ["hex_escape_test.cc"],
     deps = [
@@ -293,17 +303,5 @@ cc_test(
     deps = [
         "//googletest:gunit_main",
         "//mcucore/src:type_traits",
-    ],
-)
-
-cc_test(
-    name = "flash_string_table_test",
-    srcs = ["flash_string_table_test.cc"],
-    deps = [
-        "//googletest:gunit_main",
-        "//mcucore/extras/test_tools:print_to_std_string",
-        "//mcucore/extras/test_tools:sample_printable",
-        "//mcucore/src:flash_string_table",
-        "//mcucore/src:progmem_string_data",
     ],
 )
