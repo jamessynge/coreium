@@ -55,9 +55,12 @@ size_t Print::write(const char* str) {
   if (str == nullptr) return 0;
   return write(reinterpret_cast<const uint8_t*>(str), strlen(str));
 }
+
 size_t Print::write(const char* buffer, size_t size) {
   return write(reinterpret_cast<const uint8_t*>(buffer), size);
 }
+
+int Print::availableForWrite() { return 0; }
 
 size_t Print::print(const __FlashStringHelper* str) {
   // Assuming here that PROGMEM is meaningless on the host (i.e. that I haven't

@@ -52,6 +52,11 @@ class Print {
   // number of bytes written.
   size_t write(const char* buffer, size_t size);
 
+  // Space that is definitely available for writing. Defaults to zero, meaning
+  // "a single write may block". Should be overriden by subclasses with
+  // buffering.
+  virtual int availableForWrite();
+
   // Prints (writes) a value of various types. 'short' isn't supported on
   // Arduino AVR, where int == uint16_t (i.e. int and short are the same type on
   // that platform). To make it testable on host, we support short explicitly.
