@@ -353,3 +353,17 @@ cc_library(
     hdrs = ["type_traits.h"],
     deps = [":mcucore_platform"],
 )
+
+cc_library(
+    name = "eeprom_region",
+    hdrs = ["eeprom_region.h"],
+    deps = [
+        ":logging",
+        ":mcucore_platform",
+        ":progmem_string_data",
+        ":status_or",
+        ":string_view",
+        ":type_traits",
+        "//mcucore/extras/host/eeprom",
+    ],
+)
