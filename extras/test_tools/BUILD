@@ -15,6 +15,13 @@ cc_library(
 )
 
 cc_library(
+    name = "eeprom_example_domains",
+    srcs = ["eeprom_example_domains.cc"],
+    hdrs = ["eeprom_example_domains.h"],
+    deps = ["//mcucore/src:eeprom_domain"],
+)
+
+cc_library(
     name = "eeprom_test_utils",
     srcs = ["eeprom_test_utils.cc"],
     hdrs = ["eeprom_test_utils.h"],

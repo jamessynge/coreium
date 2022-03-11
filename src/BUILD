@@ -93,6 +93,14 @@ cc_library(
 )
 
 cc_library(
+    name = "eeprom_domain",
+    hdrs = ["eeprom_domain.h"],
+    deps = [
+        ":mcucore_platform",
+    ],
+)
+
+cc_library(
     name = "eeprom_io",
     srcs = ["eeprom_io.cc"],
     hdrs = ["eeprom_io.h"],
@@ -101,6 +109,19 @@ cc_library(
         ":logging",
         ":mcucore_platform",
         ":progmem_string_view",
+    ],
+)
+
+cc_library(
+    name = "eeprom_region",
+    hdrs = ["eeprom_region.h"],
+    deps = [
+        ":logging",
+        ":mcucore_platform",
+        ":progmem_string_data",
+        ":status_or",
+        ":string_view",
+        ":type_traits",
     ],
 )
 
@@ -352,18 +373,4 @@ cc_library(
     name = "type_traits",
     hdrs = ["type_traits.h"],
     deps = [":mcucore_platform"],
-)
-
-cc_library(
-    name = "eeprom_region",
-    hdrs = ["eeprom_region.h"],
-    deps = [
-        ":logging",
-        ":mcucore_platform",
-        ":progmem_string_data",
-        ":status_or",
-        ":string_view",
-        ":type_traits",
-        "//mcucore/extras/host/eeprom",
-    ],
 )

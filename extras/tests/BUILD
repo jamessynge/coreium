@@ -58,6 +58,16 @@ cc_test(
 )
 
 cc_test(
+    name = "eeprom_domain_test",
+    srcs = ["eeprom_domain_test.cc"],
+    deps = [
+        "//googletest:gunit_main",
+        "//mcucore/extras/test_tools:eeprom_example_domains",
+        "//mcucore/src:eeprom_domain",
+    ],
+)
+
+cc_test(
     name = "eeprom_io_test",
     srcs = ["eeprom_io_test.cc"],
     deps = [
