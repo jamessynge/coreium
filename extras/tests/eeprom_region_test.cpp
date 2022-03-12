@@ -13,34 +13,123 @@ namespace mcucore {
 namespace test {
 namespace {
 
-class EepromRegionTest : public testing::Test {
+class EepromRegionReaderTest : public testing::Test {
  protected:
   using AddrT = EepromRegion::AddrT;
   using SizeT = EepromRegion::SizeT;
   using CursorT = EepromRegion::SizeT;
 
-  template <typename T>
-  void VerifyNoWriteNoRead(EepromRegion& region, const T value) {
-    for (SizeT available = 0; available < sizeof(T); ++available) {
-      ASSERT_GE(region.size(), available);
-      ASSERT_TRUE(region.set_cursor(region.size() - available));
-      ASSERT_EQ(region.available(), available);
-
-      ASSERT_FALSE(region.Write<T>(value));
-      ASSERT_EQ(region.available(), available);
-
-      T t;
-      ASSERT_FALSE(region.ReadInto(t));
-      ASSERT_EQ(region.available(), available);
-
-      ASSERT_EQ(region.Read<T>(), Status(EepromRegion::kResourceExhausted));
-      ASSERT_EQ(region.available(), available);
-    }
-  }
-
   EEPROMClass eeprom_;
 };
 
+TEST_F(EepromRegionReaderTest, CreateAndCopy) {
+  auto validator = [](EepromRegionReader& reader, const AddrT start_address,
+                      const SizeT region_length) {
+    EXPECT_EQ(reader.start_address(), start_address);
+    EXPECT_EQ(reader.size(), region_length);
+    EXPECT_EQ(reader.cursor(), 0);
+    EXPECT_EQ(reader.available(), region_length);
+
+    auto copy = reader;
+
+    EXPECT_EQ(copy.start_address(), start_address);
+    EXPECT_EQ(copy.size(), region_length);
+    EXPECT_EQ(copy.cursor(), 0);
+    EXPECT_EQ(copy.available(), region_length);
+
+    EXPECT_TRUE(reader.set_cursor(1));
+
+    EXPECT_EQ(reader.start_address(), start_address);
+    EXPECT_EQ(reader.cursor(), 1);
+    EXPECT_EQ(copy.start_address(), start_address);
+    EXPECT_EQ(copy.cursor(), 0);
+
+    reader = copy;
+
+    EXPECT_EQ(reader.start_address(), start_address);
+    EXPECT_EQ(reader.cursor(), 0);
+    EXPECT_EQ(copy.start_address(), start_address);
+    EXPECT_EQ(copy.cursor(), 0);
+  };
+
+  {
+    EepromRegionReader reader(eeprom_);
+    validator(reader, 0, eeprom_.length());
+  }
+  {
+    EepromRegionReader reader(eeprom_, 10, 100);
+    validator(reader, 10, 100);
+  }
+}
+
+class EepromRegionTest : public EepromRegionReaderTest {
+ protected:
+};
+
+template <typename T>
+void VerifyNoWriteNoRead(EepromRegion& region, const T value) {
+  for (EepromRegion::SizeT available = 0; available < sizeof(T); ++available) {
+    ASSERT_GE(region.size(), available);
+    ASSERT_TRUE(region.set_cursor(region.size() - available));
+    ASSERT_EQ(region.available(), available);
+
+    ASSERT_FALSE(region.Write<T>(value));
+    ASSERT_EQ(region.available(), available);
+
+    T t;
+    ASSERT_FALSE(region.ReadInto(t));
+    ASSERT_EQ(region.available(), available);
+
+    ASSERT_EQ(region.Read<T>(), Status(EepromRegion::kResourceExhausted));
+    ASSERT_EQ(region.available(), available);
+  }
+}
+
+TEST_F(EepromRegionTest, CreateAndCopyWriter) {
+  {
+    EepromRegion region(eeprom_);
+    EXPECT_EQ(region.start_address(), 0);
+    EXPECT_EQ(region.size(), eeprom_.length());
+    EXPECT_EQ(region.cursor(), 0);
+    EXPECT_EQ(region.available(), eeprom_.length());
+
+    auto copy = region;
+
+    EXPECT_EQ(copy.start_address(), 0);
+    EXPECT_EQ(copy.size(), eeprom_.length());
+    EXPECT_EQ(copy.cursor(), 0);
+    EXPECT_EQ(copy.available(), eeprom_.length());
+
+    EXPECT_TRUE(region.set_cursor(1));
+
+    EXPECT_EQ(region.start_address(), 0);
+    EXPECT_EQ(region.cursor(), 1);
+    EXPECT_EQ(copy.start_address(), 0);
+    EXPECT_EQ(copy.cursor(), 0);
+
+    region = copy;
+  }
+  {
+    EepromRegion region(eeprom_, 0, EepromRegion::kMaxAddrT);
+    EXPECT_EQ(region.start_address(), 0);
+    EXPECT_EQ(region.size(), EepromRegion::kMaxAddrT);
+    EXPECT_EQ(region.cursor(), 0);
+    EXPECT_EQ(region.available(), EepromRegion::kMaxAddrT);
+  }
+  {
+    EepromRegion region(eeprom_, EepromRegion::kMaxAddrT, 1);
+    EXPECT_EQ(region.start_address(), EepromRegion::kMaxAddrT);
+    EXPECT_EQ(region.size(), 1);
+    EXPECT_EQ(region.cursor(), 0);
+    EXPECT_EQ(region.available(), 1);
+
+    EXPECT_TRUE(region.set_cursor(1));
+    EXPECT_EQ(region.cursor(), 1);
+
+    EXPECT_FALSE(region.set_cursor(2));
+    EXPECT_EQ(region.cursor(), 1);
+  }
+}
 TEST_F(EepromRegionTest, OkSize) {
   {
     EepromRegion region(eeprom_, 0, 1);

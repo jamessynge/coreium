@@ -1,7 +1,9 @@
 #ifndef MCUCORE_SRC_EEPROM_REGION_H_
 #define MCUCORE_SRC_EEPROM_REGION_H_
 
-// EepromRegion represents a bounded region of an EEPROM.
+// EepromRegionReader and EepromRegion represents a bounded region of an EEPROM.
+// The classes are separate so that EepromTlv can return a reader for a block
+// without requiring it to be writeable.
 
 #include "logging.h"
 #include "mcucore_platform.h"
@@ -12,10 +14,11 @@
 
 namespace mcucore {
 
-class EepromRegion {
+// Supports reading from EEPROM.
+class EepromRegionReader {
  public:
-  // We don't support creating an EepromRegion of size 64KB. Fortunately, all
-  // of the Microchip AVR chips that I know of have at most 4KB of EEPROM.
+  // We don't support creating an EepromRegionReader of size 64KB. Fortunately,
+  // all of the Microchip AVR chips that I know of have at most 4KB of EEPROM.
   using AddrT = uint16_t;
   static constexpr AddrT kMaxAddrT = 65534;  // NOT 65535.
   using SizeT = uint16_t;
@@ -25,8 +28,8 @@ class EepromRegion {
   // Requires an EEPROMClass instance, rather than using the Arduino defined
   // EEPROM instance, so that testing is easier... NOT because we expect to work
   // with a device that has multiple EEPROMs!
-  EepromRegion(EEPROMClass& eeprom, AddrT start_address, AddrT size)
-      : eeprom_(eeprom),
+  EepromRegionReader(EEPROMClass& eeprom, AddrT start_address, AddrT size)
+      : eeprom_(&eeprom),
         start_address_(start_address),
         size_(size),
         cursor_(0) {
@@ -40,8 +43,12 @@ class EepromRegion {
         << MCU_FLASHSTR("Overflows region");  // COV_NF_LINE
   }
 
-  EepromRegion(EEPROMClass& eeprom, AddrT start_address)
-      : EepromRegion(eeprom, start_address, eeprom.length() - start_address) {}
+  explicit EepromRegionReader(EEPROMClass& eeprom, AddrT start_address = 0)
+      : EepromRegionReader(eeprom, start_address,
+                           eeprom.length() - start_address) {}
+
+  EepromRegionReader(const EepromRegionReader&) = default;
+  EepromRegionReader& operator=(const EepromRegionReader&) = default;
 
   AddrT start_address() const { return start_address_; }
   SizeT size() const { return size_; }
@@ -60,20 +67,6 @@ class EepromRegion {
     }
   }
 
-  // Writes `value` (a number or bool) to the EEPROM at the current cursor
-  // location, advances the cursor by the size of T, and returns true, IFF
-  // `value` fits in the region starting at cursor; else returns false and does
-  // not advance the cursor.
-  template <typename T, enable_if_t<is_arithmetic<T>::value, bool> = true>
-  bool Write(const T value) {
-    if (sizeof(T) > available()) {
-      return false;
-    }
-    eeprom_.put(start_address_ + cursor_, value);
-    cursor_ += sizeof(T);
-    return true;
-  }
-
   // Reads a value of type T from the EEPROM at the current cursor into the
   // specified output argument, advances the cursor and returns true, if the
   // value fits into the region; else returns false and does not advance the
@@ -83,7 +76,7 @@ class EepromRegion {
     if (sizeof(T) > available()) {
       return false;
     }
-    eeprom_.get(start_address_ + cursor_, output);
+    eeprom_->get(start_address_ + cursor_, output);
     cursor_ += sizeof(T);
     return true;
   }
@@ -98,27 +91,6 @@ class EepromRegion {
     }
   }
 
-  // Writes the `size` bytes starting at ptr to EEPROM, advances the cursor by
-  // `size` and returns true, IFF the value fits in the region; else returns
-  // false and does not advance the cursor.
-  bool WriteBytes(const uint8_t* ptr, const SizeT size) {
-    if (size > available()) {
-      return false;
-    }
-    AddrT to = start_address_ + cursor_;
-    const AddrT beyond = to + size;
-    MCU_DCHECK_LE(to, beyond);
-    while (to < beyond) {
-      eeprom_.write(to++, *ptr++);
-    }
-    MCU_DCHECK_EQ(to, beyond);
-    if (to != beyond) {
-      return false;  // COV_NF_LINE
-    }
-    cursor_ += size;
-    return true;
-  }
-
   // Read `size` bytes from EEPROM starting at the cursor and write them to the
   // bytes starting at `ptr`, advances the cursor by `size` and returns true,
   // IFF there are at least `size` bytes available in the region starting at the
@@ -131,10 +103,76 @@ class EepromRegion {
     const AddrT beyond = from + size;
     MCU_DCHECK_LE(from, beyond);
     while (from < beyond) {
-      *ptr++ = eeprom_.read(from++);
+      *ptr++ = eeprom_->read(from++);
     }
     MCU_DCHECK_EQ(from, beyond);
     if (from != beyond) {
+      return false;  // COV_NF_LINE
+    }
+    cursor_ += size;
+    return true;
+  }
+
+  // Reads `size` bytes from EEPROM into a char array. See ReadBytes for
+  // behavior details.
+  bool ReadString(char* ptr, const SizeT size) {
+    return ReadBytes(reinterpret_cast<uint8_t*>(ptr), size);
+  }
+
+ protected:
+  EEPROMClass* eeprom_;
+
+  // First address in the region.
+  AddrT start_address_;
+  // Size of the region.
+  SizeT size_;
+
+  // Where we'll next read from or write to *within* this block (i.e. it is an
+  // offset from start_), unless otherwise specified. Every successful read or
+  // write operation sets this to offset of the byte immediately after that
+  // of the byte that was last read from or written to.
+  SizeT cursor_;
+};
+
+// Supports writing to and reading from EEPROM.
+class EepromRegion : public EepromRegionReader {
+ public:
+  EepromRegion(EEPROMClass& eeprom, AddrT start_address, AddrT size)
+      : EepromRegionReader(eeprom, start_address, size) {}
+  explicit EepromRegion(EEPROMClass& eeprom, AddrT start_address = 0)
+      : EepromRegionReader(eeprom, start_address) {}
+  EepromRegion(const EepromRegion&) = default;
+  EepromRegion& operator=(const EepromRegion&) = default;
+
+  // Writes `value` (a number or bool) to the EEPROM at the current cursor
+  // location, advances the cursor by the size of T, and returns true, IFF
+  // `value` fits in the region starting at cursor; else returns false and does
+  // not advance the cursor.
+  template <typename T, enable_if_t<is_arithmetic<T>::value, bool> = true>
+  bool Write(const T value) {
+    if (sizeof(T) > available()) {
+      return false;
+    }
+    eeprom_->put(start_address_ + cursor_, value);
+    cursor_ += sizeof(T);
+    return true;
+  }
+
+  // Writes the `size` bytes starting at ptr to EEPROM, advances the cursor by
+  // `size` and returns true, IFF the value fits in the region; else returns
+  // false and does not advance the cursor.
+  bool WriteBytes(const uint8_t* ptr, const SizeT size) {
+    if (size > available()) {
+      return false;
+    }
+    AddrT to = start_address_ + cursor_;
+    const AddrT beyond = to + size;
+    MCU_DCHECK_LE(to, beyond);
+    while (to < beyond) {
+      eeprom_->write(to++, *ptr++);
+    }
+    MCU_DCHECK_EQ(to, beyond);
+    if (to != beyond) {
       return false;  // COV_NF_LINE
     }
     cursor_ += size;
@@ -149,26 +187,6 @@ class EepromRegion {
   bool WriteString(const StringView& t) {
     return WriteBytes(reinterpret_cast<const uint8_t*>(t.data()), t.size());
   }
-
-  // Reads `size` bytes from EEPROM into a char array. See ReadBytes for
-  // behavior details.
-  bool ReadString(char* ptr, const SizeT size) {
-    return ReadBytes(reinterpret_cast<uint8_t*>(ptr), size);
-  }
-
- protected:
-  EEPROMClass& eeprom_;
-
-  // First address in the region.
-  const AddrT start_address_;
-  // Size of the region.
-  const SizeT size_;
-
-  // Where we'll next read from or write to *within* this block (i.e. it is an
-  // offset from start_), unless otherwise specified. Every successful read or
-  // write operation sets this to offset of the byte immediately after that
-  // of the byte that was last read from or written to.
-  SizeT cursor_;
 };
 
 }  // namespace mcucore
