@@ -16,24 +16,24 @@ namespace {
 class EepromRegionReaderTest : public testing::Test {
  protected:
   using AddrT = EepromRegion::AddrT;
-  using SizeT = EepromRegion::SizeT;
-  using CursorT = EepromRegion::SizeT;
+  using LengthT = EepromRegion::LengthT;
+  using CursorT = EepromRegion::LengthT;
 
   EEPROMClass eeprom_;
 };
 
 TEST_F(EepromRegionReaderTest, CreateAndCopy) {
   auto validator = [](EepromRegionReader& reader, const AddrT start_address,
-                      const SizeT region_length) {
+                      const LengthT region_length) {
     EXPECT_EQ(reader.start_address(), start_address);
-    EXPECT_EQ(reader.size(), region_length);
+    EXPECT_EQ(reader.length(), region_length);
     EXPECT_EQ(reader.cursor(), 0);
     EXPECT_EQ(reader.available(), region_length);
 
     auto copy = reader;
 
     EXPECT_EQ(copy.start_address(), start_address);
-    EXPECT_EQ(copy.size(), region_length);
+    EXPECT_EQ(copy.length(), region_length);
     EXPECT_EQ(copy.cursor(), 0);
     EXPECT_EQ(copy.available(), region_length);
 
@@ -68,9 +68,10 @@ class EepromRegionTest : public EepromRegionReaderTest {
 
 template <typename T>
 void VerifyNoWriteNoRead(EepromRegion& region, const T value) {
-  for (EepromRegion::SizeT available = 0; available < sizeof(T); ++available) {
-    ASSERT_GE(region.size(), available);
-    ASSERT_TRUE(region.set_cursor(region.size() - available));
+  for (EepromRegion::LengthT available = 0; available < sizeof(T);
+       ++available) {
+    ASSERT_GE(region.length(), available);
+    ASSERT_TRUE(region.set_cursor(region.length() - available));
     ASSERT_EQ(region.available(), available);
 
     ASSERT_FALSE(region.Write<T>(value));
@@ -89,14 +90,14 @@ TEST_F(EepromRegionTest, CreateAndCopyWriter) {
   {
     EepromRegion region(eeprom_);
     EXPECT_EQ(region.start_address(), 0);
-    EXPECT_EQ(region.size(), eeprom_.length());
+    EXPECT_EQ(region.length(), eeprom_.length());
     EXPECT_EQ(region.cursor(), 0);
     EXPECT_EQ(region.available(), eeprom_.length());
 
     auto copy = region;
 
     EXPECT_EQ(copy.start_address(), 0);
-    EXPECT_EQ(copy.size(), eeprom_.length());
+    EXPECT_EQ(copy.length(), eeprom_.length());
     EXPECT_EQ(copy.cursor(), 0);
     EXPECT_EQ(copy.available(), eeprom_.length());
 
@@ -112,14 +113,14 @@ TEST_F(EepromRegionTest, CreateAndCopyWriter) {
   {
     EepromRegion region(eeprom_, 0, EepromRegion::kMaxAddrT);
     EXPECT_EQ(region.start_address(), 0);
-    EXPECT_EQ(region.size(), EepromRegion::kMaxAddrT);
+    EXPECT_EQ(region.length(), EepromRegion::kMaxAddrT);
     EXPECT_EQ(region.cursor(), 0);
     EXPECT_EQ(region.available(), EepromRegion::kMaxAddrT);
   }
   {
     EepromRegion region(eeprom_, EepromRegion::kMaxAddrT, 1);
     EXPECT_EQ(region.start_address(), EepromRegion::kMaxAddrT);
-    EXPECT_EQ(region.size(), 1);
+    EXPECT_EQ(region.length(), 1);
     EXPECT_EQ(region.cursor(), 0);
     EXPECT_EQ(region.available(), 1);
 
@@ -134,7 +135,7 @@ TEST_F(EepromRegionTest, OkSize) {
   {
     EepromRegion region(eeprom_, 0, 1);
     EXPECT_EQ(region.start_address(), 0);
-    EXPECT_EQ(region.size(), 1);
+    EXPECT_EQ(region.length(), 1);
     EXPECT_EQ(region.cursor(), 0);
     EXPECT_EQ(region.available(), 1);
 
@@ -147,14 +148,14 @@ TEST_F(EepromRegionTest, OkSize) {
   {
     EepromRegion region(eeprom_, 0, EepromRegion::kMaxAddrT);
     EXPECT_EQ(region.start_address(), 0);
-    EXPECT_EQ(region.size(), EepromRegion::kMaxAddrT);
+    EXPECT_EQ(region.length(), EepromRegion::kMaxAddrT);
     EXPECT_EQ(region.cursor(), 0);
     EXPECT_EQ(region.available(), EepromRegion::kMaxAddrT);
   }
   {
     EepromRegion region(eeprom_, EepromRegion::kMaxAddrT, 1);
     EXPECT_EQ(region.start_address(), EepromRegion::kMaxAddrT);
-    EXPECT_EQ(region.size(), 1);
+    EXPECT_EQ(region.length(), 1);
     EXPECT_EQ(region.cursor(), 0);
     EXPECT_EQ(region.available(), 1);
 
@@ -168,22 +169,22 @@ TEST_F(EepromRegionTest, OkSize) {
 
 TEST_F(EepromRegionTest, SetCursor) {
   const EepromRegion::AddrT kStartAddr = 10;
-  const EepromRegion::SizeT kSize = 10;
+  const EepromRegion::LengthT kLength = 10;
 
-  EepromRegion region(eeprom_, kStartAddr, kSize);
+  EepromRegion region(eeprom_, kStartAddr, kLength);
 
   EXPECT_EQ(region.cursor(), 0);
 
-  for (CursorT c = 0; c <= kSize; ++c) {
+  for (CursorT c = 0; c <= kLength; ++c) {
     EXPECT_TRUE(region.set_cursor(c));
     EXPECT_EQ(region.cursor(), c);
   }
-  for (CursorT c = kSize + 1; c < kSize * 2; ++c) {
+  for (CursorT c = kLength + 1; c < kLength * 2; ++c) {
     EXPECT_FALSE(region.set_cursor(c));
-    EXPECT_EQ(region.cursor(), kSize);
+    EXPECT_EQ(region.cursor(), kLength);
   }
 
-  for (CursorT c = kSize + 1; c > 0;) {
+  for (CursorT c = kLength + 1; c > 0;) {
     c--;
     EXPECT_TRUE(region.set_cursor(c));
     EXPECT_EQ(region.cursor(), c);
@@ -195,7 +196,7 @@ TEST_F(EepromRegionTest, WriteToTinyRegion) {
 
   EepromRegion region(eeprom_, kStartAddr, 1);
   EXPECT_EQ(region.cursor(), 0);
-  EXPECT_EQ(region.size(), 1);
+  EXPECT_EQ(region.length(), 1);
 
   EXPECT_EQ(eeprom_[kStartAddr - 1], 0);
   EXPECT_EQ(eeprom_[kStartAddr], 0);
@@ -360,8 +361,8 @@ TEST_F(EepromRegionTest, WriteAndReadFloatingPoint) {
 TEST_F(EepromRegionTest, WriteAndReadBytes) {
   const EepromRegion::AddrT kStartAddr = 11;
   const uint8_t kData[] = {9, 7, 5, 3, 1, 0, 2, 4, 6, 8};
-  constexpr SizeT kSize = 10;
-  EXPECT_EQ(sizeof kData, kSize);
+  constexpr LengthT kLength = 10;
+  EXPECT_EQ(sizeof kData, kLength);
 
   EepromRegion region(eeprom_, kStartAddr);
 
@@ -370,11 +371,11 @@ TEST_F(EepromRegionTest, WriteAndReadBytes) {
   EXPECT_EQ(region.cursor(), sizeof kData);
   region.set_cursor(0);
 
-  uint8_t buffer[kSize];
-  EXPECT_TRUE(region.ReadBytes(buffer, kSize));
+  uint8_t buffer[kLength];
+  EXPECT_TRUE(region.ReadBytes(buffer, kLength));
 
   EXPECT_EQ(region.cursor(), sizeof kData);
-  EXPECT_EQ(std::memcmp(kData, buffer, kSize), 0);
+  EXPECT_EQ(std::memcmp(kData, buffer, kLength), 0);
 }
 
 TEST_F(EepromRegionTest, WriteAndReadString) {
@@ -396,8 +397,8 @@ TEST_F(EepromRegionTest, WriteAndReadString) {
 
 TEST_F(EepromRegionTest, SpaceUnavailable) {
   const EepromRegion::AddrT kStartAddr = 10;
-  constexpr SizeT kSize = std::max(sizeof(double), sizeof(uint64_t));
-  EepromRegion region(eeprom_, kStartAddr, kSize);
+  constexpr LengthT kLength = std::max(sizeof(double), sizeof(uint64_t));
+  EepromRegion region(eeprom_, kStartAddr, kLength);
 
   VerifyNoWriteNoRead<char>(region, 'C');
   VerifyNoWriteNoRead<unsigned char>(region, 'U');
@@ -412,7 +413,7 @@ TEST_F(EepromRegionTest, SpaceUnavailable) {
   VerifyNoWriteNoRead<double>(region, 0);
 
   const uint8_t kBytes[] = {1, 2, 3};
-  region.set_cursor(kSize - 2);
+  region.set_cursor(kLength - 2);
   EXPECT_EQ(region.available(), 2);
   EXPECT_FALSE(region.WriteBytes(kBytes, 3));
   EXPECT_EQ(region.available(), 2);
@@ -424,9 +425,9 @@ TEST_F(EepromRegionTest, SpaceUnavailable) {
 
 using EepromRegionDeathTest = EepromRegionTest;
 
-TEST_F(EepromRegionDeathTest, Size0) {
+TEST_F(EepromRegionDeathTest, Length0) {
   EXPECT_DEATH_IF_SUPPORTED({ EepromRegion region(eeprom_, 1, 0); },
-                            "0 < size");
+                            "0 < length");
 }
 
 TEST_F(EepromRegionDeathTest, BeyondAddressableRange) {
