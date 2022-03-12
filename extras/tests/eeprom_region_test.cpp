@@ -111,50 +111,15 @@ TEST_F(EepromRegionTest, CreateAndCopyWriter) {
     region = copy;
   }
   {
-    EepromRegion region(eeprom_, 0, EepromRegion::kMaxAddrT);
+    EepromRegion region(eeprom_, 0, eeprom_.length());
     EXPECT_EQ(region.start_address(), 0);
-    EXPECT_EQ(region.length(), EepromRegion::kMaxAddrT);
+    EXPECT_EQ(region.length(), eeprom_.length());
     EXPECT_EQ(region.cursor(), 0);
-    EXPECT_EQ(region.available(), EepromRegion::kMaxAddrT);
+    EXPECT_EQ(region.available(), eeprom_.length());
   }
   {
-    EepromRegion region(eeprom_, EepromRegion::kMaxAddrT, 1);
-    EXPECT_EQ(region.start_address(), EepromRegion::kMaxAddrT);
-    EXPECT_EQ(region.length(), 1);
-    EXPECT_EQ(region.cursor(), 0);
-    EXPECT_EQ(region.available(), 1);
-
-    EXPECT_TRUE(region.set_cursor(1));
-    EXPECT_EQ(region.cursor(), 1);
-
-    EXPECT_FALSE(region.set_cursor(2));
-    EXPECT_EQ(region.cursor(), 1);
-  }
-}
-TEST_F(EepromRegionTest, OkSize) {
-  {
-    EepromRegion region(eeprom_, 0, 1);
-    EXPECT_EQ(region.start_address(), 0);
-    EXPECT_EQ(region.length(), 1);
-    EXPECT_EQ(region.cursor(), 0);
-    EXPECT_EQ(region.available(), 1);
-
-    EXPECT_TRUE(region.set_cursor(1));
-    EXPECT_EQ(region.cursor(), 1);
-
-    EXPECT_FALSE(region.set_cursor(2));
-    EXPECT_EQ(region.cursor(), 1);
-  }
-  {
-    EepromRegion region(eeprom_, 0, EepromRegion::kMaxAddrT);
-    EXPECT_EQ(region.start_address(), 0);
-    EXPECT_EQ(region.length(), EepromRegion::kMaxAddrT);
-    EXPECT_EQ(region.cursor(), 0);
-    EXPECT_EQ(region.available(), EepromRegion::kMaxAddrT);
-  }
-  {
-    EepromRegion region(eeprom_, EepromRegion::kMaxAddrT, 1);
-    EXPECT_EQ(region.start_address(), EepromRegion::kMaxAddrT);
+    EepromRegion region(eeprom_, eeprom_.length() - 1, 1);
+    EXPECT_EQ(region.start_address(), eeprom_.length() - 1);
     EXPECT_EQ(region.length(), 1);
     EXPECT_EQ(region.cursor(), 0);
     EXPECT_EQ(region.available(), 1);
@@ -425,14 +390,9 @@ TEST_F(EepromRegionTest, SpaceUnavailable) {
 
 using EepromRegionDeathTest = EepromRegionTest;
 
-TEST_F(EepromRegionDeathTest, Length0) {
-  EXPECT_DEATH_IF_SUPPORTED({ EepromRegion region(eeprom_, 1, 0); },
-                            "0 < length");
-}
-
 TEST_F(EepromRegionDeathTest, BeyondAddressableRange) {
   EXPECT_DEATH_IF_SUPPORTED({ EepromRegion region(eeprom_, 65535, 2); },
-                            "Overflows region");
+                            "Overflows addressable region");
 }
 
 }  // namespace

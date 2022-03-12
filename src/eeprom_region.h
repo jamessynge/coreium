@@ -28,20 +28,25 @@ class EepromRegionReader {
 
   // Requires an EEPROMClass instance, rather than using the Arduino defined
   // EEPROM instance, so that testing is easier... NOT because we expect to work
-  // with a device that has multiple EEPROMs!
-  EepromRegionReader(EEPROMClass& eeprom, AddrT start_address, AddrT length)
+  // with a device that has multiple EEPROMs! We allow the length to be zero
+  // to allow for marking a region as unusable.
+  EepromRegionReader(EEPROMClass& eeprom, const AddrT start_address,
+                     const AddrT length)
       : eeprom_(&eeprom),
         start_address_(start_address),
         length_(length),
         cursor_(0) {
     static_assert(sizeof(LengthT) >= sizeof(decltype(eeprom.length())),
                   "EEPROM length can be too large.");
-    MCU_DCHECK_LT(0, length);
     MCU_DCHECK_LE(length, kMaxAddrT);
-    // Make sure that the region isn't too near the end of the space addressable
-    // using an AddrT.
-    MCU_DCHECK_LE(length - 1, kMaxAddrT - start_address)
-        << MCU_FLASHSTR("Overflows region");  // COV_NF_LINE
+    if (length > 0) {
+      // Make sure that the region isn't too near the end of the space
+      // addressable using an AddrT.
+      MCU_DCHECK_LE(length - 1, kMaxAddrT - start_address)
+          << MCU_FLASHSTR("Overflows addressable region");  // COV_NF_LINE
+    }
+    MCU_DCHECK_LE(start_address + length, eeprom.length())
+        << MCU_FLASHSTR("Beyond EEPROM");  // COV_NF_LINE
   }
 
   explicit EepromRegionReader(EEPROMClass& eeprom, AddrT start_address = 0)
