@@ -14,7 +14,7 @@ namespace test {
 namespace {
 
 class EepromRegionTest : public testing::Test {
- public:
+ protected:
   using AddrT = EepromRegion::AddrT;
   using SizeT = EepromRegion::SizeT;
   using CursorT = EepromRegion::SizeT;
@@ -38,15 +38,12 @@ class EepromRegionTest : public testing::Test {
     }
   }
 
- protected:
-  void SetUp() override {  // Reset the EEPROM to all zeroes.
-    EEPROM = EEPROMClass();
-  }
+  EEPROMClass eeprom_;
 };
 
 TEST_F(EepromRegionTest, OkSize) {
   {
-    EepromRegion region(0, 1);
+    EepromRegion region(eeprom_, 0, 1);
     EXPECT_EQ(region.start_address(), 0);
     EXPECT_EQ(region.size(), 1);
     EXPECT_EQ(region.cursor(), 0);
@@ -59,14 +56,14 @@ TEST_F(EepromRegionTest, OkSize) {
     EXPECT_EQ(region.cursor(), 1);
   }
   {
-    EepromRegion region(0, EepromRegion::kMaxAddrT);
+    EepromRegion region(eeprom_, 0, EepromRegion::kMaxAddrT);
     EXPECT_EQ(region.start_address(), 0);
     EXPECT_EQ(region.size(), EepromRegion::kMaxAddrT);
     EXPECT_EQ(region.cursor(), 0);
     EXPECT_EQ(region.available(), EepromRegion::kMaxAddrT);
   }
   {
-    EepromRegion region(EepromRegion::kMaxAddrT, 1);
+    EepromRegion region(eeprom_, EepromRegion::kMaxAddrT, 1);
     EXPECT_EQ(region.start_address(), EepromRegion::kMaxAddrT);
     EXPECT_EQ(region.size(), 1);
     EXPECT_EQ(region.cursor(), 0);
@@ -84,7 +81,7 @@ TEST_F(EepromRegionTest, SetCursor) {
   const EepromRegion::AddrT kStartAddr = 10;
   const EepromRegion::SizeT kSize = 10;
 
-  EepromRegion region(kStartAddr, kSize);
+  EepromRegion region(eeprom_, kStartAddr, kSize);
 
   EXPECT_EQ(region.cursor(), 0);
 
@@ -107,22 +104,22 @@ TEST_F(EepromRegionTest, SetCursor) {
 TEST_F(EepromRegionTest, WriteToTinyRegion) {
   const EepromRegion::AddrT kStartAddr = 10;
 
-  EepromRegion region(kStartAddr, 1);
+  EepromRegion region(eeprom_, kStartAddr, 1);
   EXPECT_EQ(region.cursor(), 0);
   EXPECT_EQ(region.size(), 1);
 
-  EXPECT_EQ(EEPROM[kStartAddr - 1], 0);
-  EXPECT_EQ(EEPROM[kStartAddr], 0);
-  EXPECT_EQ(EEPROM[kStartAddr + 1], 0);
+  EXPECT_EQ(eeprom_[kStartAddr - 1], 0);
+  EXPECT_EQ(eeprom_[kStartAddr], 0);
+  EXPECT_EQ(eeprom_[kStartAddr + 1], 0);
 
   EXPECT_TRUE(region.Write(static_cast<uint8_t>(7)));
   EXPECT_EQ(region.cursor(), 1);
   EXPECT_FALSE(region.Write(static_cast<uint8_t>(8)));
   EXPECT_EQ(region.cursor(), 1);
 
-  EXPECT_EQ(EEPROM[kStartAddr - 1], 0);
-  EXPECT_EQ(EEPROM[kStartAddr], 7);
-  EXPECT_EQ(EEPROM[kStartAddr + 1], 0);
+  EXPECT_EQ(eeprom_[kStartAddr - 1], 0);
+  EXPECT_EQ(eeprom_[kStartAddr], 7);
+  EXPECT_EQ(eeprom_[kStartAddr + 1], 0);
 
   EXPECT_TRUE(region.set_cursor(0));
   EXPECT_EQ(region.cursor(), 0);
@@ -130,14 +127,14 @@ TEST_F(EepromRegionTest, WriteToTinyRegion) {
   EXPECT_TRUE(region.Write(static_cast<uint8_t>(8)));
   EXPECT_EQ(region.cursor(), 1);
 
-  EXPECT_EQ(EEPROM[kStartAddr - 1], 0);
-  EXPECT_EQ(EEPROM[kStartAddr], 8);
-  EXPECT_EQ(EEPROM[kStartAddr + 1], 0);
+  EXPECT_EQ(eeprom_[kStartAddr - 1], 0);
+  EXPECT_EQ(eeprom_[kStartAddr], 8);
+  EXPECT_EQ(eeprom_[kStartAddr + 1], 0);
 }
 
 TEST_F(EepromRegionTest, WriteAndReadCharacters) {
   const EepromRegion::AddrT kStartAddr = 10;
-  EepromRegion region(kStartAddr);
+  EepromRegion region(eeprom_, kStartAddr);
 
   EXPECT_TRUE(region.Write<char>('a'));
   EXPECT_TRUE(region.Write<signed char>('b'));
@@ -153,7 +150,7 @@ TEST_F(EepromRegionTest, WriteAndReadCharacters) {
 
 TEST_F(EepromRegionTest, WriteAndReadBools) {
   const EepromRegion::AddrT kStartAddr = 10;
-  EepromRegion region(kStartAddr);
+  EepromRegion region(eeprom_, kStartAddr);
 
   EXPECT_TRUE(region.Write(true));
   EXPECT_TRUE(region.Write(false));
@@ -184,7 +181,7 @@ TEST_F(EepromRegionTest, WriteAndReadIntegers) {
   const int32_t e = std::numeric_limits<int32_t>::min() + 1;
   const uint32_t f = std::numeric_limits<uint32_t>::max() - 1;
 
-  EepromRegion region(kStartAddr);
+  EepromRegion region(eeprom_, kStartAddr);
 
   EXPECT_TRUE(region.Write(a));
   EXPECT_TRUE(region.Write(b));
@@ -234,7 +231,7 @@ TEST_F(EepromRegionTest, WriteAndReadFloatingPoint) {
   const double i = std::numeric_limits<double>::round_error();
   const double j = std::numeric_limits<double>::max();
 
-  EepromRegion region(kStartAddr);
+  EepromRegion region(eeprom_, kStartAddr);
 
   EXPECT_TRUE(region.Write(a));
   EXPECT_TRUE(region.Write(b));
@@ -277,7 +274,7 @@ TEST_F(EepromRegionTest, WriteAndReadBytes) {
   constexpr SizeT kSize = 10;
   EXPECT_EQ(sizeof kData, kSize);
 
-  EepromRegion region(kStartAddr);
+  EepromRegion region(eeprom_, kStartAddr);
 
   EXPECT_TRUE(region.WriteBytes(kData, sizeof kData));
 
@@ -296,7 +293,7 @@ TEST_F(EepromRegionTest, WriteAndReadString) {
   StringView view(kString);
 
   const EepromRegion::AddrT kStartAddr = 23;
-  EepromRegion region(kStartAddr);
+  EepromRegion region(eeprom_, kStartAddr);
 
   EXPECT_TRUE(region.WriteString(view));
   EXPECT_EQ(region.cursor(), view.size());
@@ -311,7 +308,7 @@ TEST_F(EepromRegionTest, WriteAndReadString) {
 TEST_F(EepromRegionTest, SpaceUnavailable) {
   const EepromRegion::AddrT kStartAddr = 10;
   constexpr SizeT kSize = std::max(sizeof(double), sizeof(uint64_t));
-  EepromRegion region(kStartAddr, kSize);
+  EepromRegion region(eeprom_, kStartAddr, kSize);
 
   VerifyNoWriteNoRead<char>(region, 'C');
   VerifyNoWriteNoRead<unsigned char>(region, 'U');
@@ -339,11 +336,12 @@ TEST_F(EepromRegionTest, SpaceUnavailable) {
 using EepromRegionDeathTest = EepromRegionTest;
 
 TEST_F(EepromRegionDeathTest, Size0) {
-  EXPECT_DEATH_IF_SUPPORTED({ EepromRegion region(1, 0); }, "0 < size");
+  EXPECT_DEATH_IF_SUPPORTED({ EepromRegion region(eeprom_, 1, 0); },
+                            "0 < size");
 }
 
 TEST_F(EepromRegionDeathTest, BeyondAddressableRange) {
-  EXPECT_DEATH_IF_SUPPORTED({ EepromRegion region(65535, 2); },
+  EXPECT_DEATH_IF_SUPPORTED({ EepromRegion region(eeprom_, 65535, 2); },
                             "Overflows region");
 }
 

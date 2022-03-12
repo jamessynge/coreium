@@ -22,8 +22,16 @@ class EepromRegion {
   static constexpr uint32_t kResourceExhausted =
       'F' + ('U' << 8) + ('L' << 16) + ('L' << 24);
 
-  EepromRegion(AddrT start_address, AddrT size)
-      : start_address_(start_address), size_(size), cursor_(0) {
+  // Requires an EEPROMClass instance, rather than using the Arduino defined
+  // EEPROM instance, so that testing is easier... NOT because we expect to work
+  // with a device that has multiple EEPROMs!
+  EepromRegion(EEPROMClass& eeprom, AddrT start_address, AddrT size)
+      : eeprom_(eeprom),
+        start_address_(start_address),
+        size_(size),
+        cursor_(0) {
+    static_assert(sizeof(SizeT) >= sizeof(decltype(eeprom.length())),
+                  "EEPROM size can be too large.");
     MCU_DCHECK_LT(0, size);
     MCU_DCHECK_LE(size, kMaxAddrT);
     // Make sure that the region isn't too near the end of the space addressable
@@ -32,13 +40,8 @@ class EepromRegion {
         << MCU_FLASHSTR("Overflows region");  // COV_NF_LINE
   }
 
-  explicit EepromRegion(AddrT start_address)
-      : EepromRegion(start_address, EEPROM.length() - start_address) {}
-
-  EepromRegion() : EepromRegion(0, EEPROM.length()) {
-    static_assert(sizeof(SizeT) >= sizeof(decltype(EEPROM.length())),
-                  "EEPROM size can be too large.");
-  }
+  EepromRegion(EEPROMClass& eeprom, AddrT start_address)
+      : EepromRegion(eeprom, start_address, eeprom.length() - start_address) {}
 
   AddrT start_address() const { return start_address_; }
   SizeT size() const { return size_; }
@@ -66,7 +69,7 @@ class EepromRegion {
     if (sizeof(T) > available()) {
       return false;
     }
-    EEPROM.put(start_address_ + cursor_, value);
+    eeprom_.put(start_address_ + cursor_, value);
     cursor_ += sizeof(T);
     return true;
   }
@@ -80,7 +83,7 @@ class EepromRegion {
     if (sizeof(T) > available()) {
       return false;
     }
-    EEPROM.get(start_address_ + cursor_, output);
+    eeprom_.get(start_address_ + cursor_, output);
     cursor_ += sizeof(T);
     return true;
   }
@@ -106,7 +109,7 @@ class EepromRegion {
     const AddrT beyond = to + size;
     MCU_DCHECK_LE(to, beyond);
     while (to < beyond) {
-      EEPROM.write(to++, *ptr++);
+      eeprom_.write(to++, *ptr++);
     }
     MCU_DCHECK_EQ(to, beyond);
     if (to != beyond) {
@@ -128,7 +131,7 @@ class EepromRegion {
     const AddrT beyond = from + size;
     MCU_DCHECK_LE(from, beyond);
     while (from < beyond) {
-      *ptr++ = EEPROM.read(from++);
+      *ptr++ = eeprom_.read(from++);
     }
     MCU_DCHECK_EQ(from, beyond);
     if (from != beyond) {
@@ -154,6 +157,8 @@ class EepromRegion {
   }
 
  protected:
+  EEPROMClass& eeprom_;
+
   // First address in the region.
   const AddrT start_address_;
   // Size of the region.
