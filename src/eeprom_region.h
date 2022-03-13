@@ -23,8 +23,6 @@ class EepromRegionReader {
   using AddrT = uint16_t;
   static constexpr AddrT kMaxAddrT = 65534;  // NOT 65535.
   using LengthT = uint16_t;
-  static constexpr uint32_t kResourceExhausted =
-      'F' + ('U' << 8) + ('L' << 16) + ('L' << 24);
 
   // Requires an EEPROMClass instance, rather than using the Arduino defined
   // EEPROM instance, so that testing is easier... NOT because we expect to work
@@ -93,7 +91,7 @@ class EepromRegionReader {
     if (ReadInto(value)) {
       return value;
     } else {
-      return Status(kResourceExhausted);
+      return Status(StatusCode::kResourceExhausted);
     }
   }
 

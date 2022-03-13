@@ -7,6 +7,7 @@
 #include "extras/host/eeprom/eeprom.h"
 #include "extras/test_tools/status_or_test_utils.h"
 #include "gtest/gtest.h"
+#include "status_code.h"
 #include "string_view.h"
 
 namespace mcucore {
@@ -81,7 +82,7 @@ void VerifyNoWriteNoRead(EepromRegion& region, const T value) {
     ASSERT_FALSE(region.ReadInto(t));
     ASSERT_EQ(region.available(), available);
 
-    ASSERT_EQ(region.Read<T>(), Status(EepromRegion::kResourceExhausted));
+    ASSERT_EQ(region.Read<T>(), Status(StatusCode::kResourceExhausted));
     ASSERT_EQ(region.available(), available);
   }
 }

@@ -7,6 +7,7 @@
 #include "gtest/gtest.h"
 #include "progmem_string_view.h"
 #include "status.h"
+#include "status_code.h"
 #include "string_view.h"
 
 namespace mcucore {
@@ -14,12 +15,13 @@ namespace test {
 namespace {
 
 template <typename T>
-StatusOr<T> ReturnStatusWithoutMessage(uint32_t code) {
+StatusOr<T> ReturnStatusWithoutMessage(StatusCode code) {
   return Status(code);
 }
 
 template <typename T>
-StatusOr<T> ReturnStatusWithMessage(uint32_t code, ProgmemStringView message) {
+StatusOr<T> ReturnStatusWithMessage(StatusCode code,
+                                    ProgmemStringView message) {
   return Status(code, message);
 }
 
@@ -33,26 +35,26 @@ TEST(StatusOrTest, IntValue) {
   EXPECT_TRUE(status_or.ok());
   EXPECT_EQ(status_or.value(), 1);
   EXPECT_TRUE(status_or.status().ok());
-  EXPECT_EQ(status_or.status().code(), 0);
+  EXPECT_EQ(status_or.status().code(), StatusCode::kOk);
   EXPECT_EQ(status_or.status().message(), ProgmemStringView());
 
-  status_or = Status(123, ProgmemStringView("Oops"));
+  status_or = Status(StatusCode::kInvalidArgument, ProgmemStringView("Oops"));
   EXPECT_FALSE(status_or.ok());
   EXPECT_FALSE(status_or.status().ok());
-  EXPECT_EQ(status_or.status().code(), 123);
+  EXPECT_EQ(status_or.status().code(), StatusCode::kInvalidArgument);
   EXPECT_EQ(status_or.status().message(), ProgmemStringView("Oops"));
 
   status_or = ReturnValue<int>(123);
   EXPECT_TRUE(status_or.ok());
   EXPECT_EQ(status_or.value(), 123);
   EXPECT_TRUE(status_or.status().ok());
-  EXPECT_EQ(status_or.status().code(), 0);
+  EXPECT_EQ(status_or.status().code(), StatusCode::kOk);
   EXPECT_EQ(status_or.status().message(), ProgmemStringView());
 
-  status_or = ReturnStatusWithoutMessage<int>(11508);
+  status_or = ReturnStatusWithoutMessage<int>(StatusCode::kNotFound);
   EXPECT_FALSE(status_or.ok());
   EXPECT_FALSE(status_or.status().ok());
-  EXPECT_EQ(status_or.status().code(), 11508);
+  EXPECT_EQ(status_or.status().code(), StatusCode::kNotFound);
   EXPECT_EQ(status_or.status().message(), ProgmemStringView(""));
 }
 
@@ -61,28 +63,28 @@ TEST(StatusOrTest, StringViewValue) {
   EXPECT_TRUE(status_or.ok());
   EXPECT_EQ(status_or.value(), StringView("abc"));
   EXPECT_TRUE(status_or.status().ok());
-  EXPECT_EQ(status_or.status().code(), 0);
+  EXPECT_EQ(status_or.status().code(), StatusCode::kOk);
   EXPECT_EQ(status_or.status().message(), ProgmemStringView());
 
-  status_or = Status(345);
+  status_or = Status(StatusCode::kResourceExhausted);
   EXPECT_FALSE(status_or.ok());
   EXPECT_FALSE(status_or.status().ok());
-  EXPECT_EQ(status_or.status().code(), 345);
+  EXPECT_EQ(status_or.status().code(), StatusCode::kResourceExhausted);
   EXPECT_EQ(status_or.status().message(), ProgmemStringView(""));
 
   status_or = StringView();
   EXPECT_TRUE(status_or.ok());
   EXPECT_EQ(status_or.value(), StringView(""));
   EXPECT_TRUE(status_or.status().ok());
-  EXPECT_EQ(status_or.status().code(), 0);
+  EXPECT_EQ(status_or.status().code(), StatusCode::kOk);
   EXPECT_EQ(status_or.status().message(), ProgmemStringView());
 
   status_or = ReturnStatusWithMessage<StringView>(
-      90210, ProgmemStringView("Beverly Hills"));
+      StatusCode::kNotFound, ProgmemStringView("where is it?"));
   EXPECT_FALSE(status_or.ok());
   EXPECT_FALSE(status_or.status().ok());
-  EXPECT_EQ(status_or.status().code(), 90210);
-  EXPECT_EQ(status_or.status().message(), ProgmemStringView("Beverly Hills"));
+  EXPECT_EQ(status_or.status().code(), StatusCode::kNotFound);
+  EXPECT_EQ(status_or.status().message(), ProgmemStringView("where is it?"));
 }
 
 TEST(StatusOrTest, Ctors) {
@@ -93,21 +95,16 @@ TEST(StatusOrTest, Ctors) {
     EXPECT_EQ(status_or_int.value(), 1);
   }
   {
-    StatusOr<int> status_or_int(OkStatus());
-    EXPECT_TRUE(status_or_int.ok());
-    EXPECT_EQ(status_or_int.status(), OkStatus());
-    EXPECT_EQ(status_or_int.value(), 0);  // Default value for an int;
-  }
-  {
     StatusOr<int> status_or_int(StatusOr<int>(345));
     EXPECT_TRUE(status_or_int.ok());
     EXPECT_EQ(status_or_int.status(), OkStatus());
     EXPECT_EQ(status_or_int.value(), 345);
   }
   {
-    StatusOr<int> status_or_int(Status(123));
+    const auto code = Status(StatusCode::kInvalidArgument);
+    StatusOr<int> status_or_int(code);
     EXPECT_FALSE(status_or_int.ok());
-    EXPECT_EQ(status_or_int.status(), Status(123));
+    EXPECT_EQ(status_or_int.status(), code);
   }
 }
 
@@ -140,21 +137,23 @@ TEST(StatusOrTest, AssignOrReturn_CallReturnsOK) {
 TEST(StatusOrTest, AssignOrReturn_ErrorNotValue) {
   bool did_return = false;
   auto outer = [&]() -> Status {
-    StatusOr<int> status_or_value1 = Status(123);
+    StatusOr<int> status_or_value1 = Status(StatusCode::kInvalidArgument);
     StatusOr<int> status_or_value2(0);
     did_return = true;
     MCU_ASSIGN_OR_RETURN(status_or_value2, status_or_value1);
     did_return = false;
     ADD_FAILURE() << "Should have returned! status_or_value2="
                   << status_or_value2;
-    return Status(3232);
+    return Status();
   };
-  EXPECT_EQ(outer(), Status(123));
+  EXPECT_EQ(outer(), Status(StatusCode::kInvalidArgument));
   EXPECT_TRUE(did_return);
 }
 
 TEST(StatusOrTest, AssignOrReturn_CallReturnsError) {
-  auto inner = []() -> StatusOr<int> { return Status(123); };
+  auto inner = []() -> StatusOr<int> {
+    return Status(StatusCode::kInvalidArgument);
+  };
   bool did_return = false;
   auto outer = [&]() -> Status {
     did_return = true;
@@ -162,11 +161,26 @@ TEST(StatusOrTest, AssignOrReturn_CallReturnsError) {
     did_return = false;
     ADD_FAILURE() << "Should have returned! value_in_status_or="
                   << value_in_status_or;
-    return Status(3232);
+    return Status();
   };
-  EXPECT_EQ(outer(), Status(123));
+  EXPECT_EQ(outer(), Status(StatusCode::kInvalidArgument));
   EXPECT_TRUE(did_return);
 }
+
+#ifdef MCU_ENABLE_DCHECK
+
+TEST(StatusOrDeathTest, BadCtorCall) {
+  // Not OK to initialize with an OK Status.
+  EXPECT_DEATH(
+      {
+        StatusOr<int> status_or_int(OkStatus());
+        EXPECT_FALSE(status_or_int.ok());
+        EXPECT_EQ(status_or_int.status(), Status(StatusCode::kUnknown));
+      },
+      "status.ok");
+}
+
+#endif
 
 }  // namespace
 }  // namespace test

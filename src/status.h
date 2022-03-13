@@ -1,18 +1,23 @@
 #ifndef MCUCORE_SRC_STATUS_H_
 #define MCUCORE_SRC_STATUS_H_
 
-// This is a simplistic version of absl::Status, where the status, a uint32_t,
-// is either 0 (OK) or non-zero. The choice of uint32_t is to comply with the
-// Alpaca choice of 32-bit error codes such as:
+// This is a simplistic version of absl::Status.
 //
-//     ActionNotImplementedException:
-//         Reserved error code (0x8004040C) to indicate that the
-//         requested action is not implemented in this driver.
+// Since StatusCode is defined in the library McuCore, not in the (possibly
+// multiple) libraries which may use Status, we allow for 'automatically'
+// converting values of an enum `MyLibraryStatusCode` to StatusCode, by way of
+// a function ToStatusCode defined (roughly) follows:
+//
+//    StatusCode ToStatusCode(MyLibraryStatusCode code) {
+//      // Some conversion, such as a static_cast. Beware of collisions.
+//      return static_cast<MyLibraryStatusCode>(code);
+//    }
 //
 // Author: james.synge@gmail.com
 
 #include "mcucore_platform.h"
 #include "progmem_string_view.h"
+#include "status_code.h"
 
 namespace mcucore {
 
@@ -32,17 +37,28 @@ namespace mcucore {
 
 class Status {
  public:
-  Status() : code_(0) {}
-  explicit Status(uint32_t code) : code_(code) {}
-  Status(uint32_t code, ProgmemStringView message)
-      : code_(code), message_(code != 0 ? message : ProgmemStringView()) {}
-  bool ok() const { return code_ == 0; }
-  uint32_t code() const { return code_; }
+  // Defaults to OK. This is different than StatusOr.
+  Status() : code_(StatusCode::kOk) {}
+  explicit Status(StatusCode code) : code_(code) {}
+  Status(StatusCode code, ProgmemStringView message)
+      : code_(code),
+        message_(code != StatusCode::kOk ? message : ProgmemStringView()) {}
+
+  template <typename T, enable_if_t<has_to_status_code<T>::value>>
+  explicit Status(T code_to_convert) : code_(ToStatusCode(code_to_convert)) {}
+
+  template <typename T, enable_if_t<has_to_status_code<T>::value>>
+  explicit Status(T code_to_convert, ProgmemStringView message)
+      : code_(ToStatusCode(code_to_convert)),
+        message_(code_ != StatusCode::kOk ? message : ProgmemStringView()) {}
+
+  bool ok() const { return code_ == StatusCode::kOk; }
+  StatusCode code() const { return code_; }
   const ProgmemStringView message() const { return message_; }
   size_t printTo(Print& out) const;
 
  private:
-  uint32_t code_;
+  StatusCode code_;
   ProgmemStringView message_;
 };
 

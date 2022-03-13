@@ -89,6 +89,7 @@ cc_test(
         "//mcucore/extras/host/eeprom",
         "//mcucore/extras/test_tools:status_or_test_utils",
         "//mcucore/src:eeprom_region",
+        "//mcucore/src:status_code",
         "//mcucore/src:string_view",
     ],
 )
@@ -264,6 +265,7 @@ cc_test(
         "//mcucore/extras/test_tools:status_test_utils",
         "//mcucore/src:progmem_string_view",
         "//mcucore/src:status",
+        "//mcucore/src:status_code",
         "//mcucore/src:status_or",
         "//mcucore/src:string_view",
     ],
@@ -278,6 +280,7 @@ cc_test(
         "//mcucore/extras/test_tools:progmem_string_view_utils",
         "//mcucore/src:progmem_string_view",
         "//mcucore/src:status",
+        "//mcucore/src:status_code",
     ],
 )
 

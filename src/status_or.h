@@ -8,6 +8,7 @@
 
 #include "logging.h"
 #include "status.h"
+#include "status_code.h"
 
 namespace mcucore {
 
@@ -16,19 +17,21 @@ namespace mcucore {
 template <typename T>
 class StatusOr {
  public:
+  StatusOr() : StatusOr(Status(StatusCode::kUnknown)) {}
   /*implicit*/ StatusOr(const T& t)  // NOLINT
       : t_(t), ok_(true) {}
   /*implicit*/ StatusOr(const Status& status)  // NOLINT
-      : status_(status), ok_(status.ok()) {
+      : status_(status), ok_(false) {
+    MCU_DCHECK(!status.ok());
     if (status.ok()) {
-      t_ = {};
+      status_ = Status(StatusCode::kUnknown);  // COV_NF_LINE
     }
   }
 
   bool ok() const { return ok_; }
 
   const T& value() const {
-    MCU_CHECK(ok_) << MCU_FLASHSTR("Hey, there isn't a value!");
+    MCU_CHECK(ok_);
     return t_;
   }
 

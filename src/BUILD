@@ -315,6 +315,16 @@ cc_library(
         ":o_print_stream",
         ":progmem_string_data",
         ":progmem_string_view",
+        ":status_code",
+    ],
+)
+
+cc_library(
+    name = "status_code",
+    hdrs = ["status_code.h"],
+    deps = [
+        ":mcucore_platform",
+        ":type_traits",
     ],
 )
 
@@ -324,6 +334,7 @@ cc_library(
     deps = [
         ":logging",
         ":status",
+        ":status_code",
     ],
 )
 
