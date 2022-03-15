@@ -14,6 +14,7 @@
 #include "int_helpers.h"             // IWYU pragma: export
 #include "json_encoder.h"            // IWYU pragma: export
 #include "json_encoder_helpers.h"    // IWYU pragma: export
+#include "limits.h"                  // IWYU pragma: export
 #include "log_sink.h"                // IWYU pragma: export
 #include "logging.h"                 // IWYU pragma: export
 #include "mcucore_config.h"          // IWYU pragma: export

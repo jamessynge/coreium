@@ -330,3 +330,12 @@ cc_test(
         "//mcucore/src:type_traits",
     ],
 )
+
+cc_test(
+    name = "limits_test",
+    srcs = ["limits_test.cc"],
+    deps = [
+        "//googletest:gunit_main",
+        "//mcucore/src:limits",
+    ],
+)

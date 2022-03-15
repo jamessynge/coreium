@@ -24,6 +24,7 @@ cc_library(
         ":int_helpers",
         ":json_encoder",
         ":json_encoder_helpers",
+        ":limits",
         ":log_sink",
         ":logging",
         ":mcucore_config",
@@ -190,6 +191,15 @@ cc_library(
         ":json_encoder",
         ":logging",
         ":mcucore_platform",
+    ],
+)
+
+cc_library(
+    name = "limits",
+    hdrs = ["limits.h"],
+    deps = [
+        ":mcucore_platform",
+        ":type_traits",
     ],
 )
 
