@@ -92,15 +92,19 @@ constexpr char GetNthCharOfM(char const (&c)[M]) {
 // program (i.e. we don't waste flash memory with multiple copies).
 template <char... C>
 struct ProgmemStringData final {
+  // We add a trailing null character to the array so that we can interpret
+  // kData as a __FlashStringHelper instance (see MCU_FLASHSTR); Arduino's
+  // Print::print(const __FlashStringHelper*) needs the string to be NUL
+  // terminated so that it knows when it has found the end of the string.
   using ArrayType = char[1 + sizeof...(C)];
+  static constexpr char const kData[1 + sizeof...(C)] AVR_PROGMEM = {C..., 0};
 
+  // Return the array.
   constexpr const ArrayType& progmem_char_array() const { return kData; }
 
-  // We add a trailing null character here so that we can interpret kData as a
-  // __FlashStringHelper instance (see MCU_FLASHSTR for how we do that);
-  // Arduino's Print::print(const __FlashStringHelper*) needs the string to be
-  // NUL terminated so that it knows when it has found the end of the string.
-  static constexpr char const kData[1 + sizeof...(C)] AVR_PROGMEM = {C..., 0};
+  // Return the number of chars in the string, not including the terminating
+  // NUL.
+  static constexpr int size() { return sizeof...(C); }
 };
 
 // 'Define' the storage for the kData array, though in fact that won't happen

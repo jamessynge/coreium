@@ -57,6 +57,7 @@ std::string PSDPrettyTypeName() {
 
 TEST(ProgmemStringDataTest, ExplicitProgmemStrData) {
   using Type = ProgmemStringData<'H', 'E', 'L', 'L', 'O'>;
+  EXPECT_EQ(Type::size(), 5);
   auto printable = MakeProgmemStringView<Type>();
   EXPECT_EQ(printable.size(), 5);
   mcucore::test::PrintToStdString out;
@@ -66,6 +67,7 @@ TEST(ProgmemStringDataTest, ExplicitProgmemStrData) {
 
 TEST(ProgmemStringDataTest, EmptyProgmemStrData) {
   using Type = ProgmemStringData<>;
+  EXPECT_EQ(Type::size(), 0);
   auto printable = MakeProgmemStringView<Type>();
   EXPECT_EQ(printable.size(), 0);
   mcucore::test::PrintToStdString out;
