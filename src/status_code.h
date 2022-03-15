@@ -32,11 +32,20 @@ enum class StatusCode : int16_t {
   kOk = 0,
 
   // kUnknown is the status of a default initialized StatusOr instance.
-  kUnknown = 1,
+  kUnknown = 2,
 
   // Ran out of something we need (e.g. have an empty buffer when reading, or
   // a full buffer when writing).
   kResourceExhausted = 8,
+
+  // Conditions are not correct for the requested operation.
+  kFailedPrecondition = 9,
+
+  // A parameter is out of the necessary range.
+  kOutOfRange = 11,
+
+  // Some data has been lost, e.g. EEPROM is corrupt.
+  kDataLoss = 15,
 
   //////////////////////////////////////////////////////////////////////////////
   // These map to HTTP error codes:

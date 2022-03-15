@@ -17,7 +17,7 @@
 
 #include "mcucore_platform.h"
 #include "progmem_string_view.h"
-#include "status_code.h"
+#include "status_code.h"  // pragma IWYU: export
 
 namespace mcucore {
 
