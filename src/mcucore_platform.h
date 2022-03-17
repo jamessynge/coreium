@@ -55,6 +55,11 @@ using MicrosT = uint32_t;
 
 #endif  // ARDUINO
 
+namespace mcucore {
+// A common definition of the type to be used for indexing into EEPROM.
+using EepromAddrT = decltype(EEPROM.length());
+}  // namespace mcucore
+
 // See absl/base/attributes.h.
 #ifdef ABSL_FALLTHROUGH_INTENDED
 #define MCU_FALLTHROUGH_INTENDED ABSL_FALLTHROUGH_INTENDED
@@ -77,19 +82,6 @@ using MicrosT = uint32_t;
 #define MCU_CONSTEXPR_FUNC constexpr
 #define MCU_CONSTEXPR_VAR constexpr
 #endif  // MCU_ENABLE_DEBUGGING
-
-// max is a macro in Arduino, but not on a host. We avoid 'confusion' by using
-// inlineable function.
-constexpr inline size_t MaxOf2(const size_t a, const size_t b) {
-#ifdef ARDUINO
-  return max(a, b);
-#else   // !ARDUINO
-  return (a >= b) ? a : b;
-#endif  // ARDUINO
-}
-constexpr size_t MaxOf4(size_t a, size_t b, size_t c, size_t d) {
-  return MaxOf2(MaxOf2(a, b), MaxOf2(c, d));
-}
 
 // It turns out that absl/meta/type_traits.h uses the symbol F in a template
 // definition, and Arduino's WString.h definition of macro F(s) interferes if

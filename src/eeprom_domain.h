@@ -46,11 +46,14 @@
 //     #include <McuCore.h>
 //     MCU_DECLARE_NAMED_DOMAIN(MyDomainName, N);
 //
+// =============================================================================
 // ============================ COLLISION DETECTION ============================
+// =============================================================================
 //
 // The MCU_DEFINE_DOMAIN macro is designed to help with detecting (at link time)
 // when two source files accidently use the same domain number. If this happens,
-// you may see an error such as the following (for the example of a domain 17):
+// you should see an error when the program is linked together; for example, if
+// two source files define the domain 17, you might see this error:
 //
 //    ld: error: duplicate symbol: _MakeEepromDomain_17_CollisionDetector()
 
@@ -61,13 +64,22 @@ namespace internal {
 class EepromDomain {
  public:
   EepromDomain() = delete;
+  EepromDomain(const EepromDomain& other) = default;
+  EepromDomain& operator=(const EepromDomain& other) = default;
 
   constexpr uint8_t value() const { return value_; }
+
+  bool operator==(const EepromDomain& other) const {
+    return value_ == other.value_;
+  }
+  bool operator!=(const EepromDomain& other) const {
+    return value_ != other.value_;
+  }
 
  private:
   constexpr explicit EepromDomain(uint8_t value) : value_(value) {}
   friend EepromDomain MakeEepromDomain(uint8_t);
-  const uint8_t value_;
+  uint8_t value_;
 };
 
 /////////////////////////////////////////////////////

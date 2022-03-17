@@ -117,6 +117,7 @@ cc_library(
     name = "eeprom_region",
     hdrs = ["eeprom_region.h"],
     deps = [
+        ":limits",
         ":logging",
         ":mcucore_platform",
         ":progmem_string_data",
