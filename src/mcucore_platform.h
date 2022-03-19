@@ -50,13 +50,17 @@
 #endif  // ARDUINO
 
 // The names of some Arduino macros are the same as those of symbols found in
-// useful libraries, interfering with their use (e.g. <limits> defines functions
-// called min and max). Where I find that to be the case, I undefine those
-// macros here.
-#undef abs
-#undef max
-#undef min
-#undef round
+// useful libraries, interfering with their use or with my own definition of
+// symbols with those names (e.g. <limits> defines functions called min and
+// max). Where I find that to be the case, I undefine those macros here.
+
+// #undef abs
+#undef max       // <limits>
+#undef min       // <limits>
+#undef round     // <chrono>
+#undef INTERNAL  // codes.proto.h
+#undef EXTERNAL  // absl/strings/cord.h (or included files).
+#undef DEFAULT
 
 template <typename T>
 T max(T a, T b) {

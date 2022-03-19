@@ -142,12 +142,18 @@ inline void yield() {}
 #undef abs
 #endif
 
-#define min(a, b) ((a) < (b) ? (a) : (b))
-#define max(a, b) ((a) > (b) ? (a) : (b))
-#define abs(x) ((x) > 0 ? (x) : -(x))
+// NOTE: I am NOT defining min, max, abs, and round here, and possibly some
+// other macros, because they get in the way of compiling host-only code, such
+// as that which includes <ostream>, because that indirectly includes <chrono>,
+// which defines a function called 'round'.
+
+//#define min(a, b) ((a) < (b) ? (a) : (b))
+//#define max(a, b) ((a) > (b) ? (a) : (b))
+//#define abs(x) ((x) > 0 ? (x) : -(x))
 #define constrain(amt, low, high) \
   ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)))
-#define round(x) ((x) >= 0 ? (ArduinoLong)((x) + 0.5) : (ArduinoLong)((x)-0.5))
+//#define round(x) ((x) >= 0 ? (ArduinoLong)((x) + 0.5) :
+//(ArduinoLong)((x)-0.5))
 #define radians(deg) ((deg)*DEG_TO_RAD)
 #define degrees(rad) ((rad)*RAD_TO_DEG)
 #define sq(x) ((x) * (x))
@@ -198,8 +204,8 @@ inline ArduinoInt analogRead(uint8_t pin) { return 123; }
 inline void analogReference(uint8_t mode) {}
 inline void analogWrite(uint8_t pin, ArduinoInt val) {}
 
-ArduinoULong millis(void);
-ArduinoULong micros(void);
+ArduinoULong millis();
+ArduinoULong micros();
 void delay(ArduinoULong ms);
 void delayMicroseconds(ArduinoUInt us);
 ArduinoULong pulseIn(uint8_t pin, uint8_t state, ArduinoULong timeout);
@@ -212,8 +218,8 @@ inline void attachInterrupt(uint8_t interruptNum, void (*userFunc)(void),
                             ArduinoInt mode) {}
 inline void detachInterrupt(uint8_t interruptNum) {}
 
-// void setup(void);
-// void loop(void);
+// void setup();
+// void loop();
 
 // Returning a variety of values, but totally bogus.
 #define digitalPinToInterrupt(p) \
