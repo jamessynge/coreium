@@ -8,6 +8,7 @@
 //
 // Author: james.synge@gmail.com
 
+#include "mcucore_platform.h"  // IWYU pragma: keep
 #include "progmem_string_view.h"
 #include "string_view.h"
 

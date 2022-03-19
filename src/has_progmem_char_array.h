@@ -7,6 +7,7 @@
 //
 // Author: james.synge@gmail.com
 
+#include "mcucore_platform.h"  // IWYU pragma: keep
 #include "type_traits.h"
 
 namespace mcucore {

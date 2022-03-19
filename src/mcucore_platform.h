@@ -27,9 +27,6 @@
 #define AVR_PROGMEM
 #endif  // ARDUINO_ARCH_AVR
 
-using MillisT = unsigned long;  // NOLINT
-using MicrosT = unsigned long;  // NOLINT
-
 #else  // !ARDUINO
 
 #define MCU_EMBEDDED_TARGET 0
@@ -50,14 +47,33 @@ using MicrosT = unsigned long;  // NOLINT
 
 #define AVR_PROGMEM
 
-using MillisT = uint32_t;
-using MicrosT = uint32_t;
-
 #endif  // ARDUINO
+
+// The names of some Arduino macros are the same as those of symbols found in
+// useful libraries, interfering with their use (e.g. <limits> defines functions
+// called min and max). Where I find that to be the case, I undefine those
+// macros here.
+#undef abs
+#undef max
+#undef min
+#undef round
+
+template <typename T>
+T max(T a, T b) {
+  return a >= b ? a : b;
+}
+template <typename T>
+T min(T a, T b) {
+  return a <= b ? a : b;
+}
 
 namespace mcucore {
 // A common definition of the type to be used for indexing into EEPROM.
 using EepromAddrT = decltype(EEPROM.length());
+
+// The types in which milliseconds and microseconds are expressed.
+using MillisT = decltype(millis());
+using MicrosT = decltype(micros());
 }  // namespace mcucore
 
 // See absl/base/attributes.h.

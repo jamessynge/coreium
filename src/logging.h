@@ -99,6 +99,7 @@
 
 #include "log_sink.h"  // IWYU pragma: keep
 #include "mcucore_config.h"
+#include "mcucore_platform.h"     // IWYU pragma: keep
 #include "o_print_stream.h"       // IWYU pragma: export
 #include "progmem_string_data.h"  // IWYU pragma: export
 

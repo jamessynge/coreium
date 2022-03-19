@@ -1,7 +1,7 @@
 #ifndef MCUCORE_EXTRAS_HOST_ARDUINO_AVR_IO_H_
 #define MCUCORE_EXTRAS_HOST_ARDUINO_AVR_IO_H_
 
-#include "extras/host/arduino/int_types.h"  // IWYU pragma: export
+#include <stdint.h>
 
 #ifndef AVR_IO_REGISTER_LINKAGE
 #define AVR_IO_REGISTER_LINKAGE extern
@@ -101,24 +101,5 @@ constexpr uint8_t PORF = 0;
 
 #define PIN_WIRE_SDA (20)
 #define PIN_WIRE_SCL (21)
-
-#define NOT_AN_INTERRUPT 0xff
-
-#define digitalPinToInterrupt(p) \
-  ((p) == 2                      \
-       ? 0                       \
-       : ((p) == 3 ? 1           \
-                   : ((p) >= 18 && (p) <= 21 ? 23 - (p) : NOT_AN_INTERRUPT)))
-
-#define digitalPinToPort(p) p
-
-#define portOutputRegister(p) &TCCR1A  // Totally BOGUS
-
-#define digitalPinToBitMask(p) 1
-
-#define ISR(name) void ISR_##name()
-
-// From avr-libc's include/avr/sfr_defs.h
-#define _BV(bit) (1 << (bit))
 
 #endif  // MCUCORE_EXTRAS_HOST_ARDUINO_AVR_IO_H_

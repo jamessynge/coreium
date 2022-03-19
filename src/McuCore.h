@@ -6,7 +6,9 @@
 #include "array_view.h"              // IWYU pragma: export
 #include "counting_print.h"          // IWYU pragma: export
 #include "crc32.h"                   // IWYU pragma: export
+#include "eeprom_domain.h"           // IWYU pragma: export
 #include "eeprom_io.h"               // IWYU pragma: export
+#include "eeprom_region.h"           // IWYU pragma: export
 #include "flash_string_table.h"      // IWYU pragma: export
 #include "has_print_to.h"            // IWYU pragma: export
 #include "has_progmem_char_array.h"  // IWYU pragma: export
@@ -25,7 +27,9 @@
 #include "progmem_string.h"          // IWYU pragma: export
 #include "progmem_string_data.h"     // IWYU pragma: export
 #include "progmem_string_view.h"     // IWYU pragma: export
+#include "semistd/utility.h"         // IWYU pragma: export
 #include "status.h"                  // IWYU pragma: export
+#include "status_code.h"             // IWYU pragma: export
 #include "status_or.h"               // IWYU pragma: export
 #include "stream_to_print.h"         // IWYU pragma: export
 #include "string_compare.h"          // IWYU pragma: export

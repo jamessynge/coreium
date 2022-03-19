@@ -16,7 +16,9 @@ cc_library(
         ":array_view",
         ":counting_print",
         ":crc32",
+        ":eeprom_domain",
         ":eeprom_io",
+        ":eeprom_region",
         ":flash_string_table",
         ":has_print_to",
         ":has_progmem_char_array",
@@ -36,12 +38,14 @@ cc_library(
         ":progmem_string_data",
         ":progmem_string_view",
         ":status",
+        ":status_code",
         ":status_or",
         ":stream_to_print",
         ":string_compare",
         ":string_view",
         ":tiny_string",
         ":type_traits",
+        "//mcucore/src/semistd:utility",
     ],
 )
 
@@ -149,7 +153,10 @@ cc_library(
 cc_library(
     name = "has_progmem_char_array",
     hdrs = ["has_progmem_char_array.h"],
-    deps = [":type_traits"],
+    deps = [
+        ":mcucore_platform",
+        ":type_traits",
+    ],
 )
 
 cc_library(
@@ -224,6 +231,7 @@ cc_library(
     deps = [
         ":log_sink",
         ":mcucore_config",
+        ":mcucore_platform",
         ":o_print_stream",
         ":progmem_string_data",
     ],
@@ -344,6 +352,7 @@ cc_library(
     hdrs = ["status_or.h"],
     deps = [
         ":logging",
+        ":mcucore_platform",
         ":status",
         ":status_code",
     ],
@@ -363,6 +372,7 @@ cc_library(
     srcs = ["string_compare.cc"],
     hdrs = ["string_compare.h"],
     deps = [
+        ":mcucore_platform",
         ":progmem_string_view",
         ":string_view",
     ],

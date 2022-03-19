@@ -2,8 +2,6 @@
 
 // Author: james.synge@gmail.com
 
-#include <limits.h>
-
 #include <cstdint>
 #include <string>
 #include <string_view>

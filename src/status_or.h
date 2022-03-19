@@ -7,6 +7,7 @@
 // Author: james.synge@gmail.com
 
 #include "logging.h"
+#include "mcucore_platform.h"  // IWYU pragma: keep
 #include "status.h"
 #include "status_code.h"
 

@@ -1,4 +1,4 @@
-#include "extras/host/arduino/character.h"
+#include "extras/host/arduino/wcharacter.h"
 
 #include "absl/strings/ascii.h"
 

@@ -9,18 +9,20 @@
 // https://stackoverflow.com/a/2598284.
 static const absl::Time start_time = absl::Now();  // NOLINT
 
-uint32_t millis() {
+ArduinoULong millis() {
   auto elapsed = absl::Now() - start_time;
   auto elapsed_ms = absl::ToInt64Milliseconds(elapsed);
   return static_cast<uint32_t>(elapsed_ms);
 }
 
-uint32_t micros() {
+ArduinoULong micros() {
   auto elapsed = absl::Now() - start_time;
   auto elapsed_us = absl::ToInt64Microseconds(elapsed);
   return static_cast<uint32_t>(elapsed_us);
 }
 
-void delay(uint32_t ms) { absl::SleepFor(absl::Milliseconds(ms)); }
+void delay(ArduinoULong ms) { absl::SleepFor(absl::Milliseconds(ms)); }
 
-void delayMicroseconds(uint32_t us) { absl::SleepFor(absl::Microseconds(us)); }
+void delayMicroseconds(ArduinoUInt us) {
+  absl::SleepFor(absl::Microseconds(us));
+}

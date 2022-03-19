@@ -146,6 +146,15 @@ cc_test(
 )
 
 cc_test(
+    name = "limits_test",
+    srcs = ["limits_test.cc"],
+    deps = [
+        "//googletest:gunit_main",
+        "//mcucore/src:limits",
+    ],
+)
+
+cc_test(
     name = "log_sink_test",
     srcs = ["log_sink_test.cc"],
     deps = [
@@ -328,14 +337,5 @@ cc_test(
     deps = [
         "//googletest:gunit_main",
         "//mcucore/src:type_traits",
-    ],
-)
-
-cc_test(
-    name = "limits_test",
-    srcs = ["limits_test.cc"],
-    deps = [
-        "//googletest:gunit_main",
-        "//mcucore/src:limits",
     ],
 )

@@ -15,13 +15,12 @@ cc_library(
     hdrs = ["arduino.h"],
     deps = [
         ":avr_io",
-        ":character",
-        ":int_types",
         ":pgmspace",
         ":print",
         ":random",
         ":serial",
         ":stream",
+        ":wcharacter",
         ":wstring",
         "//absl/time",
     ],
@@ -47,19 +46,6 @@ cc_library(
     name = "avr_io",
     srcs = ["avr_io.cc"],
     hdrs = ["avr_io.h"],
-    deps = [":int_types"],
-)
-
-cc_library(
-    name = "character",
-    srcs = ["character.cc"],
-    hdrs = ["character.h"],
-    deps = ["//absl/strings"],
-)
-
-cc_library(
-    name = "int_types",
-    hdrs = ["int_types.h"],
 )
 
 cc_library(
@@ -100,6 +86,13 @@ cc_library(
     name = "stream",
     hdrs = ["stream.h"],
     deps = [":print"],
+)
+
+cc_library(
+    name = "wcharacter",
+    srcs = ["wcharacter.cc"],
+    hdrs = ["wcharacter.h"],
+    deps = ["//absl/strings"],
 )
 
 cc_library(
