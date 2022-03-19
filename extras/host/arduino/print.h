@@ -32,6 +32,10 @@ class Printable {
 class Print {
  public:
   Print();
+  // Arduino's Print doesn't have a dtor defined, so the compiler complains
+  // about a class with virtual functions having a non-virtual dtor. To shut it
+  // up, I've added one here, which necessitates some extra work in McuNet's
+  // connection.h.
   virtual ~Print();
 
   // These are the two abstract virtual methods in Arduino's Print class.
