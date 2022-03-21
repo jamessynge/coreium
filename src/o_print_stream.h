@@ -10,8 +10,9 @@
 //      const int kBaudRate = 9600;
 //      Serial.begin(kBaudRate);
 //      while (!Serial) {}
-//      mcucore::LogSink() << F("Starting the program, with baud rate ")
-//                         << kBaudRate << F(", current time: ") << millis();
+//      mcucore::LogSink()
+//          << FLASHSTR("Starting the program, with baud rate ") << kBaudRate
+//          << FLASHSTR(", current time: ") << millis();
 //    }
 //
 // Here LogSink is taking care of writing a newline at the end, and flushing the
@@ -22,6 +23,11 @@
 //      Serial.print(kBaudRate);
 //      Serial.print(F(", current time: "));
 //      Serial.printLn(millis());
+//
+// (We use FLASHSTR(str) rather than F(str) due to conflicts caused by Arduino's
+// F as the name for that macro. While macros should generally be avoided, they
+// are nonetheless useful, so when they are defined they should have names that
+// are not very likely to collide with choices made by others. Sigh.)
 //
 // Author: james.synge@gmail.com
 

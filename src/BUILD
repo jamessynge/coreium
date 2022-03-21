@@ -183,7 +183,7 @@ cc_library(
         ":crc32",
         ":logging",
         ":mcucore_platform",
-        "//mcucore/extras/host/arduino:avr_io",
+        ":o_print_stream",
         "//mcucore/extras/host/arduino:avr_wdt",
     ],
 )

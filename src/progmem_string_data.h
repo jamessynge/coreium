@@ -11,6 +11,12 @@
 // Arduino defined F(string_literal) macro, where every occurrence in a single
 // file is stored separately.
 //
+// (We use MCU_FLASHSTR(str) (or FLASHSTR(str) if not including this file),
+// rather than F(str) due to conflicts caused by Arduino's F as the name for
+// that macro. While macros should generally be avoided, they are nonetheless
+// useful, so when they are defined they should have names that are not very
+// likely to collide with choices made by others. Sigh.)
+//
 // MCU_PSV(string_literal) expands to a ProgmemStringView instance with
 // string_literal as the value it views.
 //

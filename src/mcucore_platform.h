@@ -52,7 +52,8 @@
 // The names of some Arduino macros are the same as those of symbols found in
 // useful libraries, interfering with their use or with my own definition of
 // symbols with those names (e.g. <limits> defines functions called min and
-// max). Where I find that to be the case, I undefine those macros here.
+// max). Where I find that to be the case, I undefine those macros here and work
+// to find an alternative in McuCore, et al.
 
 // #undef abs
 #undef max       // <limits>
@@ -60,6 +61,8 @@
 #undef round     // <chrono>
 #undef INTERNAL  // codes.proto.h
 #undef EXTERNAL  // absl/strings/cord.h (or included files).
+#undef F         // absl/meta/type_traits.h; see FLASHSTR below and MCU_FLASHSTR
+                 // in progmem_string_data.h.
 #undef DEFAULT
 
 template <typename T>
@@ -106,13 +109,9 @@ using MicrosT = decltype(micros());
 // It turns out that absl/meta/type_traits.h uses the symbol F in a template
 // definition, and Arduino's WString.h definition of macro F(s) interferes if
 // the former is included after the latter. Avoiding this problem by using
-// FLASHSTR in place of F on the host.
-#ifdef ARDUINO
-#define FLASHSTR(string_literal) F(string_literal)
-#else  // !ARDUINO
+// FLASHSTR in place of F. Note that this is AVR specific.
 #define FLASHSTR(string_literal) \
   (reinterpret_cast<const __FlashStringHelper *>(PSTR(string_literal)))
-#endif  // ARDUINO
 
 // Test for the has_feature intrinsic offered by some compilers.
 #ifdef __has_feature
