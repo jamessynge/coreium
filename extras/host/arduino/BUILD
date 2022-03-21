@@ -49,6 +49,12 @@ cc_library(
 )
 
 cc_library(
+    name = "avr_wdt",
+    hdrs = ["avr_wdt.h"],
+    deps = [":arduino"],
+)
+
+cc_library(
     name = "pgmspace",
     srcs = ["pgmspace.cc"],
     hdrs = ["pgmspace.h"],

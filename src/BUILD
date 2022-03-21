@@ -176,6 +176,19 @@ cc_library(
 )
 
 cc_library(
+    name = "jitter_random",
+    srcs = ["jitter_random.cc"],
+    hdrs = ["jitter_random.h"],
+    deps = [
+        ":crc32",
+        ":logging",
+        ":mcucore_platform",
+        "//mcucore/extras/host/arduino:avr_io",
+        "//mcucore/extras/host/arduino:avr_wdt",
+    ],
+)
+
+cc_library(
     name = "json_encoder",
     srcs = ["json_encoder.cc"],
     hdrs = ["json_encoder.h"],

@@ -11,7 +11,45 @@
 #define AVR_IO_CONST(type, name, value) \
   constexpr type name = value;          \
   static_assert(name == value, "dummy use of the variable")
-#endif
+#endif  // !AVR_IO_CONST
+
+#define DEFINE_AVR_8_BIT_TIMER_COUNTER_REGISTERS_AND_FIELDS(n)                 \
+  AVR_IO_REGISTER_LINKAGE volatile uint8_t TCCR##n##A, TCCR##n##B, TCCR##n##C; \
+  AVR_IO_REGISTER_LINKAGE volatile uint8_t OCR##n##A, OCR##n##B, OCR##n##C;    \
+  AVR_IO_REGISTER_LINKAGE volatile uint8_t TIMSK##n, TIFR##n;                  \
+  AVR_IO_REGISTER_LINKAGE volatile uint8_t TCNT##n, OCR##n, ICR##n;            \
+  AVR_IO_CONST(uint8_t, COM##n##A1, 7);                                        \
+  AVR_IO_CONST(uint8_t, COM##n##A0, 6);                                        \
+  AVR_IO_CONST(uint8_t, COM##n##B1, 5);                                        \
+  AVR_IO_CONST(uint8_t, COM##n##B0, 4);                                        \
+  AVR_IO_CONST(uint8_t, COM##n##C1, 3);                                        \
+  AVR_IO_CONST(uint8_t, COM##n##C0, 2);                                        \
+  /* Waveform Generation bit fields. */                                        \
+  AVR_IO_CONST(uint8_t, WGM##n##1, 1);                                         \
+  AVR_IO_CONST(uint8_t, WGM##n##0, 0);                                         \
+  AVR_IO_CONST(uint8_t, WGM##n##3, 4);                                         \
+  AVR_IO_CONST(uint8_t, WGM##n##2, 3);                                         \
+  /* Clock select bit fields. */                                               \
+  AVR_IO_CONST(uint8_t, CS##n##2, 2);                                          \
+  AVR_IO_CONST(uint8_t, CS##n##1, 1);                                          \
+  AVR_IO_CONST(uint8_t, CS##n##0, 0);                                          \
+  /* Interrupt Mask Register bit fields. */                                    \
+  AVR_IO_CONST(uint8_t, ICIE##n, 5);                                           \
+  AVR_IO_CONST(uint8_t, OCIE##n##C, 3);                                        \
+  AVR_IO_CONST(uint8_t, OCIE##n##B, 2);                                        \
+  AVR_IO_CONST(uint8_t, OCIE##n##A, 1);                                        \
+  AVR_IO_CONST(uint8_t, TOIE##n, 0);                                           \
+  /* Interrupt Flag Register bit fields. */                                    \
+  AVR_IO_CONST(uint8_t, ICF##n, 5);                                            \
+  AVR_IO_CONST(uint8_t, OCF##n##C, 3);                                         \
+  AVR_IO_CONST(uint8_t, OCF##n##B, 2);                                         \
+  AVR_IO_CONST(uint8_t, OCF##n##A, 1);                                         \
+  AVR_IO_CONST(uint8_t, TOV##n, 0)
+
+DEFINE_AVR_8_BIT_TIMER_COUNTER_REGISTERS_AND_FIELDS(0);  // NOLINT
+
+// Timer/Counter2 isn't really the same as 0, but good enough for now.
+DEFINE_AVR_8_BIT_TIMER_COUNTER_REGISTERS_AND_FIELDS(2);  // NOLINT
 
 #define DEFINE_AVR_16_BIT_TIMER_COUNTER_REGISTERS_AND_FIELDS(n)                \
   AVR_IO_REGISTER_LINKAGE volatile uint8_t TCCR##n##A, TCCR##n##B, TCCR##n##C; \
