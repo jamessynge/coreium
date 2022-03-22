@@ -24,6 +24,7 @@ cc_library(
         ":has_progmem_char_array",
         ":hex_escape",
         ":int_helpers",
+        ":jitter_random",
         ":json_encoder",
         ":json_encoder_helpers",
         ":limits",
@@ -184,6 +185,7 @@ cc_library(
         ":logging",
         ":mcucore_platform",
         ":o_print_stream",
+        ":progmem_string_data",
         "//mcucore/extras/host/arduino:avr_wdt",
     ],
 )

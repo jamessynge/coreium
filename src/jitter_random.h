@@ -34,6 +34,7 @@ namespace mcucore {
 class JitterRandom {
  public:
   enum ETimerCounterSelection {
+    // Timer/Counter 0 is not actually 'taken over', but always used.
     kTimerCounter0 = 1 << 0,
     kTimerCounter1 = 1 << 1,
     kTimerCounter3 = 1 << 3,

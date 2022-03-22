@@ -1,5 +1,3 @@
-#include "jitter_random.h"
-
 // I experimented with the idea of using the watchdog timmer to help generate
 // a random number here:
 //
@@ -23,6 +21,15 @@
 // NOTE: This is very specific to the ATmega2560, and would need to be modified
 // to support other/multiple types of AVR processors, let along other processor
 // families.
+
+// #ifndef JITTER_RANDOM_ENABLE_MCU_VLOG
+// #define MCU_DISABLE_VLOG
+// #endif
+
+#include "jitter_random.h"
+
+#include "o_print_stream.h"
+#include "progmem_string_data.h"
 
 #if MCU_HOST_TARGET
 #include "extras/host/arduino/avr_wdt.h"  // pragma: keep extras include
@@ -103,6 +110,7 @@ class JitterRandomCollector {
 
 #if MCU_HOST_TARGET || defined(TCNT1)
     if (timer_counters_to_use_ & JitterRandom::kTimerCounter1) {
+      MCU_VLOG(3) << MCU_FLASHSTR("Initializing") << MCU_FLASHSTR(" T/C 1");
       noInterrupts();
       TIMSK1 = 0;  // Disable interrupts from the Timer/Counter.
       TCCR1B = 0;  // Turn off the Timer/Counter.
@@ -124,6 +132,7 @@ class JitterRandomCollector {
 
 #if MCU_HOST_TARGET || defined(TCNT3)
     if (timer_counters_to_use_ & JitterRandom::kTimerCounter3) {
+      MCU_VLOG(3) << MCU_FLASHSTR("Initializing") << MCU_FLASHSTR(" T/C 3");
       noInterrupts();
       TIMSK3 = 0;  // Disable interrupts from the Timer/Counter.
       TCCR3B = 0;  // Turn off the Timer/Counter.
@@ -140,6 +149,7 @@ class JitterRandomCollector {
 
 #if MCU_HOST_TARGET || defined(TCNT4)
     if (timer_counters_to_use_ & JitterRandom::kTimerCounter4) {
+      MCU_VLOG(3) << MCU_FLASHSTR("Initializing") << MCU_FLASHSTR(" T/C 4");
       noInterrupts();
       TIMSK4 = 0;  // Disable interrupts from the Timer/Counter.
       TCCR4B = 0;  // Turn off the Timer/Counter.
@@ -162,6 +172,7 @@ class JitterRandomCollector {
 
 #if MCU_HOST_TARGET || defined(TCNT5)
     if (timer_counters_to_use_ & JitterRandom::kTimerCounter5) {
+      MCU_VLOG(3) << MCU_FLASHSTR("Initializing") << MCU_FLASHSTR(" T/C 5");
       noInterrupts();
       TIMSK5 = 0;  // Disable interrupts from the Timer/Counter.
       TCCR5B = 0;  // Turn off the Timer/Counter.
@@ -185,33 +196,42 @@ class JitterRandomCollector {
 
   ~JitterRandomCollector() {
     // Disable counters.
-    noInterrupts();
 
 #if MCU_HOST_TARGET || defined(TCNT1)
     if (timer_counters_to_use_ & JitterRandom::kTimerCounter1) {
+      MCU_VLOG(3) << MCU_FLASHSTR("Disabling") << MCU_FLASHSTR(" T/C 1");
+      noInterrupts();
       TCCR1B = 0;  // Turn off the Timer/Counter.
+      interrupts();
     }
 #endif
 
 #if MCU_HOST_TARGET || defined(TCNT3)
     if (timer_counters_to_use_ & JitterRandom::kTimerCounter3) {
+      MCU_VLOG(3) << MCU_FLASHSTR("Disabling") << MCU_FLASHSTR(" T/C 3");
+      noInterrupts();
       TCCR3B = 0;  // Turn off the Timer/Counter.
+      interrupts();
     }
 #endif
 
 #if MCU_HOST_TARGET || defined(TCNT4)
     if (timer_counters_to_use_ & JitterRandom::kTimerCounter4) {
+      MCU_VLOG(3) << MCU_FLASHSTR("Disabling") << MCU_FLASHSTR(" T/C 4");
+      noInterrupts();
       TCCR4B = 0;  // Turn off the Timer/Counter.
+      interrupts();
     }
 #endif
 
 #if MCU_HOST_TARGET || defined(TCNT5)
     if (timer_counters_to_use_ & JitterRandom::kTimerCounter5) {
+      MCU_VLOG(3) << MCU_FLASHSTR("Disabling") << MCU_FLASHSTR(" T/C 5");
+      noInterrupts();
       TCCR5B = 0;  // Turn off the Timer/Counter.
+      interrupts();
     }
 #endif
-
-    interrupts();
   }
 
   uint32_t crc_value() { return crc_.value(); }
@@ -220,7 +240,8 @@ class JitterRandomCollector {
     // Read each counter register, append to the crc, then wait a little bit
     // before reading the next register, where that little bit is a function
     // of the accumulated value so that it isn't the same every time.
-    crc_.appendByte(TCNT0);
+
+    AppendByte(TCNT0);
 
 #if MCU_HOST_TARGET || defined(TCNT1)
     {
@@ -279,8 +300,14 @@ class JitterRandomCollector {
   }
 
   void Append(uint16_t value) {
-    crc_.appendByte(static_cast<uint8_t>(value & 0xFF));
-    crc_.appendByte(static_cast<uint8_t>((value >> 8) & 0xFF));
+    AppendByte(static_cast<uint8_t>(value & 0xFF));
+    AppendByte(static_cast<uint8_t>((value >> 8) & 0xFF));
+  }
+
+  void AppendByte(const uint8_t value) {
+    crc_.appendByte(value);
+    MCU_VLOG(4) << MCU_FLASHSTR("AppendByte ") << BaseHex << value
+                << MCU_FLASHSTR(", crc is now ") << crc_.value();
   }
 
   Crc32 crc_;
@@ -293,13 +320,25 @@ uint32_t JitterRandom::random32(
     uint8_t num_watchdog_interrupts) {
   MCU_DCHECK_NE(num_watchdog_interrupts, 0);
 
+  MCU_VLOG(1) << MCU_FLASHSTR("JitterRandom::random32 timer_counters_to_use: ")
+              << BaseHex << static_cast<uint32_t>(timer_counters_to_use)
+              << BaseDec << MCU_FLASHSTR(", num_watchdog_interrupts: ")
+              << num_watchdog_interrupts;
+
   EnableWatchdogInterrupts();
 
   JitterRandomCollector collector(timer_counters_to_use);
 
   while (num_watchdog_interrupts > 0) {
+    const auto copy_of_interrupted = interrupted;
+    MCU_VLOG(2) << MCU_FLASHSTR("loop start, already interrupted=")
+                << copy_of_interrupted
+                << MCU_FLASHSTR(", num_watchdog_interrupts: ")
+                << num_watchdog_interrupts;
+
     num_watchdog_interrupts--;
     WaitForOneInterrupt();
+    MCU_VLOG(2) << MCU_FLASHSTR("interrupt detected");
     collector.CaptureCounters();
   }
 

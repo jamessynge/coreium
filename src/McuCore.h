@@ -14,6 +14,7 @@
 #include "has_progmem_char_array.h"  // IWYU pragma: export
 #include "hex_escape.h"              // IWYU pragma: export
 #include "int_helpers.h"             // IWYU pragma: export
+#include "jitter_random.h"           // IWYU pragma: export
 #include "json_encoder.h"            // IWYU pragma: export
 #include "json_encoder_helpers.h"    // IWYU pragma: export
 #include "limits.h"                  // IWYU pragma: export
