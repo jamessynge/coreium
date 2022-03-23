@@ -9,6 +9,12 @@ using ::mcucore::LogSink;
 using ::mcucore::ProgmemString;
 
 void setup() {
+  // Disable watchdog timer after reset; some AVR parts don't reset the watchdog
+  // upon start, so the setting from a previous run can kill a future one. I'm
+  // not sure if Arduino core for AVR already does this, in which case this
+  // would be redundant.
+  ::mcucore::avr::DisableWatchdogInterrupts();
+
   // Setup serial with the fastest baud rate supported by the SoftwareSerial
   // class. Note that the baud rate is meaningful on boards with
   // microcontrollers that do 'true' serial (e.g. Arduino Uno and Mega), while
@@ -24,6 +30,7 @@ void setup() {
   // to diagnose bugs (experience speaking).
   while (!Serial) {
   }
+  LogSink() << MCU_FLASHSTR("Serial ready");
 }
 
 void Report(ProgmemString ps, int counter_flags) {

@@ -46,6 +46,7 @@ cc_library(
         ":string_view",
         ":tiny_string",
         ":type_traits",
+        "//mcucore/src/platform/avr:watchdog",
         "//mcucore/src/semistd:utility",
     ],
 )
@@ -186,7 +187,7 @@ cc_library(
         ":mcucore_platform",
         ":o_print_stream",
         ":progmem_string_data",
-        "//mcucore/extras/host/arduino:avr_wdt",
+        "//mcucore/src/platform/avr:watchdog",
     ],
 )
 

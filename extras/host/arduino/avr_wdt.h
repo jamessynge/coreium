@@ -20,4 +20,25 @@
 
 inline void wdt_enable(uint8_t) {}
 
+// These aren't in avr/wdt.h, but this is an appropriate place to define them
+// for stubbing things out on host (i.e. a "do nothing" implementation, not an
+// attempt to simulate the watchdog behavior).
+
+#ifndef AVR_WDT_REGISTER_LINKAGE
+#define AVR_WDT_REGISTER_LINKAGE extern
+#endif  // !AVR_WDT_REGISTER_LINKAGE
+
+#define WDP0 0
+#define WDP1 1
+#define WDP2 2
+#define WDE 3
+#define WDCE 4
+#define WDP3 5
+#define WDIE 6
+#define WDIF 7
+
+#define _WD_CHANGE_BIT WDCE
+
+AVR_WDT_REGISTER_LINKAGE volatile uint8_t _WD_CONTROL_REG;  // NOLINT
+
 #endif  // MCUCORE_EXTRAS_HOST_ARDUINO_AVR_WDT_H_

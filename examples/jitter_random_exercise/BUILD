@@ -14,9 +14,6 @@ cc_binary(
         "//mcucore/extras/host/arduino",
         "//mcucore/extras/host/arduino:arduino_main",
         "//mcucore/src:McuCore",
-        "//mcucore/src:jitter_random",
-        "//mcucore/src:log_sink",
-        "//mcucore/src:o_print_stream",
-        "//mcucore/src:progmem_string",
+        "//mcucore/src/platform/avr:watchdog",
     ],
 )

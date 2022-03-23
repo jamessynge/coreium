@@ -23,6 +23,7 @@
 #include "mcucore_config.h"          // IWYU pragma: export
 #include "mcucore_platform.h"        // IWYU pragma: export
 #include "o_print_stream.h"          // IWYU pragma: export
+#include "platform/avr/watchdog.h"   // IWYU pragma: export
 #include "print_misc.h"              // IWYU pragma: export
 #include "printable_cat.h"           // IWYU pragma: export
 #include "progmem_string.h"          // IWYU pragma: export

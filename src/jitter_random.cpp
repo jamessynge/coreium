@@ -28,17 +28,17 @@
 
 #include "jitter_random.h"
 
-#include "o_print_stream.h"
-#include "progmem_string_data.h"
-
-#if MCU_HOST_TARGET
-#include "extras/host/arduino/avr_wdt.h"  // pragma: keep extras include
-#elif MCU_EMBEDDED_TARGET
-#include <avr/wdt.h>
-#endif
-
 #include "crc32.h"
 #include "logging.h"
+#include "o_print_stream.h"
+#include "platform/avr/watchdog.h"
+#include "progmem_string_data.h"
+
+// #if MCU_HOST_TARGET
+// #include
+// "extras/host/arduino/avr_wdt.h"
+// // pragma: keep extras include #elif MCU_EMBEDDED_TARGET #include <avr/wdt.h>
+// #endif
 
 namespace mcucore {
 namespace {
@@ -61,30 +61,6 @@ void WaitForInterrupt() {
   interrupted = false;
 }
 
-void EnableWatchdogInterrupts() {
-  noInterrupts();
-  interrupted = false;
-  MCUSR = 0;  // Is this needed?
-  wdt_enable(WDTO_15MS);
-  interrupts();
-}
-
-void DisableWatchdogInterrupts() {
-  noInterrupts();
-  // Paranoia: just in case some 'thread' is waiting for this to finish,
-  // signal that an interrupt has occurred.
-  interrupted = true;
-  MCUSR = 0;  // Is this needed?
-  wdt_reset();
-  interrupts();
-}
-
-void WaitForOneInterrupt() {
-  EnableWatchdogInterrupts();
-  WaitForInterrupt();
-  DisableWatchdogInterrupts();
-}
-
 }  // namespace
 
 // For accumulating state.
@@ -93,8 +69,6 @@ class JitterRandomCollector {
   explicit JitterRandomCollector(
       const JitterRandom::ETimerCounterSelection timer_counters_to_use)
       : timer_counters_to_use_(timer_counters_to_use) {
-    EnableWatchdogInterrupts();
-
     // Enable counters. We don't need to enable Timer/Counter 0 because that
     // is done by the Arduino core for AVR, and is used as the basis for
     // millis() and micros().
@@ -110,7 +84,7 @@ class JitterRandomCollector {
 
 #if MCU_HOST_TARGET || defined(TCNT1)
     if (timer_counters_to_use_ & JitterRandom::kTimerCounter1) {
-      MCU_VLOG(3) << MCU_FLASHSTR("Initializing") << MCU_FLASHSTR(" T/C 1");
+      MCU_VLOG(3) << MCU_FLASHSTR("Initializing") << MCU_FLASHSTR(" T/C ") << 1;
       noInterrupts();
       TIMSK1 = 0;  // Disable interrupts from the Timer/Counter.
       TCCR1B = 0;  // Turn off the Timer/Counter.
@@ -132,7 +106,7 @@ class JitterRandomCollector {
 
 #if MCU_HOST_TARGET || defined(TCNT3)
     if (timer_counters_to_use_ & JitterRandom::kTimerCounter3) {
-      MCU_VLOG(3) << MCU_FLASHSTR("Initializing") << MCU_FLASHSTR(" T/C 3");
+      MCU_VLOG(3) << MCU_FLASHSTR("Initializing") << MCU_FLASHSTR(" T/C ") << 3;
       noInterrupts();
       TIMSK3 = 0;  // Disable interrupts from the Timer/Counter.
       TCCR3B = 0;  // Turn off the Timer/Counter.
@@ -149,7 +123,7 @@ class JitterRandomCollector {
 
 #if MCU_HOST_TARGET || defined(TCNT4)
     if (timer_counters_to_use_ & JitterRandom::kTimerCounter4) {
-      MCU_VLOG(3) << MCU_FLASHSTR("Initializing") << MCU_FLASHSTR(" T/C 4");
+      MCU_VLOG(3) << MCU_FLASHSTR("Initializing") << MCU_FLASHSTR(" T/C ") << 4;
       noInterrupts();
       TIMSK4 = 0;  // Disable interrupts from the Timer/Counter.
       TCCR4B = 0;  // Turn off the Timer/Counter.
@@ -172,7 +146,7 @@ class JitterRandomCollector {
 
 #if MCU_HOST_TARGET || defined(TCNT5)
     if (timer_counters_to_use_ & JitterRandom::kTimerCounter5) {
-      MCU_VLOG(3) << MCU_FLASHSTR("Initializing") << MCU_FLASHSTR(" T/C 5");
+      MCU_VLOG(3) << MCU_FLASHSTR("Initializing") << MCU_FLASHSTR(" T/C ") << 5;
       noInterrupts();
       TIMSK5 = 0;  // Disable interrupts from the Timer/Counter.
       TCCR5B = 0;  // Turn off the Timer/Counter.
@@ -199,7 +173,7 @@ class JitterRandomCollector {
 
 #if MCU_HOST_TARGET || defined(TCNT1)
     if (timer_counters_to_use_ & JitterRandom::kTimerCounter1) {
-      MCU_VLOG(3) << MCU_FLASHSTR("Disabling") << MCU_FLASHSTR(" T/C 1");
+      MCU_VLOG(3) << MCU_FLASHSTR("Disabling") << MCU_FLASHSTR(" T/C ") << 1;
       noInterrupts();
       TCCR1B = 0;  // Turn off the Timer/Counter.
       interrupts();
@@ -208,7 +182,7 @@ class JitterRandomCollector {
 
 #if MCU_HOST_TARGET || defined(TCNT3)
     if (timer_counters_to_use_ & JitterRandom::kTimerCounter3) {
-      MCU_VLOG(3) << MCU_FLASHSTR("Disabling") << MCU_FLASHSTR(" T/C 3");
+      MCU_VLOG(3) << MCU_FLASHSTR("Disabling") << MCU_FLASHSTR(" T/C ") << 3;
       noInterrupts();
       TCCR3B = 0;  // Turn off the Timer/Counter.
       interrupts();
@@ -217,7 +191,7 @@ class JitterRandomCollector {
 
 #if MCU_HOST_TARGET || defined(TCNT4)
     if (timer_counters_to_use_ & JitterRandom::kTimerCounter4) {
-      MCU_VLOG(3) << MCU_FLASHSTR("Disabling") << MCU_FLASHSTR(" T/C 4");
+      MCU_VLOG(3) << MCU_FLASHSTR("Disabling") << MCU_FLASHSTR(" T/C ") << 4;
       noInterrupts();
       TCCR4B = 0;  // Turn off the Timer/Counter.
       interrupts();
@@ -226,7 +200,7 @@ class JitterRandomCollector {
 
 #if MCU_HOST_TARGET || defined(TCNT5)
     if (timer_counters_to_use_ & JitterRandom::kTimerCounter5) {
-      MCU_VLOG(3) << MCU_FLASHSTR("Disabling") << MCU_FLASHSTR(" T/C 5");
+      MCU_VLOG(3) << MCU_FLASHSTR("Disabling") << MCU_FLASHSTR(" T/C ") << 5;
       noInterrupts();
       TCCR5B = 0;  // Turn off the Timer/Counter.
       interrupts();
@@ -325,7 +299,8 @@ uint32_t JitterRandom::random32(
               << BaseDec << MCU_FLASHSTR(", num_watchdog_interrupts: ")
               << num_watchdog_interrupts;
 
-  EnableWatchdogInterrupts();
+  avr::EnableWatchdogInterrupts();
+  interrupted = false;
 
   JitterRandomCollector collector(timer_counters_to_use);
 
@@ -337,12 +312,12 @@ uint32_t JitterRandom::random32(
                 << num_watchdog_interrupts;
 
     num_watchdog_interrupts--;
-    WaitForOneInterrupt();
+    WaitForInterrupt();
     MCU_VLOG(2) << MCU_FLASHSTR("interrupt detected");
     collector.CaptureCounters();
   }
 
-  DisableWatchdogInterrupts();
+  avr::DisableWatchdogInterrupts();
 
   return collector.crc_value();
 }

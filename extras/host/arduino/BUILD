@@ -50,8 +50,8 @@ cc_library(
 
 cc_library(
     name = "avr_wdt",
+    srcs = ["avr_wdt.cc"],
     hdrs = ["avr_wdt.h"],
-    deps = [":arduino"],
 )
 
 cc_library(
