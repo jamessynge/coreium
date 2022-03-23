@@ -33,32 +33,66 @@ void setup() {
   LogSink() << MCU_FLASHSTR("Serial ready");
 }
 
-void Report(ProgmemString ps, int counter_flags) {
-  const auto r = JitterRandom::random32(
-      static_cast<JitterRandom::ETimerCounterSelection>(counter_flags));
+uint32_t Random32(const int counter_flags, const int interrupt_count) {
+  return JitterRandom::random32(
+      static_cast<JitterRandom::ETimerCounterSelection>(counter_flags),
+      interrupt_count);
+}
+
+void Report(ProgmemString ps, const int counter_flags,
+            const int interrupt_count) {
+  const auto r = Random32(counter_flags, interrupt_count);
   LogSink() << ps << BaseHex << r;
 }
 
 void loop() {
   LogSink() << MCU_FLASHSTR("Loop Entry");
 
-  Report(MCU_FLASHSTR("T/C 0 only: "), JitterRandom::kTimerCounter0);
+  for (int interrupt_count = 1; interrupt_count <= 6; ++interrupt_count) {
+    const auto r0 = Random32(JitterRandom::kTimerCounter0, interrupt_count);
+    const auto r01 = Random32(JitterRandom::kTimerCounter1, interrupt_count);
+    const auto r013 =
+        Random32(JitterRandom::kTimerCounter0 | JitterRandom::kTimerCounter1 |
+                     JitterRandom::kTimerCounter3,
+                 interrupt_count);
+    const auto r0134 = Random32(
+        JitterRandom::kTimerCounter0 | JitterRandom::kTimerCounter1 |
+            JitterRandom::kTimerCounter3 | JitterRandom::kTimerCounter4,
+        interrupt_count);
+    const auto r01345 = Random32(
+        JitterRandom::kTimerCounter0 | JitterRandom::kTimerCounter1 |
+            JitterRandom::kTimerCounter3 | JitterRandom::kTimerCounter4 |
+            JitterRandom::kTimerCounter5,
+        interrupt_count);
 
-  Report(MCU_FLASHSTR("T/C 0, 1: "),
-         JitterRandom::kTimerCounter0 | JitterRandom::kTimerCounter1);
+#if 1  // Print in base 36.
+    LogSink sink;
+    sink << MCU_FLASHSTR("ic ") << interrupt_count << ' ';
+    sink.set_base(36);
+    sink << r0 << ' ' << r01 << ' ' << r013 << ' ' << r0134 << ' ' << r01345;
+#else
+    LogSink() << MCU_FLASHSTR("ic ") << interrupt_count << ' ' << r0 << ' '
+              << r01 << ' ' << r013 << ' ' << r0134 << ' ' << r01345;
+#endif
 
-  Report(MCU_FLASHSTR("T/C 0, 1, 3: "), JitterRandom::kTimerCounter0 |
-                                            JitterRandom::kTimerCounter1 |
-                                            JitterRandom::kTimerCounter3);
+#if 0
+    Report(MCU_FLASHSTR("T/C 0 only: "), JitterRandom::kTimerCounter0);
 
-  Report(MCU_FLASHSTR("T/C 0, 1, 3, 4: "),
-         JitterRandom::kTimerCounter0 | JitterRandom::kTimerCounter1 |
-             JitterRandom::kTimerCounter3 | JitterRandom::kTimerCounter4);
+    Report(MCU_FLASHSTR("T/C 0, 1: "),
+           JitterRandom::kTimerCounter0 | JitterRandom::kTimerCounter1);
 
-  Report(MCU_FLASHSTR("T/C 0, 1, 3, 4, 5: "),
-         JitterRandom::kTimerCounter0 | JitterRandom::kTimerCounter1 |
-             JitterRandom::kTimerCounter3 | JitterRandom::kTimerCounter4 |
-             JitterRandom::kTimerCounter5);
+    Report(MCU_FLASHSTR("T/C 0, 1, 3: "), JitterRandom::kTimerCounter0 |
+                                              JitterRandom::kTimerCounter1 |
+                                              JitterRandom::kTimerCounter3);
 
-  delay(10 * 1000);
+    Report(MCU_FLASHSTR("T/C 0, 1, 3, 4: "),
+           JitterRandom::kTimerCounter0 | JitterRandom::kTimerCounter1 |
+               JitterRandom::kTimerCounter3 | JitterRandom::kTimerCounter4);
+
+    Report(MCU_FLASHSTR("T/C 0, 1, 3, 4, 5: "),
+           JitterRandom::kTimerCounter0 | JitterRandom::kTimerCounter1 |
+               JitterRandom::kTimerCounter3 | JitterRandom::kTimerCounter4 |
+               JitterRandom::kTimerCounter5);
+#endif
+  }
 }
