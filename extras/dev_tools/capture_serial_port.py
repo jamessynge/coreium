@@ -3,6 +3,7 @@
 
 import argparse
 import sys
+from typing import List
 
 import serial  # 3rd party, not standard Python
 
@@ -17,12 +18,13 @@ def main(argv: List[str]):
   parsed_args = parser.parse_args(args)
   print('port:', parsed_args.port)
 
-  ser = serial.Serial(parsed_args.port, timeout=120)
+  ser = serial.Serial(parsed_args.port, baudrate=115200, timeout=120)
 
   while True:
     try:
       line = ser.readline()
-      print(line)
+      line = line.decode('utf-8')
+      print(line, end='', flush=True)
     except KeyboardInterrupt:
       print('Keyboard Interrupt')
       break
