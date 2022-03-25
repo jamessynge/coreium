@@ -321,5 +321,12 @@ uint32_t JitterRandom::random32(
 
   return collector.crc_value();
 }
+void JitterRandom::setRandomSeed(ETimerCounterSelection timer_counters_to_use,
+                                 uint8_t num_watchdog_interrupts) {
+  uint32_t seed = random32(timer_counters_to_use, num_watchdog_interrupts);
+  MCU_VLOG(1) << MCU_FLASHSTR("JitterRandom::setRandomSeed to ") << BaseHex
+              << seed;
+  randomSeed(seed);
+}
 
 }  // namespace mcucore

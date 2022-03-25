@@ -11,4 +11,6 @@ int32_t random(int32_t howbig);
 // Returns a random number in the range [howsmall, howbig-1].
 int32_t random(int32_t howsmall, int32_t howbig);
 
+inline void randomSeed(uint32_t seed) {}
+
 #endif  // MCUCORE_EXTRAS_HOST_ARDUINO_RANDOM_H_

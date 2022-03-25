@@ -44,11 +44,11 @@ class JitterRandom {
         kTimerCounter1 | kTimerCounter3 | kTimerCounter4 | kTimerCounter5,
   };
 
-  // Returns an unsigned 32-bit pseudo random value. `timer_counters_to_use`
-  // specifies which of the timer/counters to take over for this purpose (i.e.
-  // which aren't currently being used for some other purpose).
-  // `num_watchdog_interrupts` specifies how many calls to the watchdog
-  // interrupt handler to wait for; must be non-zero.
+  // Returns an unsigned 32-bit pseudo-random value, based on hardware clock
+  // jitter. `timer_counters_to_use` specifies which of the timer/counters to
+  // take over for this purpose (i.e. which aren't currently being used for some
+  // other purpose). `num_watchdog_interrupts` specifies how many calls to the
+  // watchdog interrupt handler to wait for; must be non-zero.
   //
   // We assume that Timer/Counter 0 is already configured by the Arduino core
   // libraries, and read from its count when reading the counters.
@@ -60,8 +60,15 @@ class JitterRandom {
   // Regardless of the value of `timer_counters_to_use`, all timer/counter
   // registers will be read on each watchdog interrupt and used as sources of
   // unpredictable input, even though they all have the same clock base.
-  static uint32_t random32(ETimerCounterSelection timer_counters_to_use,
-                           uint8_t num_watchdog_interrupts = 15);
+  static uint32_t random32(
+      ETimerCounterSelection timer_counters_to_use = kTimerCounter0,
+      uint8_t num_watchdog_interrupts = 6);
+
+  // Initialize the Arduino Random Number Generator with a seed produced by
+  // random32().
+  static void setRandomSeed(
+      ETimerCounterSelection timer_counters_to_use = kTimerCounter0,
+      uint8_t num_watchdog_interrupts = 6);
 };
 
 }  // namespace mcucore
