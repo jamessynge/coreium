@@ -1,3 +1,28 @@
+// This implementation is specific to ATmega640/1280/1281/2560/2561, and has not
+// been generalized or tested with other AVR models. From the datasheet for
+// those models:
+//
+//    The WDT gives an interrupt or a system reset when the counter reaches a
+//    given time-out value. In normal operation mode, it is required that the
+//    system uses the WDR - Watchdog Timer Reset - instruction to restart the
+//    counter before the time-out value is reached. If the system doesn't
+//    use the WDR - Watchdog Timer Reset - instruction to restart the
+//    counter, an interrupt or system reset will be issued.
+//
+//    ... alterations to the Watchdog set-up must follow timed sequences. The
+//    sequence for clearing WDE and changing time-out configuration is as
+//    follows:
+//    1. In the same operation, write a logic one to the Watchdog change enable
+//       bit (WDCE) and WDE. A logic one must be written to WDE regardless of
+//       the previous value of the WDE bit.
+//    2. Within the next four clock cycles, write the WDE and Watchdog prescaler
+//       bits (WDP) as desired, but with the WDCE bit cleared. This must be done
+//       in one operation.
+//    ...
+//    To clear WDE (Watchdog System Reset Enable), WDRF (Watchdog Reset Flag)
+//    must be cleared first. This feature ensures multiple resets during
+//    conditions causing failure, and a safe start-up after the failure.
+
 #include "platform/avr/watchdog.h"
 
 #include "logging.h"
@@ -14,59 +39,60 @@
 namespace mcucore {
 namespace avr {
 namespace {
-constexpr uint8_t kMaxPrescaler = 9;
-}
 
-void EnableWatchdogInterrupts(uint8_t prescaler) {
+constexpr uint8_t kMaxPrescaler = 9;  // 0b1001
+
+uint8_t PrescalerToRegisterMask(uint8_t prescaler) {
   MCU_DCHECK_LE(prescaler, kMaxPrescaler) << prescaler;
   if (prescaler > kMaxPrescaler) {
     prescaler = kMaxPrescaler;
   }
-
-  uint8_t wdt_configuration = (1 << WDIE);
+  uint8_t mask = 0;
   if ((prescaler & (1 << 3)) != 0) {
-    wdt_configuration |= (1 << WDP3);
+    mask |= (1 << WDP3);
   }
   if ((prescaler & (1 << 2)) != 0) {
-    wdt_configuration |= (1 << WDP2);
+    mask |= (1 << WDP2);
   }
   if ((prescaler & (1 << 1)) != 0) {
-    wdt_configuration |= (1 << WDP1);
+    mask |= (1 << WDP1);
   }
   if ((prescaler & (1 << 0)) != 0) {
-    wdt_configuration |= (1 << WDP0);
+    mask |= (1 << WDP0);
   }
-
-  noInterrupts();
-
-  // Clear WDRF (Watchdog Reset Flag) in MCUSR.
-  MCUSR &= ~(1 << WDRF);
-
-  // Enable changing the configuration of the watchdog.
-  _WD_CONTROL_REG |= (1 << _WD_CHANGE_BIT) | (1 << WDE);
-
-  // Set the watchdog (must be done within 4 clock cycles of enabling the
-  // change).
-  _WD_CONTROL_REG = wdt_configuration;
-
-  interrupts();
+  return mask;
 }
 
-void DisableWatchdogInterrupts() {
+void SetControlRegister(uint8_t new_value) {
   noInterrupts();
 
-  // Clear WDRF (Watchdog Reset Flag) in MCUSR.
+  // Clear WDRF (Watchdog Reset Flag) in MCUSR. This is required in order to
+  // clear the WDE flag (which we may be doing).
   MCUSR &= ~(1 << WDRF);
 
-  // Write logical one to WDCE and WDE; keep old prescaler setting to prevent
-  // unintentional time-out.
+  // Write logical one to WDCE (Change Enable) and WDE bits. This enables
+  // changing the configuration of the watchdog.
   _WD_CONTROL_REG |= (1 << WDCE) | (1 << WDE);
 
-  // Disable the watchdog.
-  _WD_CONTROL_REG = 0x00;
+  // Overwrite the register.
+  _WD_CONTROL_REG = new_value;
 
   interrupts();
 }
+
+}  // namespace
+
+void DisableWatchdog() { SetControlRegister(0x00); }
+
+void EnableWatchdogInterruptMode(uint8_t prescaler) {
+  SetControlRegister((1 << WDIE) | PrescalerToRegisterMask(prescaler));
+}
+
+void EnableWatchdogResetMode(uint8_t prescaler) {
+  SetControlRegister((1 << WDE) | PrescalerToRegisterMask(prescaler));
+}
+
+void ResetWatchdogCounter() { wdt_reset(); }
 
 }  // namespace avr
 }  // namespace mcucore

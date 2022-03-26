@@ -13,7 +13,7 @@ void setup() {
   // upon start, so the setting from a previous run can kill a future one. I'm
   // not sure if Arduino core for AVR already does this, in which case this
   // would be redundant.
-  ::mcucore::avr::DisableWatchdogInterrupts();
+  ::mcucore::avr::DisableWatchdog();
 
   // Setup serial with the fastest baud rate supported by the SoftwareSerial
   // class. Note that the baud rate is meaningful on boards with

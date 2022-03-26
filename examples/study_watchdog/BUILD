@@ -8,8 +8,8 @@ package(
 )
 
 cc_binary(
-    name = "jitter_random_exercise",
-    srcs = ["jitter_random_exercise.ino.cc"],
+    name = "study_watchdog",
+    srcs = ["study_watchdog.ino.cc"],
     deps = [
         "//mcucore/extras/host/arduino",
         "//mcucore/extras/host/arduino:arduino_main",

@@ -299,7 +299,7 @@ uint32_t JitterRandom::random32(
               << BaseDec << MCU_FLASHSTR(", num_watchdog_interrupts: ")
               << num_watchdog_interrupts;
 
-  avr::EnableWatchdogInterrupts();
+  avr::EnableWatchdogInterruptMode();
   interrupted = false;
 
   JitterRandomCollector collector(timer_counters_to_use);
@@ -317,7 +317,7 @@ uint32_t JitterRandom::random32(
     collector.CaptureCounters();
   }
 
-  avr::DisableWatchdogInterrupts();
+  avr::DisableWatchdog();
 
   return collector.crc_value();
 }
