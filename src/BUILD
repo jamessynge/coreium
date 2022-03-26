@@ -20,6 +20,7 @@ cc_library(
         ":eeprom_io",
         ":eeprom_region",
         ":flash_string_table",
+        ":has_insert_into",
         ":has_print_to",
         ":has_progmem_char_array",
         ":hex_escape",
@@ -277,6 +278,7 @@ cc_library(
     name = "o_print_stream",
     hdrs = ["o_print_stream.h"],
     deps = [
+        ":has_insert_into",
         ":has_print_to",
         ":int_helpers",
         ":mcucore_platform",
@@ -421,4 +423,13 @@ cc_library(
     name = "type_traits",
     hdrs = ["type_traits.h"],
     deps = [":mcucore_platform"],
+)
+
+cc_library(
+    name = "has_insert_into",
+    hdrs = ["has_insert_into.h"],
+    deps = [
+        ":mcucore_platform",
+        ":type_traits",
+    ],
 )

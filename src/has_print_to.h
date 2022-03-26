@@ -1,11 +1,14 @@
 #ifndef MCUCORE_SRC_HAS_PRINT_TO_H_
 #define MCUCORE_SRC_HAS_PRINT_TO_H_
 
-// Support for determining at compile time if a value has support for being
-// inserted into an OPrintStream. In particular, is it a class instance with a
-// printTo method that has a signature compatible with Arduino's
-// Printable::printTo method, or is there a PrintValueTo function that will
-// print the value to a Print instance.
+// Support for determining at compile time if a value of type T has support for
+// being printed. In particular, determining if:
+//
+// A) T is a class or struct with a printTo method that has a signature
+//    compatible with Arduino's Printable::printTo method;
+//
+// B) there exists a PrintValueTo(Print& out, const T& value) function, which is
+//    presumed to print the value to the Print instance.
 //
 // Author: james.synge@gmail.com
 

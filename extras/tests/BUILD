@@ -339,3 +339,14 @@ cc_test(
         "//mcucore/src:type_traits",
     ],
 )
+
+cc_test(
+    name = "has_insert_into_test",
+    srcs = ["has_insert_into_test.cc"],
+    deps = [
+        "//googletest:gunit_main",
+        "//mcucore/extras/test_tools:print_to_std_string",
+        "//mcucore/src:has_insert_into",
+        "//mcucore/src:o_print_stream",
+    ],
+)

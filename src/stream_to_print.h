@@ -13,9 +13,20 @@
 #include "mcucore_platform.h"
 #include "o_print_stream.h"
 
+namespace mcucore {
+
+class StreamToPrint : public OPrintStream {
+ public:
+  explicit StreamToPrint(Print& out) : OPrintStream(out) {}
+  StreamToPrint(const StreamToPrint& out) = default;
+  StreamToPrint(StreamToPrint&& out) = default;
+};
+
+}  // namespace mcucore
+
 template <typename T>
-::mcucore::OPrintStream operator<<(Print& out, const T& value) {
-  ::mcucore::OPrintStream strm(out);
+::mcucore::StreamToPrint operator<<(Print& out, const T& value) {
+  ::mcucore::StreamToPrint strm(out);
   strm << value;
   return strm;
 }

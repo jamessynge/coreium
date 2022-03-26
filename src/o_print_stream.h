@@ -31,6 +31,7 @@
 //
 // Author: james.synge@gmail.com
 
+#include "has_insert_into.h"
 #include "has_print_to.h"
 #include "int_helpers.h"
 #include "mcucore_platform.h"
@@ -45,20 +46,20 @@
 namespace mcucore {
 
 // The template function PrintValue is the core of this class, and the specific
-// version that is realized is selected based on the use of the enable_if<T>
+// version that is realized is selected based on the use of the enable_if_t<T>
 // type trait. Care has been taken to ensure that only a single PrintValue
 // definition works for each type that we intend to support.
 //
-// Since the type of the value to be printed is known at compile time, it should
-// be that the compiler is able to inline most calls to the appropriate function
+// Since the type of the value to be printed is known at compile time, the
+// compiler *should* be able to inline most calls to the appropriate function
 // calls defined outside of this class (e.g. Foo::printTo(Print&) or
-// PrintValueTo(const Foo&, Print&)).
+// PrintValueTo(const Foo&, Print&)). In this example:
 //
 // [1]    SomeType foo;
 // [2]    OPrintStream ostrm(Serial);
 // [3]    ostrm << &foo;
 //
-// the insertion operator (operator<<) ultimately calls the PrintValue
+// The insertion operator (operator<<) ultimately calls the PrintValue
 // definition for pointers, which in turn calls the PrintPointer overload for
 // values of type "const void*". The compiler should thus be able to replace
 // line [3] with (roughly) this:
@@ -91,6 +92,9 @@ class OPrintStream {
   inline void set_base(uint8_t base) { base_ = base; }
 
  protected:
+  OPrintStream(const OPrintStream& out) = default;
+  OPrintStream(OPrintStream&& out) = default;
+
   // The template function DoPrint is exposed so that subclasses can call it,
   // rather than using an awkward call to the insertion operator.
   template <typename T>
@@ -107,9 +111,19 @@ class OPrintStream {
       typename ::mcucore::is_same<char, typename ::mcucore::remove_cv<T>::type>;
 
   // We provide multiple definitions of the template function PrintValue, with
-  // enable_if used to select one of them based on the type of the value.
+  // enable_if_t used to select one of them based on the type of the value.
   // Ideally the compiled code is as specific to the inserted type as possible
   // so that most stream insertions require as little code as possible.
+  //
+  // NOTE: The value (1, 10, etc. below) assigned to the type produced by
+  // enable_if_t is used to address the problem described as follows by
+  // https://en.cppreference.com/w/cpp/types/enable_if:
+  //
+  //   A common mistake is to declare two function templates that differ only in
+  //   their default template arguments. This does not work because the
+  //   declarations are treated as redeclarations of the same function template
+  //   (default template arguments are not accounted for in function template
+  //   equivalence).
 
   // The value is of type char, but not signed char or unsigned char. We want
   // single characters (e.g. '\n') to be streamed as characters, but want small
@@ -120,9 +134,19 @@ class OPrintStream {
     out_.print(value);
   }
 
+  // The value is of a class type for which the class has an InsertInto
+  // function.
+  template <typename HasInsertInto,
+            enable_if_t<has_insert_into<HasInsertInto>::value, int> = 10>
+  inline void PrintValue(const HasInsertInto& value) {
+    value.InsertInto(*this);
+  }
+
+  // Reserving 3 for HasInsertValueInto.
+
   // The value is of a class type for which the class has a printTo function.
   template <typename HasPrintTo,
-            enable_if_t<has_print_to<HasPrintTo>::value, int> = 2>
+            enable_if_t<has_print_to<HasPrintTo>::value, int> = 15>
   inline void PrintValue(const HasPrintTo value) {
     value.printTo(out_);
   }
@@ -132,7 +156,7 @@ class OPrintStream {
   template <typename HasPrintValueTo,
             enable_if_t<has_print_value_to<HasPrintValueTo>::value &&
                             !is_char<HasPrintValueTo>::value,
-                        int> = 3>
+                        int> = 20>
   inline void PrintValue(const HasPrintValueTo value) {
     PrintValueTo(value, out_);
   }
@@ -140,7 +164,7 @@ class OPrintStream {
   // The value is a bool and there is no PrintValueTo function defined for bool.
   template <typename Bool, enable_if_t<is_same<Bool, bool>::value &&
                                            !has_print_value_to<Bool>::value,
-                                       int> = 4>
+                                       int> = 25>
   inline void PrintValue(const Bool value) {
     out_.print(value ? MCU_FLASHSTR("true") : MCU_FLASHSTR("false"));
   }
@@ -154,7 +178,7 @@ class OPrintStream {
       enable_if_t<is_integral<Integer>::value && !is_char<Integer>::value &&
                       !is_same<Integer, bool>::value &&
                       !has_print_value_to<Integer>::value,
-                  int> = 5>
+                  int> = 30>
   inline void PrintValue(const Integer value) {
     PrintInteger(value);
   }
@@ -163,7 +187,7 @@ class OPrintStream {
   // function.
   template <typename Float, enable_if_t<is_floating_point<Float>::value &&
                                             !has_print_value_to<Float>::value,
-                                        int> = 6>
+                                        int> = 35>
   inline void PrintValue(const Float value) {
     out_.print(value);
   }
@@ -172,7 +196,7 @@ class OPrintStream {
   template <typename Pointer,
             enable_if_t<is_pointer<Pointer>::value &&
                             !has_print_value_to<Pointer>::value,
-                        int> = 7>
+                        int> = 40>
   inline void PrintValue(const Pointer value) {
     PrintPointer(value);
   }
@@ -181,7 +205,7 @@ class OPrintStream {
   // Print it as an integer of the underlying type.
   template <typename Enum, enable_if_t<is_enum<Enum>::value &&
                                            !has_print_value_to<Enum>::value,
-                                       int> = 8>
+                                       int> = 45>
   inline void PrintValue(const Enum value) {
     PrintInteger(static_cast<underlying_type_t<Enum>>(value));
   }
@@ -190,12 +214,13 @@ class OPrintStream {
   // Print::print(Others) method.
   template <
       typename Others,
-      enable_if_t<!has_print_to<Others>::value && !is_pointer<Others>::value &&
-                      !is_integral<Others>::value &&
-                      !is_floating_point<Others>::value &&
-                      !has_print_value_to<Others>::value &&
-                      !is_enum<Others>::value,
-                  int> = 9>
+      enable_if_t<
+          !is_char<Others>::value && !has_insert_into<Others>::value &&
+              !has_print_to<Others>::value && !is_pointer<Others>::value &&
+              !is_integral<Others>::value &&
+              !is_floating_point<Others>::value &&
+              !has_print_value_to<Others>::value && !is_enum<Others>::value,
+          int> = 50>
   inline void PrintValue(const Others value) {
     out_.print(value);
   }
