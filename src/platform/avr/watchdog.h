@@ -46,6 +46,9 @@ void EnableWatchdogResetMode(uint8_t prescaler = 0);
 // though it appears to be OK to use it in interrupt mode, too.
 void ResetWatchdogCounter();
 
+// Return the value of the watchdog configuration register.
+uint8_t GetWatchdogConfig();
+
 }  // namespace avr
 }  // namespace mcucore
 

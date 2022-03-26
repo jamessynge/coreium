@@ -11,8 +11,9 @@ cc_binary(
     name = "study_watchdog",
     srcs = ["study_watchdog.ino.cc"],
     deps = [
-        "//mcucore/extras/host/arduino",
         "//mcucore/extras/host/arduino:arduino_main",
         "//mcucore/src:McuCore",
+        "//mcucore/src:progmem_string_data",
+        "//mcucore/src/platform/avr:watchdog",
     ],
 )

@@ -1,30 +1,162 @@
 // Exercise JitterRandom, to assess how well it is working "by eye."
 
-#include <Arduino.h>
 #include <McuCore.h>
 
+using ::mcucore::BaseDec;
 using ::mcucore::BaseHex;
+using ::mcucore::BaseTwo;
 using ::mcucore::LogSink;
+using ::mcucore::OPrintStream;
 
-const auto tc0_at_global = TCNT0;
-const auto tc1_at_global = TCNT1;
-const auto tc2_at_global = TCNT2;
-const auto tc3_at_global = TCNT3;
-const auto tc4_at_global = TCNT4;
-const auto tc5_at_global = TCNT5;
-const auto millis_at_global = millis();
-const auto micros_at_global = micros();
+const auto SEP = MCU_FLASHSTR(", ");
+
+// These don't capture all of the configuration, e.g. data direction config
+// controls connection to I/O pins and interrupt configuration.
+
+struct EightBitTimerCounterConfig {
+  void InsertInto(OPrintStream& strm) const {
+    strm << BaseTwo << MCU_FLASHSTR("TCCRnA=") << tccr_a << SEP  // Split
+         << MCU_FLASHSTR("TCCRnB=") << tccr_b << SEP             // lines
+         << MCU_FLASHSTR("OCRnA=") << ocr_a << SEP               // here.
+         << MCU_FLASHSTR("OCRnB=") << ocr_b;
+  }
+
+  uint8_t tccr_a;
+  uint8_t tccr_b;
+  uint8_t ocr_a;
+  uint8_t ocr_b;
+};
+
+struct TimerCounter0Config : EightBitTimerCounterConfig {
+  TimerCounter0Config() {
+    tccr_a = TCCR0A;
+    tccr_b = TCCR0B;
+    ocr_a = OCR0A;
+    ocr_b = OCR0B;
+  }
+
+  void InsertInto(OPrintStream& strm) const {
+    strm << MCU_FLASHSTR("T/C 0 Config: ");
+    EightBitTimerCounterConfig::InsertInto(strm);
+  }
+};
+
+struct TimerCounter2Config : EightBitTimerCounterConfig {
+  TimerCounter2Config() {
+    tccr_a = TCCR2A;
+    tccr_b = TCCR2B;
+    ocr_a = OCR2A;
+    ocr_b = OCR2B;
+    assr = ASSR;
+  }
+
+  void InsertInto(OPrintStream& strm) const {
+    strm << MCU_FLASHSTR("T/C 2 Config: ");
+    EightBitTimerCounterConfig::InsertInto(strm);
+    strm << BaseTwo << SEP << MCU_FLASHSTR("ASSR=") << assr;
+  }
+
+  uint8_t assr;
+};
+
+struct SixteenBitTimerCounterConfig {
+  explicit SixteenBitTimerCounterConfig(uint8_t tc_num) : tc_num(tc_num) {}
+
+  void InsertInto(OPrintStream& strm) const {
+    strm << MCU_FLASHSTR("T/C ") << BaseDec << tc_num  // Force
+         << MCU_FLASHSTR(" Config: ") << BaseTwo       // formatter
+         << MCU_FLASHSTR("TCCRnA=") << tccr_a << SEP   // to split
+         << MCU_FLASHSTR("TCCRnB=") << tccr_b << SEP   // lines
+         << MCU_FLASHSTR("TCCRnC=") << tccr_c << SEP   // here
+         << MCU_FLASHSTR("OCRnA=") << ocr_a << SEP     // and
+         << MCU_FLASHSTR("OCRnB=") << ocr_b << SEP     // here.
+         << MCU_FLASHSTR("OCRnC=") << ocr_c;
+  }
+
+  const uint8_t tc_num;
+  uint8_t tccr_a;
+  uint8_t tccr_b;
+  uint8_t tccr_c;
+  uint16_t ocr_a;
+  uint16_t ocr_b;
+  uint16_t ocr_c;
+};
+
+struct TimerCounter1Config : SixteenBitTimerCounterConfig {
+  TimerCounter1Config() : SixteenBitTimerCounterConfig(1) {
+    tccr_a = TCCR1A;
+    tccr_b = TCCR1B;
+    tccr_c = TCCR1C;
+    ocr_a = OCR1A;
+    ocr_b = OCR1B;
+    ocr_c = OCR1C;
+  }
+};
+struct TimerCounter3Config : SixteenBitTimerCounterConfig {
+  TimerCounter3Config() : SixteenBitTimerCounterConfig(3) {
+    tccr_a = TCCR3A;
+    tccr_b = TCCR3B;
+    tccr_c = TCCR3C;
+    ocr_a = OCR3A;
+    ocr_b = OCR3B;
+    ocr_c = OCR3C;
+  }
+};
+struct TimerCounter4Config : SixteenBitTimerCounterConfig {
+  TimerCounter4Config() : SixteenBitTimerCounterConfig(4) {
+    tccr_a = TCCR4A;
+    tccr_b = TCCR4B;
+    tccr_c = TCCR4C;
+    ocr_a = OCR4A;
+    ocr_b = OCR4B;
+    ocr_c = OCR4C;
+  }
+};
+struct TimerCounter5Config : SixteenBitTimerCounterConfig {
+  TimerCounter5Config() : SixteenBitTimerCounterConfig(5) {
+    tccr_a = TCCR5A;
+    tccr_b = TCCR5B;
+    tccr_c = TCCR5C;
+    ocr_a = OCR5A;
+    ocr_b = OCR5B;
+    ocr_c = OCR5C;
+  }
+};
+
+struct TimerCapture {
+  void InsertInto(OPrintStream& strm) const {
+    strm << ms << MCU_FLASHSTR("ms") << SEP  // Split
+         << us << MCU_FLASHSTR("us") << SEP  // lines
+         << tc0 << SEP                       // here,
+         << tc1 << SEP                       // here,
+         << tc2 << SEP                       // here,
+         << tc3 << SEP                       // and
+         << tc4 << SEP                       // here.
+         << tc5;
+  }
+
+  const uint8_t tc0 = TCNT0;
+  const uint16_t tc1 = TCNT1;
+  const uint8_t tc2 = TCNT2;
+  const uint16_t tc3 = TCNT3;
+  const uint16_t tc4 = TCNT4;
+  const uint16_t tc5 = TCNT5;
+
+  const uint32_t ms = millis();
+  const uint32_t us = micros();
+};
+
+const auto global_watchdog_config = mcucore::avr::GetWatchdogConfig();
+TimerCapture global_counters;
+TimerCounter0Config global_tc0_config;
+TimerCounter1Config global_tc1_config;
+TimerCounter2Config global_tc2_config;
+TimerCounter3Config global_tc3_config;
+TimerCounter4Config global_tc4_config;
+TimerCounter5Config global_tc5_config;
 
 void setup() {
-  const auto tc0 = TCNT0;
-  const auto tc1 = TCNT1;
-  const auto tc2 = TCNT2;
-  const auto tc3 = TCNT3;
-  const auto tc4 = TCNT4;
-  const auto tc5 = TCNT5;
-
-  const auto ms = millis();
-  const auto us = micros();
+  TimerCapture setup_counters;
 
   // Disable watchdog timer after reset; some AVR parts don't reset the watchdog
   // upon start, so the setting from a previous run can kill a future one. I'm
@@ -47,22 +179,46 @@ void setup() {
   // to diagnose bugs (experience speaking).
   while (!Serial) {
   }
-  LogSink() << MCU_FLASHSTR("\n\nSerial ready\n\n");
-  LogSink() << MCU_FLASHSTR("Global values: ") << millis_at_global
-            << MCU_FLASHSTR("ms, ") << micros_at_global << MCU_FLASHSTR("us")
-            << BaseHex << ' ' << tc0_at_global << ' ' << tc1_at_global << ' '
-            << tc2_at_global << ' ' << tc3_at_global << ' ' << tc4_at_global
-            << ' ' << tc5_at_global;
+  const auto us = micros();
 
-  LogSink() << MCU_FLASHSTR("Local values: ") << ms << MCU_FLASHSTR("ms, ")
-            << us << MCU_FLASHSTR("us") << BaseHex << ' ' << tc0 << ' ' << tc1
-            << ' ' << tc2 << ' ' << tc3 << ' ' << tc4 << ' ' << tc5;
+  LogSink() << MCU_FLASHSTR("\nSerial ready @ ") << us << MCU_FLASHSTR("us");
+  LogSink() << MCU_FLASHSTR("Counter configs before init:\n");
+  LogSink() << MCU_FLASHSTR("Watchdog Control Register: ") << BaseTwo
+            << global_watchdog_config;
+  LogSink() << global_tc0_config;
+  LogSink() << global_tc1_config;
+  LogSink() << global_tc2_config;
+  LogSink() << global_tc3_config;
+  LogSink() << global_tc4_config;
+  LogSink() << global_tc5_config;
 
-  LogSink() << MCU_FLASHSTR("\n\nStarting Watchdog Timer in Reset Mode");
-  mcucore::avr::EnableWatchdogResetMode(4);  // ~0.25 seconds.
+  LogSink() << MCU_FLASHSTR("\nCounter values before init: ")
+            << global_counters;
+
+  LogSink() << MCU_FLASHSTR("\nCounter configs in setup():");
+  LogSink() << TimerCounter0Config();
+  LogSink() << TimerCounter1Config();
+  LogSink() << TimerCounter2Config();
+  LogSink() << TimerCounter3Config();
+  LogSink() << TimerCounter4Config();
+  LogSink() << TimerCounter5Config();
+  LogSink() << MCU_FLASHSTR("\nCounter values at setup() entry: ")
+            << setup_counters;
+
+  LogSink() << MCU_FLASHSTR("\n\nStarting Watchdog Timer in Reset Mode @ ")
+            << micros() << MCU_FLASHSTR("us");
+  mcucore::avr::EnableWatchdogResetMode(3);  // ~0.125 seconds.
+  LogSink() << MCU_FLASHSTR("Watchdog Control Register: ") << BaseTwo
+            << mcucore::avr::GetWatchdogConfig();
 }
 
+static bool first_loop = true;
+
 void loop() {
-  Serial.print('.');
-  delay(1);
+  TimerCapture counters;
+  if (first_loop || (counters.ms < 100 && (counters.ms % 10) == 0) ||
+      (counters.ms >= 100 && (counters.ms % 100) == 0)) {
+    LogSink() << counters;
+    first_loop = false;
+  }
 }

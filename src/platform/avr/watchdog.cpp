@@ -94,5 +94,7 @@ void EnableWatchdogResetMode(uint8_t prescaler) {
 
 void ResetWatchdogCounter() { wdt_reset(); }
 
+uint8_t GetWatchdogConfig() { return _WD_CONTROL_REG; }
+
 }  // namespace avr
 }  // namespace mcucore
