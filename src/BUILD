@@ -140,6 +140,7 @@ cc_library(
     srcs = ["eeprom_tlv.cc"],
     hdrs = ["eeprom_tlv.h"],
     deps = [
+        ":crc32",
         ":eeprom_domain",
         ":eeprom_io",
         ":eeprom_region",

@@ -1,21 +1,18 @@
 #include "eeprom_tlv.h"
 
+#include "extras/host/eeprom/eeprom.h"
 #include "gtest/gtest.h"
 
 namespace mcucore {
 namespace test {
 namespace {
 
-class EepromTlvTest : public testing::Test {
- protected:
-  EepromTlvTest() : eeprom_tlv_(eeprom_) {}
-  EEPROMClass eeprom_;
-  EepromTlv eeprom_tlv_;
-};
-
-TEST_F(EepromTlvTest, SomeTest) {
-  //
-  EXPECT_EQ(1, 1);
+TEST(EepromTlvTest, SomeTest) {
+  EEPROMClass eeprom;
+  auto status_or_eeprom_tlv = EepromTlv::GetIfValid(eeprom);
+  EXPECT_FALSE(status_or_eeprom_tlv.ok());
+  EXPECT_EQ(status_or_eeprom_tlv.status().code(),
+            StatusCode::kFailedPrecondition);
 }
 
 }  // namespace

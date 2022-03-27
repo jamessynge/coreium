@@ -10,7 +10,7 @@
 // 1) The prefix indicating that the EEPROM is managed by this class.
 // 2) The address of the first byte beyond the entries (i.e. the place to write
 //    the tag of the next entry).
-// 3) The CRC-32 of all of the entries. Defaults to Crc32::kInitialValue.
+// 3) The CRC-32 of all of the entries.
 // 4) Entries, each of the format:
 //    a) EepromTag (i.e. domain followed by id)
 //    b) Entry length, of type EepromTlv::BlockLengthT; zero is valid, in which
@@ -80,22 +80,33 @@ class EepromTlv {
   // store composite data. That eliminates the idea of having an in-progress
   // transaction.
 
+  // If room for an entry with a data length of at least minimum_length is
+  // available, writes an entry with the specified tag to the EEPROM. Calls
+  // writer_function, passing it an EepromRegion (of at least minimum_length)
+  // and writer_args; writer function should use the EepromRegion to write the
+  // entry's data. If writer_function returns true, then the required updates
+  // are performed to commit the entry to the EEPROM; otherwise it is not
+  // considered to have been written.
   template <typename WRITER, typename... ARGS>
-  Status WriteEntryToCursor(const EepromTag& tag, BlockLengthT minimum_size,
+  Status WriteEntryToCursor(const EepromTag& tag, BlockLengthT minimum_length,
                             WRITER writer_function, ARGS&&... writer_args) {
     EepromRegion target_region;
-    MCU_RETURN_IF_ERROR(StartTransaction(minimum_size, target_region));
-    if (writer_function(target_region, writer_args...)) {
-      return CommitTransaction(tag, target_region.cursor());
+    MCU_RETURN_IF_ERROR(StartTransaction(minimum_length, target_region));
+    Status write_status = writer_function(target_region, writer_args...);
+    if (write_status.ok()) {
+      return CommitTransaction(tag, target_region.start_address(),
+                               target_region.cursor());
     } else {
-      return AbortTransaction();
+      AbortTransaction();
+      return write_status;
     }
   }
 
   EepromAddrT ReclaimUnusedSpace();
 
   // Replace any contents with the standard prefix followed by zero entries.
-  static void ClearAndInitializeEeprom();
+  static void ClearAndInitializeEeprom(EEPROMClass& eeprom);
+  static void ClearAndInitializeEeprom() { ClearAndInitializeEeprom(EEPROM); }
 
  private:
   // We use instance, rather than static, methods so that testing is easier.
@@ -105,38 +116,51 @@ class EepromTlv {
   // Returns true if the EEPROM starts with the value of Prefix().
   bool IsPrefixPresent() const;
 
-  // Returns stored end address, if it makes sense (e.g. isn't beyond the end of
-  // the EEPROM).
-  StatusOr<EepromAddrT> FindEnd() const;
+  // Returns stored beyond address, if it makes sense (e.g. isn't beyond the end
+  // of the EEPROM).
+  StatusOr<EepromAddrT> ReadBeyondAddr() const;
+
+  // Write the beyond address.
+  void WriteBeyondAddr(EepromAddrT beyond_addr);
 
   // Returns true if the CRC value matches that computed from the entries.
-  bool IsCrcCorrect(EepromAddrT end) const;
+  bool IsCrcCorrect(EepromAddrT beyond_addr) const;
 
   // Returns true if the entries appear well formed.
-  bool IsWellFormed(EepromAddrT end) const;
+  bool IsWellFormed(EepromAddrT beyond_addr) const;
+
+  EepromAddrT Available() const;
 
   // Given the address of an entry, return the address of the next entry.
   StatusOr<EepromAddrT> FindNext(EepromAddrT entry_addr) const;
 
+  // Read the stored CRC.
   uint32_t ReadCrc() const;
 
-  // If the EEPROM is valid, and there is sufficient space, start a write
-  // transaction.
-  Status StartTransaction(BlockLengthT minimum_size,
+  // Compute the CRC of the entries up to, but not including beyond_addr.
+  // Does not validate that the entries are well formed.
+  uint32_t ComputeCrc(EepromAddrT beyond_addr) const;
+
+  // Store the CRC value in the EEPROM.
+  void WriteCrc(uint32_t crc);
+
+  // If there is sufficient space, start a write transaction and update
+  // target_region to represent the space into which the writer can write the
+  // data of a new entry; target_region will have length that is at least
+  // minimum_length.
+  Status StartTransaction(BlockLengthT minimum_length,
                           EepromRegion& target_region);
 
-  Status CommitTransaction(const EepromTag& tag, BlockLengthT data_length);
+  // Data for a new entry has been written to:
+  //     [data_entry, data_entry+data_length)
+  // If that range is valid, update the EEPROM to incorporate it into the TLV
+  // structure.
+  Status CommitTransaction(const EepromTag& tag, EepromAddrT data_addr,
+                           BlockLengthT data_length);
 
-  Status AbortTransaction();
-
-  // // If there are multiple blocks with the specified tag, mark all but the
-  // last
-  // // one as unused. This supports first writing a replacement block, then
-  // going
-  // // back and
-  // int MarkExtraBlocksUnused(const EepromTag& tag);
-
-  // bool MarkUnused(DataBlock& block);
+  // Clear transaction_is_active_, to reflect that something went wrong with
+  // adding a new entry, and allowing another entry to be added later.
+  void AbortTransaction();
 
   void WriteTag(EepromAddrT entry_addr, const EepromTag& tag);
   void ReadTag(EepromAddrT entry_addr, EepromTag& tag) const;

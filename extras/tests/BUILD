@@ -99,6 +99,7 @@ cc_test(
     srcs = ["eeprom_tlv_test.cc"],
     deps = [
         "//googletest:gunit_main",
+        "//mcucore/extras/host/eeprom",
         "//mcucore/src:eeprom_tlv",
     ],
 )

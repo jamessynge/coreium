@@ -47,6 +47,10 @@ enum class StatusCode : int16_t {
   // Feature not implemented (yet?), or not supported (ever?) by this library.
   kUnimplemented = 12,
 
+  // Internal error, such as an invariant that the code should have maintained
+  // has been violated.
+  kInternal = 13,
+
   // Some data has been lost, e.g. EEPROM is corrupt.
   kDataLoss = 15,
 
