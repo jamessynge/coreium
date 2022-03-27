@@ -69,4 +69,14 @@ inline Status OkStatus() { return Status(); }
 
 }  // namespace mcucore
 
+// Evaluate expression, whose type must be Status, and return the Status if it
+// is not OK.
+#define MCU_RETURN_IF_ERROR(expr)            \
+  do {                                       \
+    const ::mcucore::Status status = (expr); \
+    if (!status.ok()) {                      \
+      return status;                         \
+    }                                        \
+  } while (false)
+
 #endif  // MCUCORE_SRC_STATUS_H_

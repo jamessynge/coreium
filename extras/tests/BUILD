@@ -95,6 +95,15 @@ cc_test(
 )
 
 cc_test(
+    name = "eeprom_tlv_test",
+    srcs = ["eeprom_tlv_test.cc"],
+    deps = [
+        "//googletest:gunit_main",
+        "//mcucore/src:eeprom_tlv",
+    ],
+)
+
+cc_test(
     name = "flash_string_table_test",
     srcs = ["flash_string_table_test.cc"],
     deps = [

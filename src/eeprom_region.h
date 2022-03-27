@@ -53,6 +53,10 @@ class EepromRegionReader {
       : EepromRegionReader(eeprom, start_address,
                            eeprom.length() - start_address) {}
 
+  // An empty, unusable region. Can be made usable be assignment.
+  EepromRegionReader()
+      : eeprom_(nullptr), start_address_(0), length_(0), cursor_(0) {}
+
   EepromRegionReader(const EepromRegionReader&) = default;
   EepromRegionReader& operator=(const EepromRegionReader&) = default;
 
@@ -155,6 +159,7 @@ class EepromRegion : public EepromRegionReader {
       : EepromRegionReader(eeprom, start_address, length) {}
   explicit EepromRegion(EEPROMClass& eeprom, EepromAddrT start_address = 0)
       : EepromRegionReader(eeprom, start_address) {}
+  EepromRegion() : EepromRegionReader() {}
   EepromRegion(const EepromRegion&) = default;
   EepromRegion& operator=(const EepromRegion&) = default;
 

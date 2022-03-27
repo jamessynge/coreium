@@ -19,6 +19,7 @@ cc_library(
         ":eeprom_domain",
         ":eeprom_io",
         ":eeprom_region",
+        ":eeprom_tlv",
         ":flash_string_table",
         ":has_insert_into",
         ":has_print_to",
@@ -131,6 +132,25 @@ cc_library(
         ":status_or",
         ":string_view",
         ":type_traits",
+    ],
+)
+
+cc_library(
+    name = "eeprom_tlv",
+    srcs = ["eeprom_tlv.cc"],
+    hdrs = ["eeprom_tlv.h"],
+    deps = [
+        ":eeprom_domain",
+        ":eeprom_io",
+        ":eeprom_region",
+        ":logging",
+        ":mcucore_platform",
+        ":progmem_string",
+        ":progmem_string_data",
+        ":progmem_string_view",
+        ":status",
+        ":status_code",
+        ":status_or",
     ],
 )
 

@@ -23,6 +23,13 @@ namespace mcucore {
 
 class Crc32 {
  public:
+  // Don't change this initial value, unless you want to invalidate all existing
+  // CRC values computed from this class.
+  static constexpr uint32_t kInitialValue = ~0L;
+
+  Crc32() : value_(kInitialValue) {}
+  explicit Crc32(uint32_t initial_value) : value_(initial_value) {}
+
   // Add the next byte of the sequence on which we're computing a CRC.
   void appendByte(uint8_t v);
 
@@ -30,7 +37,7 @@ class Crc32 {
   uint32_t value() const { return value_; }
 
  private:
-  uint32_t value_ = ~0L;
+  uint32_t value_;
 };
 
 }  // namespace mcucore
