@@ -8,13 +8,17 @@
 #ifndef ARDUINO
 
 ////////////////////////////////////////////////////////////////////////////////
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpre-c++14-compat"
+#endif  // __clang__
 
 #include "base/logging_extensions.h"
 #include "glog/logging.h"
 
+#ifdef __clang__
 #pragma clang diagnostic pop
+#endif  // __clang__
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "extras/test_tools/print_to_std_string.h"  // pragma: keep extras include
