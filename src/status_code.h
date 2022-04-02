@@ -17,8 +17,8 @@
 
 namespace mcucore {
 
-// So far all the codes I've needed fit into 16 bits; if more bits are needed,
-// change the size.
+// So far all the codes I've needed (including HTTP status codes and ASCOM error
+// codes) fit into 16 bits; if more bits are needed, change the underlying type.
 //
 // Values under 100 are used for most status codes that don't map to HTTP codes;
 // except for kOk, the specific value doesn't matter, except for the desire to

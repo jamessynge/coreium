@@ -4,6 +4,8 @@
 // EepromRegionReader and EepromRegion represents a bounded region of an EEPROM.
 // The classes are separate so that EepromTlv can return a reader for a block
 // without requiring it to be writeable.
+//
+// Author: james.synge@gmail.com
 
 #include "limits.h"
 #include "logging.h"

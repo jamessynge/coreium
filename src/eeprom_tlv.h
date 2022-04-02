@@ -5,6 +5,8 @@
 // multiple Tag-Length-Value entries in EEPROM, each with a unique tag (of type
 // EepromTag).
 //
+// Author: james.synge@gmail.com
+//
 // EEPROM LAYOUT
 //
 // 1) The prefix indicating that the EEPROM is managed by this class.

@@ -3,11 +3,11 @@
 #include <stdlib.h>
 
 #include "mcucore_platform.h"
+#include "platform/avr/watchdog.h"
 #include "progmem_string_data.h"
 
-#ifndef ARDUINO
-
 ////////////////////////////////////////////////////////////////////////////////
+#ifndef ARDUINO
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpre-c++14-compat"
@@ -19,10 +19,10 @@
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif  // __clang__
-////////////////////////////////////////////////////////////////////////////////
 
 #include "extras/test_tools/print_to_std_string.h"  // pragma: keep extras include
 #endif                                              // !ARDUINO
+////////////////////////////////////////////////////////////////////////////////
 
 #ifdef ARDUINO
 #define DEFAULT_SINK_OUT ::Serial
@@ -124,15 +124,22 @@ CheckSink::~CheckSink() {
   out_.flush();
 
 #ifdef ARDUINO
-  uint8_t seconds = 0;
+  uint8_t seconds = 1;
   while (true) {
     if (seconds < 255) {
       ++seconds;
     }
-    delay(10000L + 10000L * seconds);
+    delay(1000L * seconds);
     Announce(out_);
     out_.println();
     out_.flush();
+#ifdef ARDUINO_ARCH_AVR
+    // After we've spit out the announcement a few times, reset the
+    // Arduino so that human intervention isn't required to recover.
+    if (seconds >= 3) {
+      avr::EnableWatchdogResetMode(4);
+    }
+#endif  // !ARDUINO_ARCH_AVR    
   }
 #else  // !ARDUINO
 #if MCU_HOST_TARGET
