@@ -67,6 +67,41 @@ bool operator==(const Status& a, const Status& b);
 
 inline Status OkStatus() { return Status(); }
 
+// These convenience functions create a `Status` object with an error
+// code as indicated by the associated function name, using the error message
+// passed in `message`.
+Status DataLossError(ProgmemStringView message = {});
+Status FailedPreconditionError(ProgmemStringView message = {});
+Status InternalError(ProgmemStringView message = {});
+Status InvalidArgumentError(ProgmemStringView message = {});
+Status NotFoundError(ProgmemStringView message = {});
+Status OutOfRangeError(ProgmemStringView message = {});
+Status ResourceExhaustedError(ProgmemStringView message = {});
+Status UnimplementedError(ProgmemStringView message = {});
+Status UnknownError(ProgmemStringView message = {});
+
+// These convenience functions return `true` if a given status matches the
+// `StatusCode` error code of its associated function.
+bool IsDataLoss(const Status& status);
+bool IsFailedPrecondition(const Status& status);
+bool IsInternal(const Status& status);
+bool IsInvalidArgument(const Status& status);
+bool IsNotFound(const Status& status);
+bool IsOutOfRange(const Status& status);
+bool IsResourceExhausted(const Status& status);
+bool IsUnimplemented(const Status& status);
+bool IsUnknown(const Status& status);
+
 }  // namespace mcucore
+
+// Evaluate expression, whose type must be Status, and return the Status if it
+// is not OK.
+#define MCU_RETURN_IF_ERROR(expr)            \
+  do {                                       \
+    const ::mcucore::Status status = (expr); \
+    if (!status.ok()) {                      \
+      return status;                         \
+    }                                        \
+  } while (false)
 
 #endif  // MCUCORE_SRC_STATUS_H_

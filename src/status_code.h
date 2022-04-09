@@ -12,13 +12,19 @@
 // provide a tool for reading all source files and building a map from name to
 // value.
 
+#if MCU_HOST_TARGET
+#include <ostream>  // pragma: keep standard include
+#endif
+
 #include "mcucore_platform.h"
 #include "type_traits.h"
 
 namespace mcucore {
 
-// So far all the codes I've needed fit into 16 bits; if more bits are needed,
-// change the size.
+// So far all the codes I've needed (including HTTP status codes and ASCOM error
+// codes) fit into 16 bits; if more bits are needed, change the underlying type.
+// I recommend only adding codes that are in use because they'll increase the
+// size of ToFlashStringHelper (assuming that )
 //
 // Values under 100 are used for most status codes that don't map to HTTP codes;
 // except for kOk, the specific value doesn't matter, except for the desire to
@@ -43,6 +49,13 @@ enum class StatusCode : int16_t {
 
   // A parameter is out of the necessary range.
   kOutOfRange = 11,
+
+  // Feature not implemented (yet?), or not supported (ever?) by this library.
+  kUnimplemented = 12,
+
+  // Internal error, such as an invariant that the code should have maintained
+  // has been violated.
+  kInternal = 13,
 
   // Some data has been lost, e.g. EEPROM is corrupt.
   kDataLoss = 15,
@@ -72,6 +85,19 @@ struct has_to_status_code<
            is_enum<T>::value &&
            is_same<StatusCode, decltype(ToStatusCode(T{}))>::value>>>
     : true_type {};
+
+// BEGIN_HEADER_GENERATED_BY_MAKE_ENUM_TO_STRING
+
+const __FlashStringHelper* ToFlashStringHelper(StatusCode v);
+
+size_t PrintValueTo(StatusCode v, Print& out);
+
+#if MCU_HOST_TARGET
+// Support for debug logging of enums.
+std::ostream& operator<<(std::ostream& os, StatusCode v);
+#endif  // MCU_HOST_TARGET
+
+// END_HEADER_GENERATED_BY_MAKE_ENUM_TO_STRING
 
 }  // namespace mcucore
 

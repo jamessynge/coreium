@@ -194,6 +194,18 @@ cc_library(
     deps = [
         ":print_value_to_std_string",
         ":status_test_utils",
+        "//googletest:gunit_headers",
+        "//mcucore/src:status_or",
+    ],
+)
+
+cc_test(
+    name = "status_or_test_utils_test",
+    srcs = ["status_or_test_utils_test.cc"],
+    deps = [
+        ":status_or_test_utils",
+        "//googletest:gunit_main",
+        "//mcucore/src:status",
         "//mcucore/src:status_or",
     ],
 )
@@ -203,6 +215,18 @@ cc_library(
     hdrs = ["status_test_utils.h"],
     deps = [
         ":print_value_to_std_string",
+        "//googletest:gunit_headers",
+        "//mcucore/src:status",
+    ],
+)
+
+cc_test(
+    name = "status_test_utils_test",
+    srcs = ["status_test_utils_test.cc"],
+    deps = [
+        ":status_test_utils",
+        "//googletest:gunit_main",
+        "//mcucore/src:progmem_string_view",
         "//mcucore/src:status",
     ],
 )

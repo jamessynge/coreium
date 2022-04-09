@@ -105,6 +105,17 @@ cc_test(
 )
 
 cc_test(
+    name = "has_insert_into_test",
+    srcs = ["has_insert_into_test.cc"],
+    deps = [
+        "//googletest:gunit_main",
+        "//mcucore/extras/test_tools:print_to_std_string",
+        "//mcucore/src:has_insert_into",
+        "//mcucore/src:o_print_stream",
+    ],
+)
+
+cc_test(
     name = "hex_escape_test",
     srcs = ["hex_escape_test.cc"],
     deps = [
@@ -287,6 +298,8 @@ cc_test(
         "//googletest:gunit_main",
         "//mcucore/extras/test_tools:print_to_std_string",
         "//mcucore/extras/test_tools:progmem_string_view_utils",
+        "//mcucore/extras/test_tools:status_test_utils",
+        "//mcucore/src:progmem_string_data",
         "//mcucore/src:progmem_string_view",
         "//mcucore/src:status",
         "//mcucore/src:status_code",
@@ -337,16 +350,5 @@ cc_test(
     deps = [
         "//googletest:gunit_main",
         "//mcucore/src:type_traits",
-    ],
-)
-
-cc_test(
-    name = "has_insert_into_test",
-    srcs = ["has_insert_into_test.cc"],
-    deps = [
-        "//googletest:gunit_main",
-        "//mcucore/extras/test_tools:print_to_std_string",
-        "//mcucore/src:has_insert_into",
-        "//mcucore/src:o_print_stream",
     ],
 )

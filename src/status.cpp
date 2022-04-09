@@ -27,4 +27,60 @@ bool operator==(const Status& a, const Status& b) {
   return a.code() == b.code() && a.message() == b.message();
 }
 
+bool IsDataLoss(const Status& status) {
+  return status.code() == StatusCode::kDataLoss;
+}
+bool IsFailedPrecondition(const Status& status) {
+  return status.code() == StatusCode::kFailedPrecondition;
+}
+bool IsInternal(const Status& status) {
+  return status.code() == StatusCode::kInternal;
+}
+bool IsInvalidArgument(const Status& status) {
+  return status.code() == StatusCode::kInvalidArgument;
+}
+bool IsNotFound(const Status& status) {
+  return status.code() == StatusCode::kNotFound;
+}
+bool IsOutOfRange(const Status& status) {
+  return status.code() == StatusCode::kOutOfRange;
+}
+bool IsResourceExhausted(const Status& status) {
+  return status.code() == StatusCode::kResourceExhausted;
+}
+bool IsUnimplemented(const Status& status) {
+  return status.code() == StatusCode::kUnimplemented;
+}
+bool IsUnknown(const Status& status) {
+  return status.code() == StatusCode::kUnknown;
+}
+
+Status DataLossError(ProgmemStringView message) {
+  return Status(StatusCode::kDataLoss, message);
+}
+Status FailedPreconditionError(ProgmemStringView message) {
+  return Status(StatusCode::kFailedPrecondition, message);
+}
+Status InternalError(ProgmemStringView message) {
+  return Status(StatusCode::kInternal, message);
+}
+Status InvalidArgumentError(ProgmemStringView message) {
+  return Status(StatusCode::kInvalidArgument, message);
+}
+Status NotFoundError(ProgmemStringView message) {
+  return Status(StatusCode::kNotFound, message);
+}
+Status OutOfRangeError(ProgmemStringView message) {
+  return Status(StatusCode::kOutOfRange, message);
+}
+Status ResourceExhaustedError(ProgmemStringView message) {
+  return Status(StatusCode::kResourceExhausted, message);
+}
+Status UnimplementedError(ProgmemStringView message) {
+  return Status(StatusCode::kUnimplemented, message);
+}
+Status UnknownError(ProgmemStringView message) {
+  return Status(StatusCode::kUnknown, message);
+}
+
 }  // namespace mcucore
