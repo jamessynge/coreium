@@ -26,6 +26,8 @@
 // function (see the jitter_random_iterations_tester.ino sketch), then assessing
 // the randomness using the Chi-Squared test (see
 // eval_jitter_random_iterations.py).
+//
+// Author: james.synge@gmail.com
 
 #include "mcucore_platform.h"
 

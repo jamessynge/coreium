@@ -1,7 +1,9 @@
 #include "mcucore_config.h"
 
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic warning "-W#pragma-messages"
+#endif  // __clang__
 
 #if __cplusplus == 201103L
 #pragma message("C++ 2011")
@@ -23,4 +25,6 @@
 #pragma message("C++ beyond 2020")
 #endif
 
+#ifdef __clang__
 #pragma clang diagnostic pop
+#endif  // __clang__

@@ -15,6 +15,7 @@
 //
 // Author: james.synge@gmail.com
 
+#include "logging.h"
 #include "mcucore_platform.h"
 #include "progmem_string_view.h"
 #include "status_code.h"  // pragma IWYU: export
@@ -103,5 +104,21 @@ bool IsUnknown(const Status& status);
       return status;                         \
     }                                        \
   } while (false)
+
+#define MCU_CHECK_OK(expr)                   \
+  do {                                       \
+    const ::mcucore::Status status = (expr); \
+    MCU_CHECK(status.ok()) << status;        \
+  } while (false)
+
+#ifdef MCU_ENABLE_DCHECK
+#define MCU_DCHECK_OK(expr)                  \
+  do {                                       \
+    const ::mcucore::Status status = (expr); \
+    MCU_DCHECK(status.ok()) << status;       \
+  } while (false)
+#else
+#define MCU_DCHECK_OK(expr)
+#endif  // MCU_ENABLE_DCHECK
 
 #endif  // MCUCORE_SRC_STATUS_H_

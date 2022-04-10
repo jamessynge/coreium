@@ -46,6 +46,10 @@ class StatusOr {
     }
   }
 
+  operator Status() const {  // NOLINT
+    return status_;
+  }
+
  private:
   // Note: it could be useful to have a simple version of std::variant with
   // which to implement StatusOr.

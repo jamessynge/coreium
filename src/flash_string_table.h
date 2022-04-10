@@ -6,6 +6,8 @@
 //
 // NOTE: So far this only works if the table is stored in the first 64KB of
 // flash because this uses the "near pointer" API.
+//
+// Author: james.synge@gmail.com
 
 #include "mcucore_platform.h"
 

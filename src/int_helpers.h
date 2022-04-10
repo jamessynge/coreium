@@ -2,6 +2,8 @@
 #define MCUCORE_SRC_INT_HELPERS_H_
 
 // Provides functions for converting integers.
+//
+// Author: james.synge@gmail.com
 
 #include "mcucore_platform.h"
 #include "type_traits.h"

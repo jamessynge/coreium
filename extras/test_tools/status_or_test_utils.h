@@ -111,4 +111,14 @@ IsOkAndHoldsMatcher<typename std::decay<InnerMatcher>::type> IsOkAndHolds(
 }  // namespace test
 }  // namespace mcucore
 
+#define ASSERT_STATUS_OK_AND_ASSIGN(lhs, status_or_expression)                \
+  ASSERT_STATUS_OK_AND_ASSIGN_IMPL_(                                          \
+      MCU_STATUS_MACROS_CONCAT_NAME(_assign_status_or_value_, __LINE__), lhs, \
+      status_or_expression)
+
+#define ASSERT_STATUS_OK_AND_ASSIGN_IMPL_(statusor, lhs, status_or_expression) \
+  auto statusor = status_or_expression;                                        \
+  ASSERT_STATUS_OK(statusor);                                                  \
+  lhs = statusor.value()
+
 #endif  // MCUCORE_EXTRAS_TEST_TOOLS_STATUS_OR_TEST_UTILS_H_

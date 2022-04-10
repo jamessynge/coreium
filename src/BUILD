@@ -357,6 +357,7 @@ cc_library(
     deps = [
         ":counting_print",
         ":hex_escape",
+        ":logging",
         ":mcucore_platform",
         ":o_print_stream",
         ":progmem_string_data",

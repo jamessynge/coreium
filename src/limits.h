@@ -2,6 +2,8 @@
 #define MCUCORE_SRC_LIMITS_H_
 
 // A very minimal version of std::numeric_limits.
+//
+// Author: james.synge@gmail.com
 
 #include "mcucore_platform.h"
 #include "type_traits.h"

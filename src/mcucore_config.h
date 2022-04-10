@@ -8,9 +8,16 @@
 // the platform.
 //
 // This file should only define macros (and possibly constants), and not include
-// (and hence export) anything else.
+// (and hence export) anything else. And this file should not depend on any
+// symbols (e.g. macros) defined by mcucore_platform.h; this means we can not
+// check here whether MCU_EMBEDDED_TARGET or MCU_HOST_TARGET is defined.
 //
 // Author: james.synge@gmail.com
+
+#ifdef MCU_EMBEDDED_TARGET
+#error \
+    "This file must be included by mcucore_platform.h before defining macros."
+#endif  // MCU_EMBEDDED_TARGET
 
 #ifdef ARDUINO
 // After development, for the embedded target, we *should* leave MCU_CHECK
