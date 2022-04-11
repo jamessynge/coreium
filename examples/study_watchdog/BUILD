@@ -13,7 +13,5 @@ cc_binary(
     deps = [
         "//mcucore/extras/host/arduino:arduino_main",
         "//mcucore/src:McuCore",
-        "//mcucore/src:progmem_string_data",
-        "//mcucore/src/platform/avr:watchdog",
     ],
 )

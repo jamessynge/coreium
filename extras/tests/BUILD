@@ -87,6 +87,7 @@ cc_test(
     deps = [
         "//googletest:gunit_main",
         "//mcucore/extras/host/eeprom",
+        "//mcucore/extras/test_tools:print_value_to_std_string",
         "//mcucore/extras/test_tools:status_or_test_utils",
         "//mcucore/src:eeprom_region",
         "//mcucore/src:status_code",
@@ -100,7 +101,12 @@ cc_test(
     deps = [
         "//googletest:gunit_main",
         "//mcucore/extras/host/eeprom",
+        "//mcucore/extras/test_tools:status_or_test_utils",
+        "//mcucore/extras/test_tools:status_test_utils",
+        "//mcucore/src:eeprom_region",
         "//mcucore/src:eeprom_tlv",
+        "//mcucore/src:mcucore_platform",
+        "//mcucore/src:string_view",
     ],
 )
 
@@ -111,6 +117,17 @@ cc_test(
         "//googletest:gunit_main",
         "//mcucore/src:flash_string_table",
         "//mcucore/src:progmem_string_data",
+    ],
+)
+
+cc_test(
+    name = "has_insert_into_test",
+    srcs = ["has_insert_into_test.cc"],
+    deps = [
+        "//googletest:gunit_main",
+        "//mcucore/extras/test_tools:print_to_std_string",
+        "//mcucore/src:has_insert_into",
+        "//mcucore/src:o_print_stream",
     ],
 )
 
@@ -297,6 +314,8 @@ cc_test(
         "//googletest:gunit_main",
         "//mcucore/extras/test_tools:print_to_std_string",
         "//mcucore/extras/test_tools:progmem_string_view_utils",
+        "//mcucore/extras/test_tools:status_test_utils",
+        "//mcucore/src:progmem_string_data",
         "//mcucore/src:progmem_string_view",
         "//mcucore/src:status",
         "//mcucore/src:status_code",
@@ -347,16 +366,5 @@ cc_test(
     deps = [
         "//googletest:gunit_main",
         "//mcucore/src:type_traits",
-    ],
-)
-
-cc_test(
-    name = "has_insert_into_test",
-    srcs = ["has_insert_into_test.cc"],
-    deps = [
-        "//googletest:gunit_main",
-        "//mcucore/extras/test_tools:print_to_std_string",
-        "//mcucore/src:has_insert_into",
-        "//mcucore/src:o_print_stream",
     ],
 )

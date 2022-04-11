@@ -42,6 +42,9 @@
 #include "status_or.h"
 
 namespace mcucore {
+namespace test {
+class EepromTlvTest;
+}
 
 struct EepromTag {
   bool IsUnused() const;
@@ -63,6 +66,8 @@ class EepromTlv {
   // sense to store individual values longer than 255 bytes.
   using BlockLengthT = uint8_t;
   static constexpr BlockLengthT kMaxBlockLength = 255;
+  static constexpr EepromAddrT kFixedHeaderSize = 4 + 2 + 4;
+  static constexpr EepromAddrT kEntryHeaderSize = 2 + 1;
 
   static StatusOr<EepromTlv> GetIfValid(EEPROMClass& eeprom);
   static StatusOr<EepromTlv> GetIfValid() { return GetIfValid(EEPROM); }
@@ -104,13 +109,20 @@ class EepromTlv {
     }
   }
 
+  // TODO(jamessynge): Implement compaction.
   EepromAddrT ReclaimUnusedSpace();
+
+  // Prints a bit of info, in support of googletest using OPrintStream and
+  // PrintValueToStdString.
+  void InsertInto(OPrintStream& strm) const;
 
   // Replace any contents with the standard prefix followed by zero entries.
   static void ClearAndInitializeEeprom(EEPROMClass& eeprom);
   static void ClearAndInitializeEeprom() { ClearAndInitializeEeprom(EEPROM); }
 
  private:
+  friend class test::EepromTlvTest;
+
   // We use instance, rather than static, methods so that testing is easier.
   explicit EepromTlv(EEPROMClass& eeprom);
   EepromTlv() : EepromTlv(EEPROM) {}
@@ -131,10 +143,14 @@ class EepromTlv {
   // Returns true if the entries appear well formed.
   bool IsWellFormed(EepromAddrT beyond_addr) const;
 
+  // Returns the number of bytes available for additional data.
   EepromAddrT Available() const;
 
   // Given the address of an entry, return the address of the next entry.
   StatusOr<EepromAddrT> FindNext(EepromAddrT entry_addr) const;
+
+  // Store the CRC value in the EEPROM.
+  void WriteCrc(uint32_t crc);
 
   // Read the stored CRC.
   uint32_t ReadCrc() const;
@@ -142,9 +158,6 @@ class EepromTlv {
   // Compute the CRC of the entries up to, but not including beyond_addr.
   // Does not validate that the entries are well formed.
   uint32_t ComputeCrc(EepromAddrT beyond_addr) const;
-
-  // Store the CRC value in the EEPROM.
-  void WriteCrc(uint32_t crc);
 
   // If there is sufficient space, start a write transaction and update
   // target_region to represent the space into which the writer can write the

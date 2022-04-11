@@ -1,9 +1,13 @@
 #include "eeprom_tlv.h"
 
+#include "eeprom_region.h"
 #include "extras/host/eeprom/eeprom.h"
 #include "extras/test_tools/status_or_test_utils.h"
 #include "extras/test_tools/status_test_utils.h"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "mcucore_platform.h"
+#include "string_view.h"
 
 // 2 domains, with a declaration before the definition.
 MCU_DECLARE_DOMAIN(1);
@@ -19,29 +23,51 @@ namespace mcucore {
 namespace test {
 namespace {
 
-TEST(EepromTlvTest, GetIfValidFails) {
+TEST(EepromTlvGetIfValidTest, FailsWithNoPrefix) {
   EEPROMClass eeprom;
-  auto status_or_eeprom_tlv = EepromTlv::GetIfValid(eeprom);
-  EXPECT_FALSE(status_or_eeprom_tlv.ok());
-  EXPECT_EQ(status_or_eeprom_tlv.status().code(),
-            StatusCode::kFailedPrecondition);
+  EXPECT_THAT(EepromTlv::GetIfValid(eeprom), StatusIs(StatusCode::kNotFound));
 }
 
-TEST(EepromTlvTest, ClearAndInitializeEeprom) {
+TEST(EepromTlvGetIfValidTest, FailsWithZeroBeyondAddr) {
+  EEPROMClass eeprom;
+  EepromRegion(eeprom).WriteString(StringView("Tlv!"));
+  EXPECT_THAT(EepromTlv::GetIfValid(eeprom), StatusIs(StatusCode::kDataLoss));
+}
+
+TEST(EepromTlvGetIfValidTest, FailsWithTooLargeBeyondAddr) {
+  EEPROMClass eeprom;
+  for (EepromAddrT addr = 0; addr < 100; ++addr) {
+    eeprom.write(addr, 0xFF);
+  }
+  EepromRegion(eeprom).WriteString(StringView("Tlv!"));
+  EXPECT_THAT(EepromTlv::GetIfValid(eeprom), StatusIs(StatusCode::kDataLoss));
+}
+
+TEST(EepromTlvGetIfValidTest, FailsWithWrongCrc) {
+  EEPROMClass eeprom;
+  for (EepromAddrT addr = 0; addr < 100; ++addr) {
+    eeprom.write(addr, 0x01);
+  }
+  EepromRegion(eeprom).WriteString(StringView("Tlv!"));
+  EXPECT_THAT(EepromTlv::GetIfValid(eeprom), StatusIs(StatusCode::kDataLoss));
+}
+
+TEST(EepromTlvGetIfValidTest, ClearAndInitializeEeprom) {
   EEPROMClass eeprom;
   EepromTlv::ClearAndInitializeEeprom(eeprom);
   auto status_or_eeprom_tlv = EepromTlv::GetIfValid(eeprom);
-  ASSERT_OK(status_or_eeprom_tlv.status());
-  auto eeprom_tlv = status_or_eeprom_tlv.value();
+  ASSERT_STATUS_OK(status_or_eeprom_tlv.status());
 }
 
-EepromTlv MakeValid(EEPROMClass& eeprom) {
+StatusOr<EepromTlv> MakeEmpty(EEPROMClass& eeprom) {
   EepromTlv::ClearAndInitializeEeprom(eeprom);
-  auto status_or_eeprom_tlv = EepromTlv::GetIfValid(eeprom);
-  CHECK(status_or_eeprom_tlv.ok()) << status_or_eeprom_tlv.status();
-  ASSERT_OK(status_or_eeprom_tlv.status());
-  auto eeprom_tlv = status_or_eeprom_tlv.value();
-  return eeprom_tlv;
+  return EepromTlv::GetIfValid(eeprom);
+}
+
+EepromTlv MakeEmptyOrDie(EEPROMClass& eeprom) {
+  auto status_or_eeprom_tlv = MakeEmpty(eeprom);
+  MCU_CHECK_OK(status_or_eeprom_tlv.status());
+  return status_or_eeprom_tlv.value();
 }
 
 // Tags and the addresses to which they've been written.
@@ -57,11 +83,16 @@ Status WriteDoubleFn(EepromRegion& region, double value,
   }
 }
 
-// Base class for tests where the EEPROM contains valid contents
-// at the start.
-class EepromTlvValidTest : public testing::Test {
+}  // namespace
+
+// Base class for tests where the EEPROM contains valid contents at the start.
+// Test is NOT in anonymous namespace so that we can declare it a friend of
+// EepromTlv.
+class EepromTlvTest : public testing::Test {
  protected:
-  EepromTlvValidTest() : eeprom_tlv_(MakeValid(eeprom_)) {}
+  EepromTlvTest() : eeprom_tlv_(MakeEmptyOrDie(eeprom_)) {}
+
+  auto Available() { return eeprom_tlv_.Available(); }
 
   // Using double's here as a convenient way to express unique values.
   Status WriteDoubleEntryToCursor(EepromDomain domain, uint8_t id,
@@ -71,12 +102,12 @@ class EepromTlvValidTest : public testing::Test {
     auto status = eeprom_tlv_.WriteEntryToCursor(
         tag, sizeof value, WriteDoubleFn, value, start_address);
     if (status.ok()) {
-      tag_addresses.push_back(std::make_pair(tag, start_address));
+      tag_addresses_.push_back(std::make_pair(tag, start_address));
     }
     return status;
   }
 
-  StatusOr<double> ReadDouble(EepromDomain domain, uint8_t id) {}
+  // StatusOr<double> ReadDouble(EepromDomain domain, uint8_t id) {}
 
   TagAddresses tag_addresses_;
 
@@ -84,11 +115,19 @@ class EepromTlvValidTest : public testing::Test {
   EepromTlv eeprom_tlv_;
 };
 
-TEST_F(EepromTlvValidTest, FindEntryNotFound) {
+namespace {
+
+TEST_F(EepromTlvTest, LotsAvailable) {
+  EXPECT_EQ(Available(), eeprom_.length() - EepromTlv::kFixedHeaderSize -
+                             EepromTlv::kEntryHeaderSize);
+}
+
+TEST_F(EepromTlvTest, FindEntryNotFound) {
   for (const auto domain : {MCU_DOMAIN(1), MCU_DOMAIN(TestDomain2),
                             MCU_DOMAIN(3), MCU_DOMAIN(TestDomain4)}) {
-    for (const int id : 256) {
-      const auto status_or_region = 
+    for (int id = 0; id <= 255; ++id) {
+      EepromTag tag{domain, static_cast<uint8_t>(id)};
+      EXPECT_THAT(eeprom_tlv_.FindEntry(tag), StatusIs(StatusCode::kNotFound));
     }
   }
 }

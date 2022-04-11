@@ -10,6 +10,7 @@
 #include "mcucore_platform.h"  // IWYU pragma: keep
 #include "status.h"
 #include "status_code.h"
+#include "type_traits.h"
 
 namespace mcucore {
 
@@ -18,9 +19,10 @@ namespace mcucore {
 template <typename T>
 class StatusOr {
  public:
+  using value_type = typename remove_cv<T>::type;
   StatusOr() : StatusOr(Status(StatusCode::kUnknown)) {}
-  /*implicit*/ StatusOr(const T& t)  // NOLINT
-      : t_(t), ok_(true) {}
+  /*implicit*/ StatusOr(const value_type& value_)  // NOLINT
+      : value_(value_), ok_(true) {}
   /*implicit*/ StatusOr(const Status& status)  // NOLINT
       : status_(status), ok_(false) {
     MCU_DCHECK(!status.ok());
@@ -31,9 +33,9 @@ class StatusOr {
 
   bool ok() const { return ok_; }
 
-  const T& value() const {
+  const value_type& value() const {
     MCU_CHECK(ok_);
-    return t_;
+    return value_;
   }
 
   Status status() const {
@@ -44,15 +46,32 @@ class StatusOr {
     }
   }
 
+  operator Status() const {  // NOLINT
+    return status_;
+  }
+
  private:
   // Note: it could be useful to have a simple version of std::variant with
   // which to implement StatusOr.
   union {
     Status status_;
-    T t_;
+    value_type value_;
   };
   bool ok_;
 };
+
+template <typename T>
+bool operator==(const StatusOr<T>& a, const StatusOr<T>& b) {
+  if (a.ok() && b.ok()) {
+    return a.value() == b.value();
+  } else {
+    return a.status() == b.status();
+  }
+}
+template <typename T>
+bool operator!=(const StatusOr<T>& a, const StatusOr<T>& b) {
+  return !(a == b);
+}
 
 }  // namespace mcucore
 

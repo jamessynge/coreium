@@ -3,22 +3,31 @@
 #include <stdlib.h>
 
 #include "mcucore_platform.h"
-#include "platform/avr/watchdog.h"
 #include "progmem_string_data.h"
 
+#ifdef ARDUINO_ARCH_AVR
+#include "platform/avr/watchdog.h"
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
+// As of Early 2022, Arduino is still based on C++ 2011. When compiling for the
+// host as a target (i.e. for testing), we use -Wpre-c++14-compat to warn if the
+// code uses features added in C++ 2014, or later. However, in that case we also
+// want to take advantage of some libraries not available for the Arduino, such
+// as googlelog and STL. So, when not compiling for Arduino, we need to disable
+// the above warning so that we can include such libraries.
 #ifndef ARDUINO
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpre-c++14-compat"
-#endif  // __clang__
+#endif
 
 #include "base/logging_extensions.h"
 #include "glog/logging.h"
 
 #ifdef __clang__
 #pragma clang diagnostic pop
-#endif  // __clang__
+#endif
 
 #include "extras/test_tools/print_to_std_string.h"  // pragma: keep extras include
 #endif                                              // !ARDUINO
@@ -139,7 +148,7 @@ CheckSink::~CheckSink() {
     if (seconds >= 3) {
       avr::EnableWatchdogResetMode(4);
     }
-#endif  // !ARDUINO_ARCH_AVR    
+#endif  // !ARDUINO_ARCH_AVR
   }
 #else  // !ARDUINO
 #if MCU_HOST_TARGET

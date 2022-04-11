@@ -123,8 +123,10 @@ cc_library(
 
 cc_library(
     name = "eeprom_region",
+    srcs = ["eeprom_region.cc"],
     hdrs = ["eeprom_region.h"],
     deps = [
+        ":flash_string_table",
         ":limits",
         ":logging",
         ":mcucore_platform",
@@ -162,6 +164,15 @@ cc_library(
     deps = [
         ":logging",
         ":mcucore_platform",
+    ],
+)
+
+cc_library(
+    name = "has_insert_into",
+    hdrs = ["has_insert_into.h"],
+    deps = [
+        ":mcucore_platform",
+        ":type_traits",
     ],
 )
 
@@ -369,6 +380,7 @@ cc_library(
     deps = [
         ":counting_print",
         ":hex_escape",
+        ":logging",
         ":mcucore_platform",
         ":o_print_stream",
         ":progmem_string_data",
@@ -379,9 +391,13 @@ cc_library(
 
 cc_library(
     name = "status_code",
+    srcs = ["status_code.cc"],
     hdrs = ["status_code.h"],
     deps = [
+        ":flash_string_table",
         ":mcucore_platform",
+        ":print_misc",
+        ":progmem_string_data",
         ":type_traits",
     ],
 )
@@ -394,6 +410,7 @@ cc_library(
         ":mcucore_platform",
         ":status",
         ":status_code",
+        ":type_traits",
     ],
 )
 
@@ -444,13 +461,4 @@ cc_library(
     name = "type_traits",
     hdrs = ["type_traits.h"],
     deps = [":mcucore_platform"],
-)
-
-cc_library(
-    name = "has_insert_into",
-    hdrs = ["has_insert_into.h"],
-    deps = [
-        ":mcucore_platform",
-        ":type_traits",
-    ],
 )

@@ -36,28 +36,13 @@ class EepromRegionReader {
   // we expect to work with a device that has multiple EEPROMs! We allow the
   // length to be zero to allow for marking a region as unusable.
   EepromRegionReader(EEPROMClass& eeprom, const EepromAddrT start_address,
-                     const EepromAddrT length)
-      : eeprom_(&eeprom),
-        start_address_(start_address),
-        length_(length),
-        cursor_(0) {
-    static_assert(is_same<EepromAddrT, decltype(eeprom.length())>::value);
-    MCU_DCHECK_LE(start_address, eeprom.length())
-        << MCU_FLASHSTR("Starts")           // COV_NF_LINE
-        << MCU_FLASHSTR(" beyond EEPROM");  // COV_NF_LINE
-    MCU_DCHECK_LE(length, eeprom.length() - start_address)
-        << MCU_FLASHSTR("Extends")          // COV_NF_LINE
-        << MCU_FLASHSTR(" beyond EEPROM");  // COV_NF_LINE
-  }
+                     const EepromAddrT length);
 
   explicit EepromRegionReader(EEPROMClass& eeprom,
-                              EepromAddrT start_address = 0)
-      : EepromRegionReader(eeprom, start_address,
-                           eeprom.length() - start_address) {}
+                              EepromAddrT start_address = 0);
 
   // An empty, unusable region. Can be made usable be assignment.
-  EepromRegionReader()
-      : eeprom_(nullptr), start_address_(0), length_(0), cursor_(0) {}
+  EepromRegionReader();
 
   EepromRegionReader(const EepromRegionReader&) = default;
   EepromRegionReader& operator=(const EepromRegionReader&) = default;
@@ -67,24 +52,18 @@ class EepromRegionReader {
 
   // Cursor value is in the range [0, length()], inclusive.
   EepromAddrT cursor() const { return cursor_; }
-  EepromAddrT available() const { return length_ - cursor_; }
+
   // Set the cursor to any value in the range [0, length()], inclusive. This
   // allows for setting the value to indicate that the region is "full".
-  bool set_cursor(EepromAddrT cursor) {
-    if (cursor > length_) {
-      return false;
-    } else {
-      cursor_ = cursor;
-      return true;
-    }
-  }
+  bool set_cursor(EepromAddrT cursor);
+
+  // Number of bytes starting at the cursor and continuing to the end of the
+  // region.
+  EepromAddrT available() const { return length_ - cursor_; }
 
   // Modify this instances so that it can no longer be used for reading or
   // writing.
-  void Invalidate() {
-    cursor_ = 0;
-    length_ = 0;
-  }
+  void Invalidate();
 
   // Reads a value of type T from the EEPROM at the current cursor into the
   // specified output argument, advances the cursor and returns true, if the
@@ -114,29 +93,15 @@ class EepromRegionReader {
   // the bytes starting at `ptr`, advances the cursor by `length` and returns
   // true, IFF there are at least `length` bytes available in the region
   // starting at the cursor; else returns false and does not advance the cursor.
-  bool ReadBytes(uint8_t* ptr, const EepromAddrT length) {
-    if (length > available()) {
-      return false;
-    }
-    EepromAddrT from = start_address_ + cursor_;
-    const EepromAddrT beyond = from + length;
-    MCU_DCHECK_LE(from, beyond);
-    while (from < beyond) {
-      *ptr++ = eeprom_->read(from++);
-    }
-    MCU_DCHECK_EQ(from, beyond);
-    if (from != beyond) {
-      return false;  // COV_NF_LINE
-    }
-    cursor_ += length;
-    return true;
-  }
+  bool ReadBytes(uint8_t* ptr, const EepromAddrT length);
 
   // Reads `length` bytes from EEPROM into a char array. See ReadBytes for
   // behavior details.
-  bool ReadString(char* ptr, const EepromAddrT length) {
-    return ReadBytes(reinterpret_cast<uint8_t*>(ptr), length);
-  }
+  bool ReadString(char* ptr, const EepromAddrT length);
+
+  // Prints fields, in support of googletest using OPrintStream and
+  // PrintValueToStdString.
+  void InsertInto(OPrintStream& strm) const;
 
  protected:
   EEPROMClass* eeprom_;
@@ -182,32 +147,14 @@ class EepromRegion : public EepromRegionReader {
   // Writes the `length` bytes starting at ptr to EEPROM, advances the cursor by
   // `length` and returns true, IFF the value fits in the region; else returns
   // false and does not advance the cursor.
-  bool WriteBytes(const uint8_t* ptr, const EepromAddrT length) {
-    if (length > available()) {
-      return false;
-    }
-    EepromAddrT to = start_address_ + cursor_;
-    const EepromAddrT beyond = to + length;
-    MCU_DCHECK_LE(to, beyond);
-    while (to < beyond) {
-      eeprom_->write(to++, *ptr++);
-    }
-    MCU_DCHECK_EQ(to, beyond);
-    if (to != beyond) {
-      return false;  // COV_NF_LINE
-    }
-    cursor_ += length;
-    return true;
-  }
+  bool WriteBytes(const uint8_t* ptr, const EepromAddrT length);
 
   // Writes the characters of the string to EEPROM; see WriteBytes for behavior
   // details. The caller is required to have some means of later determining the
   // length of the string that was written in order to read it, such as writing
   // the number of bytes in the string to EEPROM prior to writing the string's
   // value, or writing a fixed size string.
-  bool WriteString(const StringView& t) {
-    return WriteBytes(reinterpret_cast<const uint8_t*>(t.data()), t.size());
-  }
+  bool WriteString(const StringView& t);
 };
 
 }  // namespace mcucore

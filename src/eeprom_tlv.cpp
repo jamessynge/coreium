@@ -43,12 +43,19 @@ constexpr EepromAddrT kAddrOfBeyondAddr = TLV_PREFIX_SIZE;
 constexpr EepromAddrT kAddrOfCrc = kAddrOfBeyondAddr + sizeof(EepromAddrT);
 constexpr EepromAddrT kAddrOfFirstEntry = kAddrOfCrc + sizeof(uint32_t);
 
+static_assert(kAddrOfBeyondAddr == 4);
+static_assert(kAddrOfCrc == 6);
+static_assert(kAddrOfFirstEntry == 10);
+static_assert(kAddrOfFirstEntry == EepromTlv::kFixedHeaderSize);
+
 constexpr uint32_t kCrc32InitialValue = ~0L;
 
 static_assert(sizeof(EepromTag) == 2);
 static_assert(sizeof(EepromTlv::BlockLengthT) == 1);
 constexpr EepromAddrT kOffsetOfEntryLength = 2;
 constexpr EepromAddrT kOffsetOfEntryData = 3;
+
+static_assert(kOffsetOfEntryData == EepromTlv::kEntryHeaderSize);
 
 }  // namespace
 
@@ -71,7 +78,8 @@ StatusOr<EepromTlv> EepromTlv::GetIfValid(EEPROMClass& eeprom) {
     return Status(StatusCode::kDataLoss, MCU_PSV("TLV CRC incorrect"));
   }
   if (!instance.IsWellFormed(beyond_addr)) {
-    return Status(StatusCode::kDataLoss, MCU_PSV("TLV not well formed"));
+    return Status(StatusCode::kFailedPrecondition,
+                  MCU_PSV("TLV not well formed"));
   }
   return instance;
 }
@@ -81,10 +89,19 @@ void EepromTlv::ClearAndInitializeEeprom(EEPROMClass& eeprom) {
   for (const char c : TLV_PREFIX_PSV) {
     eeprom.write(addr++, static_cast<uint8_t>(c));
   }
-  Crc32 crc(kCrc32InitialValue);
   EepromTlv instance(eeprom);
+  MCU_DCHECK(instance.IsPrefixPresent());
+
+  Crc32 crc(kCrc32InitialValue);
+  MCU_DCHECK_EQ(crc.value(), kCrc32InitialValue);
   instance.WriteCrc(crc.value());
+  MCU_DCHECK_EQ(instance.ReadCrc(), kCrc32InitialValue);
+
   instance.WriteBeyondAddr(kAddrOfFirstEntry);
+  MCU_DCHECK_OK(instance.ReadBeyondAddr().status());
+  MCU_DCHECK_EQ(instance.ReadBeyondAddr().value(), kAddrOfFirstEntry);
+
+  MCU_DCHECK_OK(GetIfValid(eeprom).status());
 }
 
 EepromTlv::EepromTlv(EEPROMClass& eeprom) : eeprom_(eeprom) {}
@@ -137,6 +154,19 @@ bool EepromTlv::IsWellFormed(const EepromAddrT beyond_addr) const {
   return addr == beyond_addr;
 }
 
+EepromAddrT EepromTlv::Available() const {
+  auto status_or_beyond_addr = ReadBeyondAddr();
+  if (!status_or_beyond_addr.ok()) {
+    return 0;
+  }
+  const auto new_entry_addr = status_or_beyond_addr.value();
+  if (eeprom_.length() - new_entry_addr <= kOffsetOfEntryData) {
+    return 0;
+  }
+  const auto new_entry_data_addr = new_entry_addr + kOffsetOfEntryData;
+  return eeprom_.length() - new_entry_data_addr;
+}
+
 StatusOr<EepromRegionReader> EepromTlv::FindEntry(const EepromTag& tag) const {
   MCU_ASSIGN_OR_RETURN(const auto beyond_addr, ReadBeyondAddr());
   EepromTag stored_tag{.domain = MCU_DOMAIN(0)};
@@ -164,10 +194,10 @@ StatusOr<EepromRegionReader> EepromTlv::FindEntry(const EepromTag& tag) const {
                             entry_data_length);
 }
 
-EepromAddrT EepromTlv::ReclaimUnusedSpace() {
-  MCU_CHECK(false) << MCU_FLASHSTR("ReclaimUnusedSpace is unimplemented");
-  return -1;
-}
+// EepromAddrT EepromTlv::ReclaimUnusedSpace() {
+//   MCU_CHECK(false) << MCU_FLASHSTR("ReclaimUnusedSpace is unimplemented");
+//   return -1;
+// }
 
 StatusOr<EepromAddrT> EepromTlv::FindNext(EepromAddrT entry_addr) const {
   const auto entry_data_addr = entry_addr + kOffsetOfEntryData;
@@ -189,6 +219,8 @@ StatusOr<EepromAddrT> EepromTlv::FindNext(EepromAddrT entry_addr) const {
   return next_entry_addr;
 }
 
+void EepromTlv::WriteCrc(const uint32_t crc) { eeprom_.put(kAddrOfCrc, crc); }
+
 uint32_t EepromTlv::ReadCrc() const {
   uint32_t crc;
   eeprom_.get(kAddrOfCrc, crc);
@@ -202,8 +234,6 @@ uint32_t EepromTlv::ComputeCrc(const EepromAddrT beyond_addr) const {
   }
   return computed_crc.value();
 }
-
-void EepromTlv::WriteCrc(const uint32_t crc) { eeprom_.write(kAddrOfCrc, crc); }
 
 Status EepromTlv::StartTransaction(const BlockLengthT minimum_length,
                                    EepromRegion& target_region) {
@@ -286,6 +316,10 @@ void EepromTlv::ReadTag(EepromAddrT entry_addr, EepromTag& tag) const {
   // This is one of only two places where we call MakeEepromDomain directly.
   tag.domain = internal::MakeEepromDomain(eeprom_.read(entry_addr));
   tag.id = eeprom_.read(entry_addr + 1);
+}
+
+void EepromTlv::InsertInto(OPrintStream& strm) const {
+  strm << MCU_FLASHSTR("{.available=") << Available() << MCU_FLASHSTR("}");
 }
 
 }  // namespace mcucore

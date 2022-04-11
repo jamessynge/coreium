@@ -15,7 +15,8 @@
 // Author: james.synge@gmail.com
 
 #ifdef MCU_EMBEDDED_TARGET
-#error "This file must be included by mcucore_platform.h before defining macros."
+#error \
+    "This file must be included by mcucore_platform.h before defining macros."
 #endif  // MCU_EMBEDDED_TARGET
 
 #ifdef ARDUINO
