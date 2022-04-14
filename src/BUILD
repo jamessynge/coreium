@@ -386,6 +386,7 @@ cc_library(
         ":progmem_string_data",
         ":progmem_string_view",
         ":status_code",
+        ":type_traits",
     ],
 )
 

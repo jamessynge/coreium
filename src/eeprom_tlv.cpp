@@ -11,7 +11,7 @@
 #include "status_code.h"
 #include "status_or.h"
 
-// IDEA: consider adding something like an EepromStringView or EepromArrah<T>,
+// IDEA: consider adding something like an EepromStringView or EepromArray<T>,
 // encapsulating access to an array of chars or Ts.
 
 // IDEA: Once well tested on host and working on device, maybe change some of
@@ -20,6 +20,14 @@
 // and MCU_DCHECK, such that at compile time we can decide whether the statement
 // is dropped, and if retained, we can decide (at runtime?) whether it CHECKS or
 // if LOGs.
+
+// IDEA: Consider adding a VisitEntries function, for use by multiple of the
+// functions below. Could be a free function in the namespace, passed in the
+// EEPROMClass instance. Could be a template function, along the lines of
+// WriteEntryToCursor, so that the return type could be StatusOr<T> or Status,
+// depending on the needs of the called function; and of course the parameters
+// of the function could be handled using a parameter pack, just as with
+// WriteEntryToCursor.
 
 // We reserve domain 0 and domain 255 because bytes in the the EEPROM are set
 // to one of those values when cleared/erased, but it isn't clear which one, and
@@ -52,36 +60,59 @@ constexpr uint32_t kCrc32InitialValue = ~0L;
 
 static_assert(sizeof(EepromTag) == 2);
 static_assert(sizeof(EepromTlv::BlockLengthT) == 1);
-constexpr EepromAddrT kOffsetOfEntryLength = 2;
+constexpr EepromAddrT kOffsetOfEntryDataLength = 2;
 constexpr EepromAddrT kOffsetOfEntryData = 3;
 
 static_assert(kOffsetOfEntryData == EepromTlv::kEntryHeaderSize);
 
+bool ValidateBeyondAddr(const EepromAddrT beyond_addr,
+                        const EepromAddrT eeprom_length) {
+  return kAddrOfFirstEntry <= beyond_addr && beyond_addr <= eeprom_length;
+}
+
+Status MissingPrefixError() {
+  return DataLossError(MCU_PSV("TLV Prefix missing"));
+}
+
+Status WrongComputedBeyondAddr() {
+  return DataLossError(MCU_PSV("Computed BeyondAddr incorrect"));
+}
+
 }  // namespace
 
+bool IsReservedDomain(const EepromDomain domain) {
+  return domain == MCU_DOMAIN(0) || domain == MCU_DOMAIN(255);
+}
+
+EepromTag MakeUnusedTag() {
+  return EepromTag{.domain = MCU_DOMAIN(0), .id = 255};
+}
+
 bool EepromTag::IsUnused() const {
-  return (domain == MCU_DOMAIN(0) && id == 255) ||
-         (domain == MCU_DOMAIN(255) && id == 0);
+  return domain == MCU_DOMAIN(0) && id == 255;
 }
 
 bool EepromTag::operator==(const EepromTag& other) const {
   return domain == other.domain && id == other.id;
 }
 
+void EepromTag::InsertInto(OPrintStream& strm) const {
+  strm << MCU_FLASHSTR("{.domain=") << domain.value() << MCU_FLASHSTR(", .id=")
+       << id << '}';
+}
+
+EepromTlv::EepromTlv(EEPROMClass& eeprom) : eeprom_(eeprom) {}
+
 StatusOr<EepromTlv> EepromTlv::GetIfValid(EEPROMClass& eeprom) {
   EepromTlv instance(eeprom);
-  if (!instance.IsPrefixPresent()) {
-    return Status(StatusCode::kNotFound, MCU_PSV("TLV Prefix missing"));
+  Status status = instance.Validate();
+  if (status.ok()) {
+    return instance;
   }
-  MCU_ASSIGN_OR_RETURN(const auto beyond_addr, instance.ReadBeyondAddr());
-  if (!instance.IsCrcCorrect(beyond_addr)) {
-    return Status(StatusCode::kDataLoss, MCU_PSV("TLV CRC incorrect"));
+  if (status == MissingPrefixError()) {
+    return NotFoundError(status.message());
   }
-  if (!instance.IsWellFormed(beyond_addr)) {
-    return Status(StatusCode::kFailedPrecondition,
-                  MCU_PSV("TLV not well formed"));
-  }
-  return instance;
+  return status;
 }
 
 void EepromTlv::ClearAndInitializeEeprom(EEPROMClass& eeprom) {
@@ -92,19 +123,96 @@ void EepromTlv::ClearAndInitializeEeprom(EEPROMClass& eeprom) {
   EepromTlv instance(eeprom);
   MCU_DCHECK(instance.IsPrefixPresent());
 
+#ifdef MCU_ENABLE_DCHECK
   Crc32 crc(kCrc32InitialValue);
   MCU_DCHECK_EQ(crc.value(), kCrc32InitialValue);
-  instance.WriteCrc(crc.value());
+#endif
+  instance.WriteCrc(kCrc32InitialValue);
   MCU_DCHECK_EQ(instance.ReadCrc(), kCrc32InitialValue);
 
   instance.WriteBeyondAddr(kAddrOfFirstEntry);
   MCU_DCHECK_OK(instance.ReadBeyondAddr().status());
   MCU_DCHECK_EQ(instance.ReadBeyondAddr().value(), kAddrOfFirstEntry);
 
+  MCU_DCHECK_OK(instance.Validate());
   MCU_DCHECK_OK(GetIfValid(eeprom).status());
 }
 
-EepromTlv::EepromTlv(EEPROMClass& eeprom) : eeprom_(eeprom) {}
+Status EepromTlv::Validate() const {
+  if (!IsPrefixPresent()) {
+    return MissingPrefixError();
+  }
+  MCU_ASSIGN_OR_RETURN(const auto beyond_addr, ReadBeyondAddr());
+  MCU_ASSIGN_OR_RETURN(const auto computed_crc, ComputeCrc(beyond_addr));
+  const uint32_t stored_crc = ReadCrc();
+  if (computed_crc != stored_crc) {
+    MCU_VLOG(1) << MCU_FLASHSTR("Crc wrong: ") << stored_crc
+                << "!=" << computed_crc;
+    return Status(StatusCode::kDataLoss, MCU_PSV("TLV CRC incorrect"));
+  }
+  return OkStatus();
+}
+
+// EepromAddrT EepromTlv::ReclaimUnusedSpace() {
+//   MCU_CHECK(false) << MCU_FLASHSTR("ReclaimUnusedSpace is unimplemented");
+//   return -1;
+// }
+
+StatusOr<EepromRegionReader> EepromTlv::FindEntry(const EepromTag tag) const {
+  MCU_ASSIGN_OR_RETURN(const auto beyond_addr, ReadBeyondAddr());
+  EepromAddrT found = 0;
+  auto addr = kAddrOfFirstEntry;
+  const EepromAddrT limit_addr = beyond_addr - kOffsetOfEntryData;
+  while (addr <= limit_addr) {
+    if (tag == ReadTag(addr)) {
+      found = addr;
+    }
+    MCU_ASSIGN_OR_RETURN(addr, FindNext(addr));
+  }
+
+  if (addr != beyond_addr) {
+    return WrongComputedBeyondAddr();
+  } else if (found == 0) {
+    return Status(StatusCode::kNotFound);
+  }
+
+  MCU_ASSIGN_OR_RETURN(const auto next_entry_addr, FindNext(found));
+  BlockLengthT entry_data_length =
+      (next_entry_addr - found) - kOffsetOfEntryData;
+  eeprom_.get(found + kOffsetOfEntryDataLength, entry_data_length);
+  return EepromRegionReader(eeprom_, found + kOffsetOfEntryData,
+                            entry_data_length);
+}
+
+StatusOr<EepromAddrT> EepromTlv::FindNext(EepromAddrT entry_addr) const {
+  const auto entry_data_addr = entry_addr + kOffsetOfEntryData;
+  if (entry_data_addr > eeprom_.length()) {
+    MCU_VLOG(1) << MCU_FLASHSTR("data addr out of range: ") << entry_data_addr
+                << '>' << eeprom_.length();
+    return Status(StatusCode::kDataLoss, MCU_PSV("entry_data_addr invalid"));
+  }
+
+  BlockLengthT entry_data_length;
+  eeprom_.get(entry_addr + kOffsetOfEntryDataLength, entry_data_length);
+  const auto next_entry_addr = entry_data_addr + entry_data_length;
+  if (next_entry_addr > eeprom_.length()) {
+    MCU_VLOG(1) << MCU_FLASHSTR("length beyond end: ") << entry_data_addr << '+'
+                << entry_data_length << '>' << eeprom_.length()
+                << MCU_FLASHSTR("     entry_addr: ") << entry_addr;
+    return Status(StatusCode::kDataLoss, MCU_PSV("data_length invalid"));
+  }
+  return next_entry_addr;
+}
+
+Status EepromTlv::RemoveEntry(const EepromTag tag) {
+  MCU_ASSIGN_OR_RETURN(const auto beyond_addr, ReadBeyondAddr());
+  MCU_ASSIGN_OR_RETURN(const bool found_other_tags,
+                       RemoveEntry(tag, beyond_addr, /*not_found_ok=*/false));
+  if (!found_other_tags) {
+    ClearAndInitializeEeprom(eeprom_);
+  }
+  return OkStatus();
+}
 
 bool EepromTlv::IsPrefixPresent() const {
   int addr = 0;
@@ -119,39 +227,15 @@ bool EepromTlv::IsPrefixPresent() const {
 StatusOr<EepromAddrT> EepromTlv::ReadBeyondAddr() const {
   EepromAddrT beyond_addr;
   eeprom_.get(kAddrOfBeyondAddr, beyond_addr);
-  if (kAddrOfFirstEntry <= beyond_addr && beyond_addr < eeprom_.length()) {
+  if (ValidateBeyondAddr(beyond_addr, eeprom_.length())) {
     return beyond_addr;
   }
   MCU_VLOG(1) << MCU_FLASHSTR("BeyondAddr out of range: ") << beyond_addr;
-  return Status(StatusCode::kDataLoss, MCU_PSV("TLV beyond_addr invalid"));
+  return DataLossError(MCU_PSV("Stored BeyondAddr invalid"));
 }
 
 void EepromTlv::WriteBeyondAddr(const EepromAddrT beyond_addr) {
   eeprom_.put(kAddrOfBeyondAddr, beyond_addr);
-}
-
-bool EepromTlv::IsCrcCorrect(const EepromAddrT beyond_addr) const {
-  const auto computed_crc = ComputeCrc(beyond_addr);
-  const uint32_t stored_crc = ReadCrc();
-  if (computed_crc == stored_crc) {
-    return true;
-  }
-  MCU_VLOG(1) << MCU_FLASHSTR("Crc wrong: ") << stored_crc
-              << "!=" << computed_crc;
-  return false;
-}
-
-bool EepromTlv::IsWellFormed(const EepromAddrT beyond_addr) const {
-  auto addr = kAddrOfFirstEntry;
-  while (addr < beyond_addr) {
-    // MAYBE check validity of tag.
-    auto status_or_addr = FindNext(addr);
-    if (!status_or_addr.ok()) {
-      return false;
-    }
-    addr = status_or_addr.value();
-  }
-  return addr == beyond_addr;
 }
 
 EepromAddrT EepromTlv::Available() const {
@@ -167,58 +251,6 @@ EepromAddrT EepromTlv::Available() const {
   return eeprom_.length() - new_entry_data_addr;
 }
 
-StatusOr<EepromRegionReader> EepromTlv::FindEntry(const EepromTag& tag) const {
-  MCU_ASSIGN_OR_RETURN(const auto beyond_addr, ReadBeyondAddr());
-  EepromTag stored_tag{.domain = MCU_DOMAIN(0)};
-  EepromAddrT found = 0;
-  auto addr = kAddrOfFirstEntry;
-  while (addr < beyond_addr) {
-    ReadTag(addr, stored_tag);
-    if (tag == stored_tag) {
-      found = addr;
-    }
-    MCU_ASSIGN_OR_RETURN(addr, FindNext(addr));
-  }
-
-  if (addr != beyond_addr) {
-    return Status(StatusCode::kDataLoss, MCU_PSV("TLV beyond_addr invalid"));
-  } else if (found == 0) {
-    return Status(StatusCode::kNotFound);
-  }
-
-  MCU_ASSIGN_OR_RETURN(const auto next_entry_addr, FindNext(found));
-  BlockLengthT entry_data_length =
-      (next_entry_addr - found) - kOffsetOfEntryData;
-  eeprom_.get(found + kOffsetOfEntryLength, entry_data_length);
-  return EepromRegionReader(eeprom_, found + kOffsetOfEntryData,
-                            entry_data_length);
-}
-
-// EepromAddrT EepromTlv::ReclaimUnusedSpace() {
-//   MCU_CHECK(false) << MCU_FLASHSTR("ReclaimUnusedSpace is unimplemented");
-//   return -1;
-// }
-
-StatusOr<EepromAddrT> EepromTlv::FindNext(EepromAddrT entry_addr) const {
-  const auto entry_data_addr = entry_addr + kOffsetOfEntryData;
-  if ((entry_data_addr + sizeof entry_data_addr) > eeprom_.length()) {
-    MCU_VLOG(1) << MCU_FLASHSTR("data addr out of range: ") << entry_data_addr
-                << '+' << sizeof entry_data_addr << '>' << eeprom_.length();
-    return Status(StatusCode::kDataLoss, MCU_PSV("entry_data_addr invalid"));
-  }
-  EepromAddrT entry_data_length;
-  eeprom_.get(entry_addr + kOffsetOfEntryLength, entry_data_length);
-
-  const auto next_entry_addr = entry_data_addr + entry_data_length;
-  if (next_entry_addr > eeprom_.length()) {
-    MCU_VLOG(1) << MCU_FLASHSTR("length beyond end: ") << entry_data_addr << '+'
-                << entry_data_length << '>' << eeprom_.length();
-    return Status(StatusCode::kDataLoss, MCU_PSV("data_length invalid"));
-  }
-
-  return next_entry_addr;
-}
-
 void EepromTlv::WriteCrc(const uint32_t crc) { eeprom_.put(kAddrOfCrc, crc); }
 
 uint32_t EepromTlv::ReadCrc() const {
@@ -227,21 +259,55 @@ uint32_t EepromTlv::ReadCrc() const {
   return crc;
 }
 
-uint32_t EepromTlv::ComputeCrc(const EepromAddrT beyond_addr) const {
+StatusOr<uint32_t> EepromTlv::ComputeCrc(const EepromAddrT beyond_addr) const {
   Crc32 computed_crc(kCrc32InitialValue);
-  for (EepromAddrT addr = kAddrOfFirstEntry; addr < beyond_addr; ++addr) {
-    computed_crc.appendByte(eeprom_.read(addr));
+  auto addr = kAddrOfFirstEntry;
+  const EepromAddrT limit_addr = beyond_addr - kOffsetOfEntryData;
+  while (addr <= limit_addr) {
+    MCU_DCHECK(!IsReservedDomain(ReadTag(addr).domain) ||
+               ReadTag(addr).IsUnused());
+    MCU_ASSIGN_OR_RETURN(const auto next_entry_addr, FindNext(addr));
+    addr += kOffsetOfEntryDataLength;
+    while (addr < next_entry_addr) {
+      computed_crc.appendByte(eeprom_.read(addr++));
+    }
+  }
+  if (addr == beyond_addr) {
+    return computed_crc.value();
+  }
+
+  Status status = WrongComputedBeyondAddr();
+  MCU_VLOG(1) << status.message() << MCU_FLASHSTR(": ") << addr
+              << MCU_FLASHSTR(" != ") << beyond_addr;
+  return status;
+}
+
+uint32_t EepromTlv::ComputeExtendedCrc(const EepromAddrT new_entry_addr,
+                                       const EepromAddrT beyond_addr) const {
+  Crc32 computed_crc(ReadCrc());
+  EepromAddrT addr = new_entry_addr + kOffsetOfEntryDataLength;
+  while (addr < beyond_addr) {
+    computed_crc.appendByte(eeprom_.read(addr++));
   }
   return computed_crc.value();
 }
 
-Status EepromTlv::StartTransaction(const BlockLengthT minimum_length,
+Status EepromTlv::ValidateCrc(const EepromAddrT beyond_addr) const {
+  auto status_or_crc = ComputeCrc(beyond_addr);
+  MCU_RETURN_IF_ERROR(status_or_crc.status());
+  //  MCU_RETURN_IF_ERROR(ComputeCrc(beyond_addr));
+  return OkStatus();
+}
+
+Status EepromTlv::StartTransaction(const EepromTag tag,
+                                   const BlockLengthT minimum_length,
                                    EepromRegion& target_region) {
-  if (transaction_is_active_) {
-    return Status(StatusCode::kFailedPrecondition,
-                  MCU_PSV("Write in progress"));
+  if (IsReservedDomain(tag.domain)) {
+    return InvalidArgumentError(MCU_PSV("Domain is reserved"));
   }
+  MCU_RETURN_IF_ERROR(ValidateNoTransactionIsActive());
   MCU_ASSIGN_OR_RETURN(const auto new_entry_addr, ReadBeyondAddr());
+  MCU_DCHECK_OK(ValidateCrc(new_entry_addr));
   const auto new_entry_data_addr = new_entry_addr + kOffsetOfEntryData;
   const auto available = eeprom_.length() - new_entry_data_addr;
   if (available < minimum_length) {
@@ -258,7 +324,15 @@ Status EepromTlv::StartTransaction(const BlockLengthT minimum_length,
   return OkStatus();
 }
 
-Status EepromTlv::CommitTransaction(const EepromTag& tag,
+Status EepromTlv::ValidateNoTransactionIsActive() const {
+  if (transaction_is_active_) {
+    return Status(StatusCode::kFailedPrecondition,
+                  MCU_PSV("Write in progress"));
+  }
+  return OkStatus();
+}
+
+Status EepromTlv::CommitTransaction(const EepromTag tag,
                                     const EepromAddrT data_addr,
                                     const BlockLengthT data_length) {
   if (!transaction_is_active_) {
@@ -270,6 +344,8 @@ Status EepromTlv::CommitTransaction(const EepromTag& tag,
   if (new_entry_data_addr != data_addr) {
     return Status(StatusCode::kInternal, MCU_PSV("Commit wrong data_addr"));
   }
+  MCU_DCHECK_OK(ValidateCrc(new_entry_addr));
+
   const auto new_beyond_addr = new_entry_data_addr + data_length;
   if (new_beyond_addr > eeprom_.length()) {
     MCU_VLOG(1) << MCU_FLASHSTR("length beyond end: ") << new_entry_data_addr
@@ -279,26 +355,41 @@ Status EepromTlv::CommitTransaction(const EepromTag& tag,
 
   // Write the Tag and Length of the entry.
   WriteTag(new_entry_addr, tag);
-  eeprom_.put(new_entry_addr + kOffsetOfEntryLength, data_length);
+  const auto new_entry_length_addr = new_entry_addr + kOffsetOfEntryDataLength;
+  eeprom_.put(new_entry_length_addr, data_length);
+
+  // We shouldn't yet have touched anything before the new entry, so the
+  // contents before new_entry_addr should still be valid.
+  MCU_DCHECK_OK(Validate());
+
+  // Compute the CRC incrementally, i.e. be reading the old value, then adding
+  // the appropriate bytes of the new entry.
+  const uint32_t extended_crc =
+      ComputeExtendedCrc(new_entry_addr, new_beyond_addr);
+
+#ifdef MCU_ENABLE_DCHECK
+  // Validate that the extended CRC matches what we'll get if we compute the
+  // value from all of the entries.
+  auto status_or_full_crc = ComputeCrc(new_beyond_addr);
+  MCU_DCHECK_OK(status_or_full_crc);
+  MCU_DCHECK_EQ(extended_crc, status_or_full_crc.value());
+#endif
 
   // So far we've not changed anything prior to new_entry_addr. Now we need to
-  // compute the new CRC. For now doing so by starting from the current stored
-  // value and appending just the bytes after the last entry, though we also
-  // have a DCHECK to confirm that process has produced the same values as
-  // computing the value from all bytes.
-
-  MCU_DCHECK(IsCrcCorrect(new_entry_addr));
-  Crc32 crc32(ReadCrc());
-  for (EepromAddrT addr = new_entry_data_addr; addr < new_beyond_addr; ++addr) {
-    crc32.appendByte(eeprom_.read(addr));
-  }
-  MCU_DCHECK_EQ(ComputeCrc(new_beyond_addr), crc32.value());
-
-  // We still haven't changed anything prior to new_entry_addr, but now we
-  // finally need to update the stored CRC and the stored beyond addr.
-
-  WriteCrc(crc32.value());
+  // update the stored CRC and the stored beyond addr.
+  WriteCrc(extended_crc);
   WriteBeyondAddr(new_beyond_addr);
+
+  // Validate should now
+  MCU_DCHECK_OK(Validate());
+
+  // 'Remove' any other entries with the same tag that appear before the new
+  // entry.
+  MCU_RETURN_IF_ERROR(RemoveEntry(tag, new_entry_addr, /*not_found_ok=*/true));
+
+  // And a last step of paranoia.
+  MCU_DCHECK_OK(Validate());
+
   return OkStatus();
 }
 
@@ -307,19 +398,111 @@ void EepromTlv::AbortTransaction() {
   transaction_is_active_ = false;
 }
 
-void EepromTlv::WriteTag(EepromAddrT entry_addr, const EepromTag& tag) {
+EepromTag EepromTlv::ReadTag(EepromAddrT entry_addr) const {
+  // This is one of only two places where we call MakeEepromDomain directly.
+  EepromTag tag{.domain = internal::MakeEepromDomain(eeprom_.read(entry_addr)),
+                .id = eeprom_.read(entry_addr + 1)};
+  return tag;
+}
+
+void EepromTlv::WriteTag(EepromAddrT entry_addr, const EepromTag tag) {
   eeprom_.write(entry_addr, tag.domain.value());
   eeprom_.write(entry_addr + 1, tag.id);
 }
 
-void EepromTlv::ReadTag(EepromAddrT entry_addr, EepromTag& tag) const {
-  // This is one of only two places where we call MakeEepromDomain directly.
-  tag.domain = internal::MakeEepromDomain(eeprom_.read(entry_addr));
-  tag.id = eeprom_.read(entry_addr + 1);
+EepromTlv::BlockLengthT EepromTlv::ReadEntryDataLength(
+    EepromAddrT entry_addr) const {
+  BlockLengthT data_length;
+  eeprom_.get(entry_addr + kOffsetOfEntryDataLength, data_length);
+  return data_length;
 }
 
+void EepromTlv::WriteEntryDataLength(EepromAddrT entry_addr,
+                                     BlockLengthT data_length) {
+  const auto entry_length_addr = entry_addr + kOffsetOfEntryDataLength;
+  eeprom_.put(entry_length_addr, data_length);
+}
+
+StatusOr<bool> EepromTlv::RemoveEntry(const EepromTag tag,
+                                      const EepromAddrT beyond_addr,
+                                      const bool not_found_ok) {
+  MCU_RETURN_IF_ERROR(ValidateNoTransactionIsActive());
+  bool found_other_tags = false;
+  bool found_tag = not_found_ok;
+  auto addr = kAddrOfFirstEntry;
+  const EepromAddrT limit_addr = beyond_addr - kOffsetOfEntryData;
+  while (addr <= limit_addr) {
+    const auto stored_tag = ReadTag(addr);
+    if (tag == stored_tag) {
+      found_tag = true;
+      WriteTag(addr, MakeUnusedTag());
+    } else if (!stored_tag.IsUnused()) {
+      found_other_tags = true;
+    }
+    MCU_ASSIGN_OR_RETURN(addr, FindNext(addr));
+  }
+  if (addr != beyond_addr) {
+    return Status(StatusCode::kDataLoss, MCU_PSV("TLV addr != beyond_addr"));
+  } else if (!found_tag) {
+    return Status(StatusCode::kNotFound);
+  } else {
+    return found_other_tags;
+  }
+}
+
+// Debugging support. This doesn't use methods which print error messages so
+// that it can be used to print error messages without causing recursion.
 void EepromTlv::InsertInto(OPrintStream& strm) const {
-  strm << MCU_FLASHSTR("{.available=") << Available() << MCU_FLASHSTR("}");
+  strm << MCU_FLASHSTR("{Prefix:");
+  if (IsPrefixPresent()) {
+    strm << MCU_FLASHSTR("OK");
+  } else {
+    strm << MCU_FLASHSTR("Missing");
+  }
+
+  EepromAddrT beyond_addr;
+  eeprom_.get(kAddrOfBeyondAddr, beyond_addr);
+  strm << MCU_FLASHSTR(", ") << MCU_FLASHSTR("Beyond=") << beyond_addr;
+  if (!ValidateBeyondAddr(beyond_addr,
+                          const_cast<EEPROMClass&>(eeprom_).length())) {
+    strm << MCU_FLASHSTR(" (Invalid)");
+  } else if (beyond_addr == kAddrOfFirstEntry) {
+    strm << MCU_FLASHSTR(" (Empty)");
+  } else if (beyond_addr > (const_cast<EEPROMClass&>(eeprom_).length() -
+                            kOffsetOfEntryData)) {
+    strm << MCU_FLASHSTR(" (Full)");
+  }
+
+  strm << MCU_FLASHSTR(", ") << MCU_FLASHSTR("Crc=") << ReadCrc();
+
+  // IDEA: Compute CRC as we go, print out the value if it doesn't match the
+  // stored CRC.
+  auto addr = kAddrOfFirstEntry;
+  const EepromAddrT limit_addr = beyond_addr - kOffsetOfEntryData;
+  while (addr <= limit_addr) {
+    strm << MCU_FLASHSTR(",\n   ");
+    const auto tag = ReadTag(addr);
+    strm << MCU_FLASHSTR("Entry@") << addr << MCU_FLASHSTR("{tag=") << tag;
+    if (tag.IsUnused()) {
+      strm << MCU_FLASHSTR(" (Unused)");
+    } else if (IsReservedDomain(tag.domain)) {
+      strm << MCU_FLASHSTR(" (Reserved)");
+    }
+    const auto data_length = ReadEntryDataLength(addr);
+    const auto next_entry_addr = addr + kOffsetOfEntryData + data_length;
+    strm << MCU_FLASHSTR(", length=") << data_length << MCU_FLASHSTR(", next=")
+         << next_entry_addr << '}';
+    addr = next_entry_addr;
+  }
+
+  if (addr != kAddrOfFirstEntry) {
+    strm << '\n';
+  }
+  if (addr != beyond_addr) {
+    strm << MCU_FLASHSTR("MISALIGNED");
+  }
+
+  strm << '}';
 }
 
 }  // namespace mcucore

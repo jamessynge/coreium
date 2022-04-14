@@ -40,22 +40,6 @@ inline std::ostream& operator<<(std::ostream& out, const Status& status) {
 
 namespace test {
 
-inline const Status GetStatus(const Status& status) { return status; }
-
-// GetStatus from a type T which has a method like `status()` returning a Status
-// value or reference. Most obviously applies to StatusOr.
-template <
-    class T,
-    typename std::enable_if_t<
-        std::is_class_v<T> &&
-            std::is_same_v<Status, std::remove_cv_t<std::remove_reference_t<
-                                       decltype(std::declval<T>().status())>>>,
-        int>
-        I = 0>
-inline Status GetStatus(const T& status_source) {
-  return status_source.status();
-}
-
 // Monomorphic implementation of matcher IsOk() for a given type T.
 // T can be Status, StatusOr<>, or a reference to either of them.
 template <typename T>

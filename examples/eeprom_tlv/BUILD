@@ -13,7 +13,6 @@ cc_binary(
     deps = [
         "//mcucore/examples/eeprom_tlv/src:example1",
         "//mcucore/examples/eeprom_tlv/src:example2",
-        "//mcucore/extras/host/arduino",
         "//mcucore/extras/host/arduino:arduino_main",
         "//mcucore/src:McuCore",
     ],
