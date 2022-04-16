@@ -122,8 +122,10 @@ cc_library(
 
 cc_library(
     name = "eeprom_region",
+    srcs = ["eeprom_region.cc"],
     hdrs = ["eeprom_region.h"],
     deps = [
+        ":flash_string_table",
         ":limits",
         ":logging",
         ":mcucore_platform",

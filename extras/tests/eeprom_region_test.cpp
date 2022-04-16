@@ -5,7 +5,9 @@
 #include <limits>
 
 #include "extras/host/eeprom/eeprom.h"
+#include "extras/test_tools/print_value_to_std_string.h"
 #include "extras/test_tools/status_or_test_utils.h"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "status_code.h"
 #include "string_view.h"
@@ -14,67 +16,87 @@ namespace mcucore {
 namespace test {
 namespace {
 
+using ::testing::AllOf;
+using ::testing::HasSubstr;
+
 class EepromRegionReaderTest : public testing::Test {
  protected:
   EEPROMClass eeprom_;
 };
 
+TEST_F(EepromRegionReaderTest, Unusable) {
+  EepromRegionReader region;
+  EXPECT_EQ(region.cursor(), 0);
+  EXPECT_EQ(region.length(), 0);
+  EXPECT_EQ(region.available(), 0);
+  EXPECT_THAT(PrintValueToStdString(region),
+              AllOf(HasSubstr(".cursor=0"), HasSubstr(".length=0"),
+                    HasSubstr(".available=0")));
+}
+
 TEST_F(EepromRegionReaderTest, CreateAndCopy) {
-  auto validator = [](EepromRegionReader& reader,
+  auto validator = [](EepromRegionReader& region,
                       const EepromAddrT start_address,
                       const EepromAddrT region_length) {
-    EXPECT_EQ(reader.start_address(), start_address);
-    EXPECT_EQ(reader.length(), region_length);
-    EXPECT_EQ(reader.cursor(), 0);
-    EXPECT_EQ(reader.available(), region_length);
+    EXPECT_EQ(region.start_address(), start_address);
+    EXPECT_EQ(region.length(), region_length);
+    EXPECT_EQ(region.cursor(), 0);
+    EXPECT_EQ(region.available(), region_length);
 
-    auto copy = reader;
+    auto copy = region;
 
     EXPECT_EQ(copy.start_address(), start_address);
     EXPECT_EQ(copy.length(), region_length);
     EXPECT_EQ(copy.cursor(), 0);
     EXPECT_EQ(copy.available(), region_length);
 
-    EXPECT_TRUE(reader.set_cursor(1));
+    EXPECT_TRUE(region.set_cursor(1));
 
-    EXPECT_EQ(reader.start_address(), start_address);
-    EXPECT_EQ(reader.cursor(), 1);
+    EXPECT_EQ(region.start_address(), start_address);
+    EXPECT_EQ(region.cursor(), 1);
     EXPECT_EQ(copy.start_address(), start_address);
     EXPECT_EQ(copy.cursor(), 0);
 
-    reader = copy;
+    region = copy;
 
-    EXPECT_EQ(reader.start_address(), start_address);
-    EXPECT_EQ(reader.cursor(), 0);
+    EXPECT_EQ(region.start_address(), start_address);
+    EXPECT_EQ(region.cursor(), 0);
     EXPECT_EQ(copy.start_address(), start_address);
     EXPECT_EQ(copy.cursor(), 0);
 
-    reader.Invalidate();
+    region.Invalidate();
 
-    EXPECT_EQ(reader.cursor(), 0);
-    EXPECT_EQ(reader.length(), 0);
-    EXPECT_EQ(reader.available(), 0);
+    EXPECT_EQ(region.cursor(), 0);
+    EXPECT_EQ(region.length(), 0);
+    EXPECT_EQ(region.available(), 0);
 
-    reader = copy;
+    region = copy;
 
-    EXPECT_EQ(reader.cursor(), 0);
-    EXPECT_EQ(reader.length(), region_length);
-    EXPECT_EQ(reader.available(), region_length);
+    EXPECT_EQ(region.cursor(), 0);
+    EXPECT_EQ(region.length(), region_length);
+    EXPECT_EQ(region.available(), region_length);
   };
 
   {
-    EepromRegionReader reader(eeprom_);
-    validator(reader, 0, eeprom_.length());
+    EepromRegionReader region(eeprom_);
+    validator(region, 0, eeprom_.length());
   }
   {
-    EepromRegionReader reader(eeprom_, 10, 100);
-    validator(reader, 10, 100);
+    EepromRegionReader region(eeprom_, 10, 100);
+    validator(region, 10, 100);
   }
 }
 
 class EepromRegionTest : public EepromRegionReaderTest {
  protected:
 };
+
+TEST_F(EepromRegionTest, Unusable) {
+  EepromRegion region;
+  EXPECT_EQ(region.cursor(), 0);
+  EXPECT_EQ(region.length(), 0);
+  EXPECT_EQ(region.available(), 0);
+}
 
 template <typename T>
 void VerifyNoWriteNoRead(EepromRegion& region, const T value) {

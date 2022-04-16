@@ -87,6 +87,7 @@ cc_test(
     deps = [
         "//googletest:gunit_main",
         "//mcucore/extras/host/eeprom",
+        "//mcucore/extras/test_tools:print_value_to_std_string",
         "//mcucore/extras/test_tools:status_or_test_utils",
         "//mcucore/src:eeprom_region",
         "//mcucore/src:status_code",
