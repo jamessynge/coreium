@@ -23,12 +23,11 @@ class EepromTest : public testing::Test {
 // I've no idea of the normal starting value of EEPROM cells, but the host
 // (fake) version of EEPROMClass initializes to zero. Let's make sure.
 TEST_F(EepromTest, StartsZeroedOut) {
-  static_assert(sizeof(EEPROMClass) >= 1024, "Wrong size");
-  EXPECT_EQ(eeprom_.length(), 1024);
+  EXPECT_EQ(eeprom_.length(), EEPROMClass::kDefaultSize);
 
   const std::vector<uint8_t> zeroes(eeprom_.length());
-  EXPECT_EQ(zeroes.size(), 1024);
-  for (int address = 0; address < 1024; ++address) {
+  EXPECT_EQ(zeroes.size(), EEPROMClass::kDefaultSize);
+  for (int address = 0; address < EEPROMClass::kDefaultSize; ++address) {
     EXPECT_EQ(zeroes[address], 0);
   }
 

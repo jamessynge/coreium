@@ -202,10 +202,12 @@ class Crc32RandomTest : public testing::TestWithParam<DetectsCorruptionParams> {
 
 std::vector<DetectsCorruptionParams> GenerateTestParams() {
   std::vector<DetectsCorruptionParams> cases;
+  const auto kNumTrials = 8;
   for (size_t num_data_bytes = 1; num_data_bytes <= 32; ++num_data_bytes) {
+    // This is too many trials when Crc32 logs a lot.
+    //    const auto kNumTrials = static_cast<int>(num_data_bytes * 8);
     for (int num_bits_to_flip = 1; num_bits_to_flip <= 4; ++num_bits_to_flip) {
-      cases.push_back({num_data_bytes, num_bits_to_flip,
-                       static_cast<int>(num_data_bytes * 8)});
+      cases.push_back({num_data_bytes, num_bits_to_flip, kNumTrials});
     }
   }
   return cases;

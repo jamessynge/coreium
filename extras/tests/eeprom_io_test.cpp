@@ -97,7 +97,7 @@ TEST_F(EepromIoTest, PutAndGetBytesNoCrc32) {
   for (int size : {0, 1, 2, static_cast<int>(kAllBytes.size())}) {
     const std::vector<uint8_t> kBytes(kAllBytes.data(),
                                       kAllBytes.data() + size);
-    for (int starting_address : {0, 1, 100, 1000}) {
+    for (int starting_address : {0, 1, 100, EEPROM.length() - size}) {
       RandomizeEeprom(54321.9876, EEPROM);
       PutBytes(starting_address, kBytes.data(), size, nullptr);
       std::vector<uint8_t> bytes(size);
@@ -115,7 +115,9 @@ TEST_F(EepromIoTest, PutAndGetBytesWithCrc32) {
     // For these kBytes, we should always get the same CRC value, regardless of
     // address to which we put it in the EEPROM.
     const auto expected_crc = Crc32OfBytes(kBytes);
-    for (int starting_address : {0, 1, 100, 1000}) {
+    const int last_valid_address =
+        static_cast<int>(EEPROM.length() - size - sizeof expected_crc);
+    for (int starting_address : {0, 1, 100, last_valid_address}) {
       RandomizeEeprom(54321.9876, EEPROM);
       Crc32 put_crc;
       PutBytes(starting_address, kBytes.data(), size, &put_crc);

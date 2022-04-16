@@ -9,15 +9,23 @@
 
 #include <stdint.h>
 
+#include <vector>
+
 class EEPROMClass {
  public:
+  static constexpr uint16_t kDefaultSize = 512;
+
+  // This ctor doesn't exist in the normal Arduino library, but is useful for
+  // testing with various sizes of fake EEPROM.
+  explicit EEPROMClass(uint16_t length = kDefaultSize);
+
   // Basic user access methods.
   uint8_t read(int idx) { return data_[idx]; }
   uint8_t operator[](const int idx) { return read(idx); }
   void write(int idx, uint8_t val) { data_[idx] = val; }
   void update(int idx, uint8_t val) { write(idx, val); }
 
-  uint16_t length() { return sizeof data_; }
+  uint16_t length() { return static_cast<uint16_t>(data_.size()); }
 
   // Functionality to 'get' and 'put' objects to and from EEPROM.
   template <typename T>
@@ -42,7 +50,7 @@ class EEPROMClass {
 
  private:
   // Initializes to zeroes.
-  uint8_t data_[1024] = {};
+  std::vector<uint8_t> data_;
 };
 
 extern EEPROMClass EEPROM;
