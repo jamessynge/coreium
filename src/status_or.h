@@ -21,43 +21,36 @@ class StatusOr {
  public:
   using value_type = typename remove_cv<T>::type;
   StatusOr() : StatusOr(Status(StatusCode::kUnknown)) {}
-  /*implicit*/ StatusOr(const value_type& value_)  // NOLINT
-      : value_(value_), ok_(true) {}
+  /*implicit*/ StatusOr(const value_type& value)  // NOLINT
+      : value_(value) {}
   /*implicit*/ StatusOr(const Status& status)  // NOLINT
-      : status_(status), ok_(false) {
+      : status_(status) {
     MCU_DCHECK(!status.ok());
-    if (status.ok()) {
+    if (status_.ok()) {
       status_ = Status(StatusCode::kUnknown);  // COV_NF_LINE
     }
   }
 
-  bool ok() const { return ok_; }
+  bool ok() const { return status_.ok(); }
 
   const value_type& value() const {
-    MCU_CHECK(ok_);
+    MCU_CHECK(ok());
     return value_;
   }
 
-  Status status() const {
-    if (ok_) {
-      return Status();
-    } else {
-      return status_;
-    }
-  }
+  const Status& status() const { return status_; }
 
-  operator Status() const {  // NOLINT
+  operator const Status&() const {  // NOLINT
     return status_;
   }
 
  private:
+  Status status_;
   // Note: it could be useful to have a simple version of std::variant with
   // which to implement StatusOr.
   union {
-    Status status_;
     value_type value_;
   };
-  bool ok_;
 };
 
 template <typename T>
@@ -86,10 +79,5 @@ bool operator!=(const StatusOr<T>& a, const StatusOr<T>& b) {
     return statusor.status();                                           \
   }                                                                     \
   lhs = statusor.value();
-
-// Internal helper for concatenating macro values.
-#define MCU_STATUS_MACROS_CONCAT_NAME_INNER_(x, y) x##y
-#define MCU_STATUS_MACROS_CONCAT_NAME(x, y) \
-  MCU_STATUS_MACROS_CONCAT_NAME_INNER_(x, y)
 
 #endif  // MCUCORE_SRC_STATUS_OR_H_

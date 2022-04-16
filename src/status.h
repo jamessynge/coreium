@@ -19,6 +19,7 @@
 #include "mcucore_platform.h"
 #include "progmem_string_view.h"
 #include "status_code.h"  // pragma IWYU: export
+#include "type_traits.h"
 
 namespace mcucore {
 
@@ -93,32 +94,46 @@ bool IsResourceExhausted(const Status& status);
 bool IsUnimplemented(const Status& status);
 bool IsUnknown(const Status& status);
 
+// Support for checking the status of Status or of StatusOr<T>.
+inline const Status& GetStatus(const Status& status) { return status; }
+
+// GetStatus from a type T which has a method like `status()` returning a Status
+// value or reference. Most obviously applies to StatusOr.
+template <class T,
+          typename enable_if<
+              is_union_or_class<T>::value &&
+                  is_same<Status, remove_cv_t<remove_reference_t<
+                                      decltype(declval<T>().status())>>>::value,
+              int>::type I = 0>
+inline const Status& GetStatus(const T& status_source) {
+  return status_source.status();
+}
+
 }  // namespace mcucore
 
-// Evaluate expression, whose type must be Status, and return the Status if it
-// is not OK.
-#define MCU_RETURN_IF_ERROR(expr)            \
-  do {                                       \
-    const ::mcucore::Status status = (expr); \
-    if (!status.ok()) {                      \
-      return status;                         \
-    }                                        \
+// Evaluate expression, whose type must be convertable to Status, and return the
+// Status if it is not OK.
+#define MCU_RETURN_IF_ERROR(expr)                   \
+  do {                                              \
+    const auto status = ::mcucore::GetStatus(expr); \
+    if (!status.ok()) {                             \
+      return status;                                \
+    }                                               \
   } while (false)
 
-#define MCU_CHECK_OK(expr)                   \
-  do {                                       \
-    const ::mcucore::Status status = (expr); \
-    MCU_CHECK(status.ok()) << status;        \
-  } while (false)
+#define MCU_CHECK_OK(expr)                                            \
+  for (const auto status = ::mcucore::GetStatus(expr); !status.ok();) \
+  MCU_CHECK_INTERNAL_(status.ok(), #expr) << status
 
 #ifdef MCU_ENABLE_DCHECK
-#define MCU_DCHECK_OK(expr)                  \
-  do {                                       \
-    const ::mcucore::Status status = (expr); \
-    MCU_DCHECK(status.ok()) << status;       \
-  } while (false)
+#define MCU_DCHECK_OK(expr) MCU_CHECK_OK(expr)
 #else
 #define MCU_DCHECK_OK(expr)
 #endif  // MCU_ENABLE_DCHECK
+
+// Internal helper for concatenating macro values.
+#define MCU_STATUS_MACROS_CONCAT_NAME_INNER_(x, y) x##y
+#define MCU_STATUS_MACROS_CONCAT_NAME(x, y) \
+  MCU_STATUS_MACROS_CONCAT_NAME_INNER_(x, y)
 
 #endif  // MCUCORE_SRC_STATUS_H_
