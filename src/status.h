@@ -1,7 +1,27 @@
 #ifndef MCUCORE_SRC_STATUS_H_
 #define MCUCORE_SRC_STATUS_H_
 
-// This is a simplistic version of absl::Status.
+// This is a simplistic version of absl::Status, along with helper methods such
+// as:
+//   * OkStatus(), which returns a Status instance with code kOk.
+//   * DataLossError(msg), which returns a Status instance with code kDataLoss,
+//     and with an optional message.
+//   * IsUnknown(status), which returns true IFF `status` has code kUnknown.
+//   * GetStatus(status_expr), which returns the Status of the value of
+//     `status_expr`. The type of expression `status_expr` must either be
+//     convertible to `const Status&`, or must be a type T that has a method
+//     `T::status()` whose return type is can be assigned to a Status instance.
+//
+// And these macros:
+//   * MCU_RETURN_IF_ERROR(status_expr), which evaluates GetStatus(status_expr)
+//     and if the resulting status is not OK, returns the status.
+//   * MCU_CHECK_OK(status_expr), which is roughly the same as:
+//         const Status temp_var_name = GetStatus(status_expr);
+//         MCU_CHECK(temp_var_name.ok()) << temp_var_name
+//   * MCU_DCHECK_OK(status_expr), which is like MCU_CHECK_OK, but only when
+//     MCU_ENABLE_DCHECK is defined. Otherwise it is like MCU_DCHECK(true).
+//
+// =============================================================================
 //
 // Since StatusCode is defined in the library McuCore, not in the (possibly
 // multiple) libraries which may use Status, we allow for 'automatically'
@@ -114,25 +134,20 @@ inline const Status& GetStatus(const T& status_source) {
 // `MCU_RETURN_IF_ERROR(expr)` evaluates `expr`, whose type must be convertable
 // to Status, and returns the Status if it is not OK.
 #define MCU_RETURN_IF_ERROR(expr) \
-  MCU_RETURN_IF_ERROR_IMPL_(      \
-      MCU_STATUS_MACROS_CONCAT_NAME(_return_if_error_status_, __LINE__), expr)
+  MCU_RETURN_IF_ERROR_IMPL_(MAKE_UNIQUE_NAME(_return_if_error_status_), expr)
 
 #define MCU_CHECK_OK(expr) \
-  MCU_CHECK_OK_IMPL_(      \
-      MCU_STATUS_MACROS_CONCAT_NAME(_check_status_ok_, __LINE__), expr)
+  MCU_CHECK_OK_IMPL_(MAKE_UNIQUE_NAME(_check_status_ok_), expr)
 
 #ifdef MCU_ENABLE_DCHECK
 #define MCU_DCHECK_OK(expr) \
-  MCU_CHECK_OK_IMPL_(       \
-      MCU_STATUS_MACROS_CONCAT_NAME(_dcheck_status_ok_, __LINE__), expr)
+  MCU_CHECK_OK_IMPL_(MAKE_UNIQUE_NAME(_dcheck_status_ok_), expr)
 #else
 #define MCU_DCHECK_OK(expr) MCU_DCHECK(true)
 #endif  // MCU_ENABLE_DCHECK
 
-// Internal helper for concatenating macro values.
-#define MCU_STATUS_MACROS_CONCAT_NAME_INNER_(x, y) x##y
-#define MCU_STATUS_MACROS_CONCAT_NAME(x, y) \
-  MCU_STATUS_MACROS_CONCAT_NAME_INNER_(x, y)
+////////////////////////////////////////////////////////////////////////////////
+// Internal macros, not for direct use.
 
 #define MCU_RETURN_IF_ERROR_IMPL_(name, expr)     \
   do {                                            \

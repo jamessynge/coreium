@@ -2,7 +2,14 @@
 #define MCUCORE_SRC_STATUS_OR_H_
 
 // This is a simplistic version of absl::StatusOr, supporting methods that
-// need to return a value, or an error status.
+// need to return a value, or an error status. Also defines the macro
+// MCU_ASSIGN_OR_RETURN, which helps to streamline the handling of errors when
+// calling a function Foo that returns a StatusOr<T>. For example:
+//
+//     MCU_ASSIGN_OR_RETURN(auto value, Foo());
+//
+// The code following that statement can use value, knowing that if Foo()
+// returned a non-OK status, the macro will have already performed a return.
 //
 // Author: james.synge@gmail.com
 
@@ -28,6 +35,18 @@ class StatusOr {
     MCU_DCHECK(!status.ok());
     if (status_.ok()) {
       status_ = Status(StatusCode::kUnknown);  // COV_NF_LINE
+    }
+  }
+
+  ~StatusOr() {
+    // To handle the case where the value_type has a non-trivial destructor, we
+    // need an explicit destructor here. It is possible that by adding an
+    // implementation of is_trivially_destructible, we could choose at compile
+    // type a wrapper class for value_ that has this explicit call only when
+    // necessary. However, if the compiler optimizes away or inlines the dtor
+    // when it does nothing, that extra development time wouldn't be valuable.
+    if (ok()) {
+      value_.~value_type();
     }
   }
 
@@ -69,9 +88,8 @@ bool operator!=(const StatusOr<T>& a, const StatusOr<T>& b) {
 }  // namespace mcucore
 
 #define MCU_ASSIGN_OR_RETURN(lhs, status_or_expression)                \
-  MCU_ASSIGN_OR_RETURN_IMPL_(                                          \
-      MCU_STATUS_MACROS_CONCAT_NAME(_status_or_value_, __LINE__), lhs, \
-      status_or_expression)
+  MCU_ASSIGN_OR_RETURN_IMPL_(MAKE_UNIQUE_NAME(_status_or_value_), lhs, \
+                             status_or_expression)
 
 #define MCU_ASSIGN_OR_RETURN_IMPL_(statusor, lhs, status_or_expression) \
   auto statusor = status_or_expression;                                 \
