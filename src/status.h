@@ -111,29 +111,39 @@ inline const Status& GetStatus(const T& status_source) {
 
 }  // namespace mcucore
 
-// Evaluate expression, whose type must be convertable to Status, and return the
-// Status if it is not OK.
-#define MCU_RETURN_IF_ERROR(expr)                   \
-  do {                                              \
-    const auto status = ::mcucore::GetStatus(expr); \
-    if (!status.ok()) {                             \
-      return status;                                \
-    }                                               \
-  } while (false)
+// `MCU_RETURN_IF_ERROR(expr)` evaluates `expr`, whose type must be convertable
+// to Status, and returns the Status if it is not OK.
+#define MCU_RETURN_IF_ERROR(expr) \
+  MCU_RETURN_IF_ERROR_IMPL_(      \
+      MCU_STATUS_MACROS_CONCAT_NAME(_return_if_error_status_, __LINE__), expr)
 
-#define MCU_CHECK_OK(expr)                                            \
-  for (const auto status = ::mcucore::GetStatus(expr); !status.ok();) \
-  MCU_CHECK_INTERNAL_(status.ok(), #expr) << status
+#define MCU_CHECK_OK(expr) \
+  MCU_CHECK_OK_IMPL_(      \
+      MCU_STATUS_MACROS_CONCAT_NAME(_check_status_ok_, __LINE__), expr)
 
 #ifdef MCU_ENABLE_DCHECK
-#define MCU_DCHECK_OK(expr) MCU_CHECK_OK(expr)
+#define MCU_DCHECK_OK(expr) \
+  MCU_CHECK_OK_IMPL_(       \
+      MCU_STATUS_MACROS_CONCAT_NAME(_dcheck_status_ok_, __LINE__), expr)
 #else
-#define MCU_DCHECK_OK(expr)
+#define MCU_DCHECK_OK(expr) MCU_DCHECK(true)
 #endif  // MCU_ENABLE_DCHECK
 
 // Internal helper for concatenating macro values.
 #define MCU_STATUS_MACROS_CONCAT_NAME_INNER_(x, y) x##y
 #define MCU_STATUS_MACROS_CONCAT_NAME(x, y) \
   MCU_STATUS_MACROS_CONCAT_NAME_INNER_(x, y)
+
+#define MCU_RETURN_IF_ERROR_IMPL_(name, expr)     \
+  do {                                            \
+    const auto name = ::mcucore::GetStatus(expr); \
+    if (!name.ok()) {                             \
+      return name;                                \
+    }                                             \
+  } while (false)
+
+#define MCU_CHECK_OK_IMPL_(name, expr)                            \
+  for (const auto name = ::mcucore::GetStatus(expr); !name.ok();) \
+  MCU_CHECK_INTERNAL_(name.ok(), #expr) << name
 
 #endif  // MCUCORE_SRC_STATUS_H_
