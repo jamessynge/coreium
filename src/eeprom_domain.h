@@ -5,12 +5,15 @@
 // register unique domain values, and get build-time support for detecting when
 // two domains are mistakenly registered with the same name or value.
 //
+// Author: james.synge@gmail.com
+//
+//
 // The `domain` field of an EepromTag is used to provide each subsystem (e.g. a
-// network driver) with a unique identifier (or multiple, if necessary), that is
-// distinct from the domain used by all other pieces of code. To enable a
-// subsystem to identify multiple items of data that aren't stored and loaded
-// together (e.g. when some attributes are optional), an EepromTag has an `id`
-// field for that purpose.
+// network driver or instance of an ASCOM Alpaca device) with a unique
+// identifier (or multiple, if necessary), that is distinct from the domain used
+// by all other pieces of code. To enable a subsystem to identify multiple items
+// of data that aren't stored and loaded together (e.g. when some attributes are
+// optional), an EepromTag has an `id` field for that purpose.
 //
 // To define a domain N (where N is a C++ decimal literal, 1 to 255), put the
 // following in the source (not header) file of the code that uses EepromTlv, at
@@ -95,9 +98,13 @@ using EepromDomain = internal::EepromDomain;
 
 }  // namespace mcucore
 
-// TODO(jamessynge): Add a static_assert or similar to confirm that DOMAIN is
-// a decimal literal, i.e. one that starts with a 1-9, except for the DOMAIN
-// zero, which is reserved to mean free.
+// TODO(jamessynge): Figure out how to add a static_assert or similar to confirm
+// that DOMAIN is a decimal literal, i.e. one that starts with a 1-9, except for
+// the DOMAIN zero, which is reserved to mean free. Why? To prevent two source
+// files from both declaring domain 1, one file using `1` as the value and the
+// other file using `0x1`, `01` or `0b1`, all of which are equivalent but would
+// result in a different CollisionDetector function name, and thus the collision
+// wouldn't be detected.
 
 #define MCU_DECLARE_DOMAIN(DOMAIN) \
   ::mcucore::EepromDomain _MakeEepromDomain_##DOMAIN##_CollisionDetector()

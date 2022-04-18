@@ -96,6 +96,27 @@ cc_test(
 )
 
 cc_test(
+    name = "eeprom_tlv_test",
+    srcs = ["eeprom_tlv_test.cc"],
+    deps = [
+        "//absl/strings",
+        "//glog:logging",
+        "//googletest:gunit_main",
+        "//mcucore/extras/host/eeprom",
+        "//mcucore/extras/test_tools:print_value_to_std_string",
+        "//mcucore/extras/test_tools:status_or_test_utils",
+        "//mcucore/extras/test_tools:status_test_utils",
+        "//mcucore/src:eeprom_domain",
+        "//mcucore/src:eeprom_region",
+        "//mcucore/src:eeprom_tlv",
+        "//mcucore/src:mcucore_platform",
+        "//mcucore/src:status",
+        "//mcucore/src:status_or",
+        "//mcucore/src:string_view",
+    ],
+)
+
+cc_test(
     name = "flash_string_table_test",
     srcs = ["flash_string_table_test.cc"],
     deps = [
