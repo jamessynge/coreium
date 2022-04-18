@@ -96,6 +96,24 @@
 //
 // MCU_DCHECK_NE, MCU_DCHECK_EQ, etc. expand to a MCU_DCHECK macro with the
 // named comparison.
+//
+///////////////////////////////////////////////////////////////////////////////
+//
+// MCU_VLOG_VAR Usage:
+//
+// MCU_VLOG_VAR(level, var) << optional << extra << messages;
+//
+// Logs a variable's name and value at a specified log level.
+//
+///////////////////////////////////////////////////////////////////////////////
+//
+// MCU_NAME_VAL Usage:
+//
+// MCU_VLOG(level) << MCU_NAME_VAL(var);
+// MCU_CHECK(expression) << MCU_FLASHSTR("some text") << MCU_NAME_VAL(var);
+//
+// Inserts " <var>=<value>" into the log stream, where <var> is the name of the
+// variable `var`, and <value> is the value of the variable.
 
 #include "log_sink.h"  // IWYU pragma: keep
 #include "mcucore_config.h"
@@ -210,6 +228,10 @@
                  ::mcucore::LogSink(MCU_VLOG_LOCATION(__FILE__), __LINE__)
 
 #endif
+
+// Macro to simplify logging the name and value of a variable.
+#define MCU_NAME_VAL(var_name) MCU_FLASHSTR(" " #var_name "=") << var_name
+#define MCU_VLOG_VAR(level, var_name) MCU_VLOG(level) << MCU_NAME_VAL(var_name)
 
 // Note that if we wanted optional support for further reducing the program
 // memory used by logging after development (maybe for the purpose of concealing

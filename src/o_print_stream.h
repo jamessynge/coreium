@@ -313,7 +313,11 @@ inline void BaseDec(OPrintStream& strm) { strm.set_base(10); }
 // Will insert "Value: 0b1010, 0xA" into strm.
 inline void BaseTwo(OPrintStream& strm) { strm.set_base(2); }
 
+}  // namespace mcucore
+
 #if MCU_HOST_TARGET
+// These are defined outside of namespace mcucore so that C++ Argument Dependent
+// Lookup will find these functions.
 inline size_t PrintValueTo(const std::string& value, Print& out) {
   return out.write(value.data(), value.size());
 }
@@ -321,7 +325,5 @@ inline size_t PrintValueTo(const std::string_view value, Print& out) {
   return out.write(value.data(), value.size());
 }
 #endif
-
-}  // namespace mcucore
 
 #endif  // MCUCORE_SRC_O_PRINT_STREAM_H_

@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <limits>
+#include <string>
 #include <string_view>
 
 #include "extras/test_tools/print_to_std_string.h"
@@ -208,6 +209,30 @@ TEST(OPrintStreamTest, HasPrintTo) {
   }
   {
     auto& value_ref = value;
+    PrintToStdString p2ss;
+    OPrintStream out(p2ss);
+    out << value_ref;
+    EXPECT_EQ(p2ss.str(), "ghi");
+  }
+}
+
+TEST(OPrintStreamTest, StdStringHasPrintValueTo) {
+  std::string value("ghi");
+  {
+    PrintToStdString p2ss;
+    OPrintStream out(p2ss);
+    out << value;
+    EXPECT_EQ(p2ss.str(), "ghi");
+  }
+  {
+    auto& value_ref = value;
+    PrintToStdString p2ss;
+    OPrintStream out(p2ss);
+    out << value_ref;
+    EXPECT_EQ(p2ss.str(), "ghi");
+  }
+  {
+    const auto& value_ref = value;
     PrintToStdString p2ss;
     OPrintStream out(p2ss);
     out << value_ref;
