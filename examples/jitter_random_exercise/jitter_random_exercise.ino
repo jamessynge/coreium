@@ -8,12 +8,20 @@ using ::mcucore::JitterRandom;
 using ::mcucore::LogSink;
 using ::mcucore::ProgmemString;
 
+constexpr uint32_t kMinimumTimeMs = 100;
+constexpr uint8_t kMinimumWatchdogInterrupts = 6;
+constexpr JitterRandom::ETimerCounterSelection kTimerCounters =
+    JitterRandom::kTimerCounters01345;
+constexpr uint8_t kNumRandomsToGenerate = 1;
+
 void setup() {
+  const auto boot_wdt_config = mcucore::avr::GetWatchdogConfig();
+
   // Disable watchdog timer after reset; some AVR parts don't reset the watchdog
   // upon start, so the setting from a previous run can kill a future one. I'm
   // not sure if Arduino core for AVR already does this, in which case this
   // would be redundant.
-  ::mcucore::avr::DisableWatchdog();
+  mcucore::avr::DisableWatchdog();
 
   // Setup serial with the fastest baud rate supported by the SoftwareSerial
   // class. Note that the baud rate is meaningful on boards with
@@ -30,7 +38,26 @@ void setup() {
   // to diagnose bugs (experience speaking).
   while (!Serial) {
   }
-  LogSink() << MCU_FLASHSTR("Serial ready");
+  const auto serial_ready_us = micros();
+  LogSink() << MCU_FLASHSTR("\n\nSerial ready") << MCU_NAME_VAL(serial_ready_us)
+            << MCU_NAME_VAL(boot_wdt_config) << MCU_NAME_VAL(kMinimumTimeMs)
+            << MCU_NAME_VAL(kMinimumWatchdogInterrupts)
+            << MCU_NAME_VAL(kNumRandomsToGenerate) << BaseHex
+            << MCU_NAME_VAL(kTimerCounters);
+
+  for (uint8_t num_randoms = 0; num_randoms < kNumRandomsToGenerate;
+       ++num_randoms) {  //
+    const auto rnd = JitterRandom::random32(
+        kTimerCounters, kMinimumWatchdogInterrupts, kMinimumTimeMs);
+    LogSink() << MCU_FLASHSTR("#") << num_randoms << ' ' << mcucore::SetBase(36)
+              << rnd;
+  }
+
+  // Reboot as soon as the watchdog fires.
+  mcucore::avr::EnableWatchdogResetMode();
+  while (true) {
+    delay(1000);
+  }
 }
 
 uint32_t Random32(const int counter_flags, const int interrupt_count) {

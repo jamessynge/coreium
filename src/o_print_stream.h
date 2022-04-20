@@ -313,6 +313,14 @@ inline void BaseDec(OPrintStream& strm) { strm.set_base(10); }
 // Will insert "Value: 0b1010, 0xA" into strm.
 inline void BaseTwo(OPrintStream& strm) { strm.set_base(2); }
 
+struct SetBase {
+  explicit SetBase(uint8_t base) : base(base) {}
+  void InsertInto(OPrintStream& strm) const { strm.set_base(base); }
+  const uint8_t base;
+};
+
+// BaseSetter SetBase(uint8_t base) { return BaseSetter{base}; }
+
 }  // namespace mcucore
 
 #if MCU_HOST_TARGET

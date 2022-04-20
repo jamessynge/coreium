@@ -216,6 +216,7 @@ cc_library(
     hdrs = ["jitter_random.h"],
     deps = [
         ":crc32",
+        ":limits",
         ":logging",
         ":mcucore_platform",
         ":o_print_stream",
