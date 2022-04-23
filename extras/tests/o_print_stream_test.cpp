@@ -53,7 +53,18 @@ size_t PrintValueTo(EScopedUnsignedInt8 v, Print& out) {
   }
   return count;
 }
+
 }  // namespace ns4
+
+namespace ns5 {
+
+struct SampleHasInsertInto {
+  void InsertInto(mcucore::OPrintStream& strm) const {
+    strm << 123 << mcucore::SetBase(3) << ' ' << 7;
+  }
+};
+
+}  // namespace ns5
 
 namespace o_print_stream_tests {
 namespace {
@@ -61,6 +72,7 @@ using ::mcucore::BaseDec;
 using ::mcucore::BaseHex;
 using ::mcucore::BaseTwo;
 using ::mcucore::OPrintStream;
+using ::mcucore::SetBase;
 using ::mcucore::test::PrintToStdString;
 using ::mcucore::test::SampleHasPrintTo;
 using ::mcucore::test::SamplePrintable;
@@ -77,10 +89,9 @@ void VerifyOPrintStream(const T value, std::string_view expected) {
   EXPECT_EQ(p2ss.str(), expected) << "Value: " << value;
 }
 
-template <typename T>
-void VerifyOPrintStreamManipulator(
-    OPrintStream::OPrintStreamManipulator manipulator, const T value,
-    std::string_view expected) {
+template <typename T, typename M>
+void VerifyOPrintStreamManipulator(M manipulator, const T value,
+                                   std::string_view expected) {
   PrintToStdString p2ss;
   OPrintStream out(p2ss);
   out << manipulator << value;
@@ -90,62 +101,75 @@ void VerifyOPrintStreamManipulator(
 template <typename T>
 void VerifyOPrintStreamBases(const T value, std::string_view decimal_expected,
                              std::string_view hexadecimal_expected,
-                             std::string_view binary_expected) {
-  std::cerr << "VerifyOPrintStreamBases " << value << std::endl;
+                             std::string_view binary_expected,
+                             std::string_view base36_expected) {
   VerifyOPrintStreamManipulator<T>(BaseDec, value, decimal_expected);
   VerifyOPrintStreamManipulator<T>(BaseHex, value, hexadecimal_expected);
   VerifyOPrintStreamManipulator<T>(BaseTwo, value, binary_expected);
+  VerifyOPrintStreamManipulator<T>(SetBase(36), value, base36_expected);
 }
 
 template <typename T>
 void VerifyOPrintStreamBaseless(const T value, std::string_view expected) {
-  std::cerr << "VerifyOPrintStreamBaseless " << value << std::endl;
   VerifyOPrintStreamManipulator<T>(BaseDec, value, expected);
   VerifyOPrintStreamManipulator<T>(BaseHex, value, expected);
   VerifyOPrintStreamManipulator<T>(BaseTwo, value, expected);
+  VerifyOPrintStreamManipulator<T>(SetBase(36), value, expected);
 }
 
 TEST(OPrintStreamTest, BuiltInTypes) {
   VerifyOPrintStreamBaseless<char>('a', "a");
   VerifyOPrintStreamBaseless<char>('\0', std::string_view("\0", 1));
 
-  VerifyOPrintStreamBases<unsigned char>(0, "0", "0", "0");
-  VerifyOPrintStreamBases<unsigned char>(255, "255", "0xFF", "0b11111111");
+  VerifyOPrintStreamBases<unsigned char>(0, "0", "0", "0", "0");
+  VerifyOPrintStreamBases<unsigned char>(255, "255", "0xFF", "0b11111111",
+                                         "73");
 
-  VerifyOPrintStreamBases<signed char>(-128, "-128", "0x80", "0b10000000");
-  VerifyOPrintStreamBases<signed char>(0, "0", "0", "0");
-  VerifyOPrintStreamBases<signed char>(127, "127", "0x7F", "0b1111111");
+  VerifyOPrintStreamBases<signed char>(-128, "-128", "-0x80", "-0b10000000",
+                                       "-3K");
+  VerifyOPrintStreamBases<signed char>(0, "0", "0", "0", "0");
+  VerifyOPrintStreamBases<signed char>(127, "127", "0x7F", "0b1111111", "3J");
 
-  VerifyOPrintStreamBases<int16_t>(-32768, "-32768", "0x8000",
-                                   "0b1000000000000000");
-  VerifyOPrintStreamBases<int16_t>(0, "0", "0", "0");
+  VerifyOPrintStreamBases<int16_t>(-32768, "-32768", "-0x8000",
+                                   "-0b1000000000000000", "-PA8");
+  VerifyOPrintStreamBases<int16_t>(0, "0", "0", "0", "0");
   VerifyOPrintStreamBases<int16_t>(32767, "32767", "0x7FFF",
-                                   "0b111111111111111");
+                                   "0b111111111111111", "PA7");
 
-  VerifyOPrintStreamBases<uint16_t>(0, "0", "0", "0");
+  VerifyOPrintStreamBases<uint16_t>(0, "0", "0", "0", "0");
   VerifyOPrintStreamBases<uint16_t>(65535, "65535", "0xFFFF",
-                                    "0b1111111111111111");
+                                    "0b1111111111111111", "1EKF");
 
-  VerifyOPrintStreamBases<int32_t>(-2147483648, "-2147483648", "0x80000000",
-                                   "0b10000000000000000000000000000000");
-  VerifyOPrintStreamBases<int32_t>(0, "0", "0", "0");
+  VerifyOPrintStreamBases<int32_t>(-2147483648, "-2147483648", "-0x80000000",
+                                   "-0b10000000000000000000000000000000",
+                                   "-ZIK0ZK");
+  VerifyOPrintStreamBases<int32_t>(0, "0", "0", "0", "0");
   VerifyOPrintStreamBases<int32_t>(2147483647, "2147483647", "0x7FFFFFFF",
-                                   "0b1111111111111111111111111111111");
+                                   "0b1111111111111111111111111111111",
+                                   "ZIK0ZJ");
 
-  VerifyOPrintStreamBases<uint32_t>(0, "0", "0", "0");
+  VerifyOPrintStreamBases<uint32_t>(0, "0", "0", "0", "0");
   VerifyOPrintStreamBases<uint32_t>(4294967295, "4294967295", "0xFFFFFFFF",
-                                    "0b11111111111111111111111111111111");
+                                    "0b11111111111111111111111111111111",
+                                    "1Z141Z3");
 
-  VerifyOPrintStreamBases<int64_t>(0, "0", "0", "0");
+  VerifyOPrintStreamBases<int64_t>(
+      std::numeric_limits<int64_t>::min(), "-9223372036854775808",
+      "-0x8000000000000000",
+      "-0b1000000000000000000000000000000000000000000000000000000000000000",
+      "-1Y2P0IJ32E8E8");
+  VerifyOPrintStreamBases<int64_t>(0, "0", "0", "0", "0");
   VerifyOPrintStreamBases<int64_t>(
       std::numeric_limits<int64_t>::max(), "9223372036854775807",
       "0x7FFFFFFFFFFFFFFF",
-      "0b111111111111111111111111111111111111111111111111111111111111111");
+      "0b111111111111111111111111111111111111111111111111111111111111111",
+      "1Y2P0IJ32E8E7");
 
   VerifyOPrintStreamBases<uint64_t>(
       std::numeric_limits<uint64_t>::max(), "18446744073709551615",
       "0xFFFFFFFFFFFFFFFF",
-      "0b1111111111111111111111111111111111111111111111111111111111111111");
+      "0b1111111111111111111111111111111111111111111111111111111111111111",
+      "3W5E11264SGSF");
 
   // 2 digits to the right of the decimal point, unless more features are added
   // to OPrintStream to allow specifying these values, as std::basic_ostream
@@ -257,6 +281,23 @@ TEST(OPrintStreamTest, ConstHasPrintTo) {
   }
 }
 
+TEST(OPrintStreamTest, ConstHasInsertInto) {
+  const ns5::SampleHasInsertInto value;
+  {
+    PrintToStdString p2ss;
+    OPrintStream out(p2ss);
+    out << 123 << ' ' << value << " " << 123;
+    EXPECT_EQ(p2ss.str(), "123 123 21 123");
+  }
+  {
+    auto& value_ref = value;
+    PrintToStdString p2ss;
+    OPrintStream out(p2ss);
+    out << BaseHex << 123 << ' ' << value_ref << " " << 123;
+    EXPECT_EQ(p2ss.str(), "0x7B 123 21 0x7B");
+  }
+}
+
 TEST(OPrintStreamTest, ChangeBase) {
   {
     PrintToStdString p2ss;
@@ -291,7 +332,7 @@ TEST(OPrintStreamTest, ValidEnum) {
     OPrintStream out(p2ss);
     out << ESignedInt16::kMinusOne << " " << BaseHex << ESignedInt16::kMinusOne
         << ' ' << BaseTwo << ESignedInt16::kMinusOne;
-    EXPECT_EQ(p2ss.str(), "-1 0xFFFF 0b1111111111111111");
+    EXPECT_EQ(p2ss.str(), "-1 -0xFFFF -0b1111111111111111");
   }
 
   {
@@ -330,7 +371,7 @@ TEST(OPrintStreamTest, BogusEnum) {
     OPrintStream out(p2ss);
     out << ESignedInt16(-32768) << " " << BaseHex << ESignedInt16(-32768) << ' '
         << BaseTwo << ESignedInt16(-32768);
-    EXPECT_EQ(p2ss.str(), "-32768 0x8000 0b1000000000000000");
+    EXPECT_EQ(p2ss.str(), "-32768 -0x8000 -0b1000000000000000");
   }
 
   {

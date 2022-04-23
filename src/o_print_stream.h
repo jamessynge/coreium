@@ -45,14 +45,48 @@
 
 namespace mcucore {
 
-// The template function PrintValue is the core of this class, and the specific
-// version that is realized is selected based on the use of the enable_if_t<T>
-// type trait. Care has been taken to ensure that only a single PrintValue
-// definition works for each type that we intend to support.
+class OPrintStream;
+
+// Set the base for printing numbers to 16. For example:
+//
+//   strm << "In hex: " << BaseHex << 123 << ' ' << -1;
+//
+// Will insert "In hex: 0x7B -0x1" into strm.
+void BaseHex(OPrintStream& strm);
+
+// Set the base for printing numbers to 10 (the default). For example:
+//
+//   strm << BaseHex << "Value: " << 123 << BaseDec << ", " << 123;
+//
+// Will insert "Value: 0x7B, 123" into strm.
+void BaseDec(OPrintStream& strm);
+
+// Set the base for printing numbers to 2. For example:
+//
+//   strm << BaseTwo << "Value: " << 10 << BaseHex << ", " << 10;
+//
+// Will insert "Value: 0b1010, 0xA" into strm.
+void BaseTwo(OPrintStream& strm);
+
+// Set the base to a value in the range [2, 36].
+//
+//   strm << SetBase(4) << 5;
+//
+// Will insert "11" into strm. There is no standard prefix, such as "0x" or
+// "0b", for bases other than 2, 8 and 16.
+struct SetBase {
+  explicit SetBase(uint8_t base) : base(base) {}
+  const uint8_t base;
+};
+
+// The template function PrintValue is the core of OPrintStream, and the
+// specific version that is realized is selected based on the use of the
+// enable_if_t<T> type trait. Care has been taken to ensure that only a single
+// PrintValue definition works for each type that we intend to support.
 //
 // Since the type of the value to be printed is known at compile time, the
 // compiler *should* be able to inline most calls to the appropriate function
-// calls defined outside of this class (e.g. Foo::printTo(Print&) or
+// calls defined outside of OPrintStream (e.g. Foo::printTo(Print&) or
 // PrintValueTo(const Foo&, Print&)). In this example:
 //
 // [1]    SomeType foo;
@@ -130,25 +164,28 @@ class OPrintStream {
   // numbers represented in bytes (e.g. uint8_t(10) or int8_t(-1)) to be
   // formatted as integers, i.e. handled by the Integer case below.
   template <typename Char, enable_if_t<is_char<Char>::value, int> = 1>
-  inline void PrintValue(const Char value) {
-    out_.print(value);
+  inline void PrintValue(const Char char_value) {
+    out_.print(char_value);
   }
 
   // The value is of a class type for which the class has an InsertInto
-  // function.
+  // function. The function is in charge of its own base for numbers, and
+  // anything else that we may allow to be changed in the OPrintStream, so we
+  // pass the function an OPrintStream with the same Print instance.
   template <typename HasInsertInto,
-            enable_if_t<has_insert_into<HasInsertInto>::value, int> = 10>
-  inline void PrintValue(const HasInsertInto& value) {
-    value.InsertInto(*this);
+            enable_if_t<has_insert_into<HasInsertInto>::value, int> = 5>
+  inline void PrintValue(const HasInsertInto& value_has_insert_into) {
+    OPrintStream strm(out_);
+    value_has_insert_into.InsertInto(strm);
   }
 
-  // Reserving 3 for HasInsertValueInto.
+  // Reserving 10 for HasInsertValueInto.
 
   // The value is of a class type for which the class has a printTo function.
   template <typename HasPrintTo,
             enable_if_t<has_print_to<HasPrintTo>::value, int> = 15>
-  inline void PrintValue(const HasPrintTo value) {
-    value.printTo(out_);
+  inline void PrintValue(const HasPrintTo value_has_print_to) {
+    value_has_print_to.printTo(out_);
   }
 
   // The value is of a type for which there is a PrintValueTo(T, Print&)
@@ -157,8 +194,8 @@ class OPrintStream {
             enable_if_t<has_print_value_to<HasPrintValueTo>::value &&
                             !is_char<HasPrintValueTo>::value,
                         int> = 20>
-  inline void PrintValue(const HasPrintValueTo value) {
-    PrintValueTo(value, out_);
+  inline void PrintValue(const HasPrintValueTo can_print_value_to) {
+    PrintValueTo(can_print_value_to, out_);
   }
 
   // The value is a bool and there is no PrintValueTo function defined for bool.
@@ -179,8 +216,8 @@ class OPrintStream {
                       !is_same<Integer, bool>::value &&
                       !has_print_value_to<Integer>::value,
                   int> = 30>
-  inline void PrintValue(const Integer value) {
-    PrintInteger(value);
+  inline void PrintValue(const Integer integer_value) {
+    PrintInteger(integer_value);
   }
 
   // The value is a floating point number, for which there is not a PrintValueTo
@@ -188,8 +225,8 @@ class OPrintStream {
   template <typename Float, enable_if_t<is_floating_point<Float>::value &&
                                             !has_print_value_to<Float>::value,
                                         int> = 35>
-  inline void PrintValue(const Float value) {
-    out_.print(value);
+  inline void PrintValue(const Float fp_value) {
+    out_.print(fp_value);
   }
 
   // The value is a pointer for which there is NOT a PrintValueTo function.
@@ -197,8 +234,8 @@ class OPrintStream {
             enable_if_t<is_pointer<Pointer>::value &&
                             !has_print_value_to<Pointer>::value,
                         int> = 40>
-  inline void PrintValue(const Pointer value) {
-    PrintPointer(value);
+  inline void PrintValue(const Pointer pointer_value) {
+    PrintPointer(pointer_value);
   }
 
   // The value is an enumerator, for which there is not a PrintValueTo function.
@@ -221,9 +258,11 @@ class OPrintStream {
               !is_floating_point<Others>::value &&
               !has_print_value_to<Others>::value && !is_enum<Others>::value,
           int> = 50>
-  inline void PrintValue(const Others value) {
-    out_.print(value);
+  inline void PrintValue(const Others other_type_value) {
+    out_.print(other_type_value);
   }
+
+  void PrintValue(SetBase set_base) { base_ = set_base.base; }
 
   //////////////////////////////////////////////////////////////////////////////
   // Handle various types of pointers.
@@ -260,13 +299,17 @@ class OPrintStream {
   void PrintInteger(const T value) {
     // Print.print(T value, int base) can print integer values of type T in any
     // base in the range [2, 36]; if the base is outside of that range, it
-    // prints in base 10. Only base 10 is printed in a signed fashion; all other
-    // bases are treated as unsigned T. Note that we don't include the base
-    // prefix if the value is zero, which is matches the behavior of
-    // std::basic_ostream.
+    // prints in base 10. Note that we don't include the base prefix if the
+    // value is zero, which is matches the behavior of std::basic_ostream.
     if (value == 0 || base_ == 10 || base_ < 2 || base_ > 36) {
       out_.print(value, 10);
     } else {
+      if (value <= 0) {
+        // Print the negative sign before the value because Arduino's Print
+        // class won't do so for signed values when printing with a base other
+        // than 10.
+        out_.print('-');
+      }
       const auto unsigned_value = ToUnsigned(value);
       // There are standard prefixes for base-2, base-8 and base-16, but not
       // for the other bases.
@@ -312,14 +355,6 @@ inline void BaseDec(OPrintStream& strm) { strm.set_base(10); }
 //
 // Will insert "Value: 0b1010, 0xA" into strm.
 inline void BaseTwo(OPrintStream& strm) { strm.set_base(2); }
-
-struct SetBase {
-  explicit SetBase(uint8_t base) : base(base) {}
-  void InsertInto(OPrintStream& strm) const { strm.set_base(base); }
-  const uint8_t base;
-};
-
-// BaseSetter SetBase(uint8_t base) { return BaseSetter{base}; }
 
 }  // namespace mcucore
 
