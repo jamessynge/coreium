@@ -66,7 +66,10 @@ ISR(WDT_vect) {  // NOLINT
 
 void WaitForInterrupt() {
   while (interrupted == false) {
-    // Wait for interrupt.
+    // Wait for interrupt... except on a host target, where there aren't any.
+#ifdef MCU_HOST_TARGET
+    break;
+#endif
   }
   interrupted = false;
 }

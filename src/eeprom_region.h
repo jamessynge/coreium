@@ -97,6 +97,11 @@ class EepromRegionReader {
   // starting at the cursor; else returns false and does not advance the cursor.
   bool ReadBytes(uint8_t* ptr, const EepromAddrT length);
 
+  template <typename SizeType, SizeType N>
+  bool ReadBytes(uint8_t (&buf)[N]) {
+    return ReadBytes(buf, N);
+  }
+
   // Reads `length` bytes from EEPROM into a char array. See ReadBytes for
   // behavior details.
   bool ReadString(char* ptr, const EepromAddrT length);
@@ -151,6 +156,10 @@ class EepromRegion : public EepromRegionReader {
   // false and does not advance the cursor.
   bool WriteBytes(const uint8_t* ptr, const EepromAddrT length);
 
+  template <typename SizeType, SizeType N>
+  bool WriteBytes(const uint8_t (&buf)[N]) {
+    return WriteBytes(buf, N);
+  }
   // Writes the characters of the string to EEPROM; see WriteBytes for behavior
   // details. The caller is required to have some means of later determining the
   // length of the string that was written in order to read it, such as writing
