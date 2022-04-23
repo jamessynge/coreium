@@ -40,9 +40,6 @@ class EepromRegionReader {
   EepromRegionReader(EEPROMClass& eeprom, const EepromAddrT start_address,
                      const EepromAddrT length);
 
-  explicit EepromRegionReader(EEPROMClass& eeprom,
-                              EepromAddrT start_address = 0);
-
   // An empty, unusable region. Can be made usable be assignment.
   EepromRegionReader();
 
@@ -81,6 +78,8 @@ class EepromRegionReader {
     return true;
   }
 
+  // Reads a value of type T from the EEPROM at the current cursor, and returns
+  // its value. Uses the ReadInto method above.
   template <typename T, enable_if_t<is_arithmetic<T>::value, bool> = true>
   StatusOr<T> Read() {
     T value;
@@ -97,6 +96,8 @@ class EepromRegionReader {
   // starting at the cursor; else returns false and does not advance the cursor.
   bool ReadBytes(uint8_t* ptr, const EepromAddrT length);
 
+  // Fill the array `buf` with contiguous bytes from EEPROM. The size of buf is
+  // known at compile time. Delegates to the ReadBytes implementation above.
   template <typename SizeType, SizeType N>
   bool ReadBytes(uint8_t (&buf)[N]) {
     return ReadBytes(buf, N);
@@ -131,8 +132,6 @@ class EepromRegion : public EepromRegionReader {
   EepromRegion(EEPROMClass& eeprom, EepromAddrT start_address,
                EepromAddrT length)
       : EepromRegionReader(eeprom, start_address, length) {}
-  explicit EepromRegion(EEPROMClass& eeprom, EepromAddrT start_address = 0)
-      : EepromRegionReader(eeprom, start_address) {}
   EepromRegion() : EepromRegionReader() {}
   EepromRegion(const EepromRegion&) = default;
   EepromRegion& operator=(const EepromRegion&) = default;
@@ -156,6 +155,8 @@ class EepromRegion : public EepromRegionReader {
   // false and does not advance the cursor.
   bool WriteBytes(const uint8_t* ptr, const EepromAddrT length);
 
+  // Writes all the bytes in `buf` to the EEPROM, using the WriteBytes overload
+  // above. The size of buf is known at compile time.
   template <typename SizeType, SizeType N>
   bool WriteBytes(const uint8_t (&buf)[N]) {
     return WriteBytes(buf, N);

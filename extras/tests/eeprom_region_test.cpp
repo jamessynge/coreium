@@ -78,12 +78,18 @@ TEST_F(EepromRegionReaderTest, CreateAndCopy) {
   };
 
   {
-    EepromRegionReader region(eeprom_);
+    EepromRegionReader region(eeprom_, 0, eeprom_.length());
     validator(region, 0, eeprom_.length());
   }
+
   {
     EepromRegionReader region(eeprom_, 10, 100);
     validator(region, 10, 100);
+  }
+
+  {
+    EepromRegionReader region(eeprom_, 10, 1);
+    validator(region, 10, 1);
   }
 }
 
@@ -119,7 +125,7 @@ void VerifyNoWriteNoRead(EepromRegion& region, const T value) {
 
 TEST_F(EepromRegionTest, CreateAndCopyWriter) {
   {
-    EepromRegion region(eeprom_);
+    EepromRegion region(eeprom_, 0, eeprom_.length());
     EXPECT_EQ(region.start_address(), 0);
     EXPECT_EQ(region.length(), eeprom_.length());
     EXPECT_EQ(region.cursor(), 0);
@@ -220,7 +226,7 @@ TEST_F(EepromRegionTest, WriteToTinyRegion) {
 
 TEST_F(EepromRegionTest, WriteAndReadCharacters) {
   const EepromAddrT kStartAddr = 10;
-  EepromRegion region(eeprom_, kStartAddr);
+  EepromRegion region(eeprom_, kStartAddr, eeprom_.length() - kStartAddr);
 
   EXPECT_TRUE(region.Write<char>('a'));
   EXPECT_TRUE(region.Write<signed char>('b'));
@@ -236,7 +242,7 @@ TEST_F(EepromRegionTest, WriteAndReadCharacters) {
 
 TEST_F(EepromRegionTest, WriteAndReadBools) {
   const EepromAddrT kStartAddr = 10;
-  EepromRegion region(eeprom_, kStartAddr);
+  EepromRegion region(eeprom_, kStartAddr, eeprom_.length() - kStartAddr);
 
   EXPECT_TRUE(region.Write(true));
   EXPECT_TRUE(region.Write(false));
@@ -267,7 +273,7 @@ TEST_F(EepromRegionTest, WriteAndReadIntegers) {
   const int32_t e = std::numeric_limits<int32_t>::min() + 1;
   const uint32_t f = std::numeric_limits<uint32_t>::max() - 1;
 
-  EepromRegion region(eeprom_, kStartAddr);
+  EepromRegion region(eeprom_, kStartAddr, eeprom_.length() - kStartAddr);
 
   EXPECT_TRUE(region.Write(a));
   EXPECT_TRUE(region.Write(b));
@@ -324,7 +330,7 @@ TEST_F(EepromRegionTest, WriteAndReadFloatingPoint) {
   const double i = std::numeric_limits<double>::round_error();
   const double j = std::numeric_limits<double>::max();
 
-  EepromRegion region(eeprom_, kStartAddr);
+  EepromRegion region(eeprom_, kStartAddr, eeprom_.length() - kStartAddr);
 
   EXPECT_TRUE(region.Write(a));
   EXPECT_TRUE(region.Write(b));
@@ -361,13 +367,33 @@ TEST_F(EepromRegionTest, WriteAndReadFloatingPoint) {
   EXPECT_EQ(region.cursor(), 5 * sizeof(float) + 5 * sizeof(double));
 }
 
-TEST_F(EepromRegionTest, WriteAndReadBytes) {
+TEST_F(EepromRegionTest, WriteAndReadBytesImplicitSize) {
   const EepromAddrT kStartAddr = 11;
   const uint8_t kData[] = {9, 7, 5, 3, 1, 0, 2, 4, 6, 8};
   constexpr EepromAddrT kLength = 10;
   EXPECT_EQ(sizeof kData, kLength);
 
-  EepromRegion region(eeprom_, kStartAddr);
+  EepromRegion region(eeprom_, kStartAddr, eeprom_.length() - kStartAddr);
+
+  EXPECT_TRUE(region.WriteBytes(kData));
+
+  EXPECT_EQ(region.cursor(), sizeof kData);
+  region.set_cursor(0);
+
+  uint8_t buffer[kLength];
+  EXPECT_TRUE(region.ReadBytes(buffer));
+
+  EXPECT_EQ(region.cursor(), sizeof kData);
+  EXPECT_EQ(std::memcmp(kData, buffer, kLength), 0);
+}
+
+TEST_F(EepromRegionTest, WriteAndReadBytesExplicitSize) {
+  const EepromAddrT kStartAddr = 11;
+  const uint8_t kData[] = {9, 7, 5, 3, 1, 0, 2, 4, 6, 8};
+  constexpr EepromAddrT kLength = 10;
+  EXPECT_EQ(sizeof kData, kLength);
+
+  EepromRegion region(eeprom_, kStartAddr, eeprom_.length() - kStartAddr);
 
   EXPECT_TRUE(region.WriteBytes(kData, sizeof kData));
 
@@ -386,7 +412,7 @@ TEST_F(EepromRegionTest, WriteAndReadString) {
   StringView view(kString);
 
   const EepromAddrT kStartAddr = 23;
-  EepromRegion region(eeprom_, kStartAddr);
+  EepromRegion region(eeprom_, kStartAddr, eeprom_.length() - kStartAddr);
 
   EXPECT_TRUE(region.WriteString(view));
   EXPECT_EQ(region.cursor(), view.size());
@@ -427,6 +453,8 @@ TEST_F(EepromRegionTest, SpaceUnavailable) {
   EXPECT_EQ(region.available(), 2);
 }
 
+#ifdef MCU_ENABLE_DCHECK
+// These tests only apply if MCU_DCHECK is enabled.
 using EepromRegionDeathTest = EepromRegionTest;
 
 TEST_F(EepromRegionDeathTest, StartsBeyondEEPROM) {
@@ -439,6 +467,7 @@ TEST_F(EepromRegionDeathTest, ExtendsBeyondEEPROM) {
       { EepromRegion region(eeprom_, eeprom_.length() - 1, 2); },
       "Extends beyond EEPROM");
 }
+#endif
 
 }  // namespace
 }  // namespace test

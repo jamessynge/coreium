@@ -41,6 +41,7 @@ namespace test {
 namespace {
 
 using ::testing::AllOf;
+using ::testing::AnyOf;
 using ::testing::Gt;
 using ::testing::HasSubstr;
 using ::testing::Not;
@@ -82,6 +83,18 @@ std::string ToStdString(StringView view) {
 TEST(EepromTlvGetIfValidTest, FailsWithNoPrefix) {
   EEPROMClass eeprom;
   EXPECT_THAT(EepromTlv::GetIfValid(eeprom), StatusIs(StatusCode::kNotFound));
+
+  // Get will call ClearAndInitializeEeprom not valid.
+  ASSERT_STATUS_OK_AND_ASSIGN(auto eeprom_tlv, EepromTlv::Get(eeprom));
+  EXPECT_STATUS_OK(eeprom_tlv.Validate());
+
+  // Now there should be a prefix.
+  ASSERT_STATUS_OK_AND_ASSIGN(auto eeprom_tlv2, EepromTlv::GetIfValid(eeprom));
+  EXPECT_STATUS_OK(eeprom_tlv2.Validate());
+
+  // Safe to call GetOrDie now.
+  auto eeprom_tlv3 = EepromTlv::GetOrDie(eeprom);
+  EXPECT_STATUS_OK(eeprom_tlv3.Validate());
 }
 
 TEST(EepromTlvGetIfValidTest, FailsWithZeroBeyondAddr) {
@@ -98,11 +111,25 @@ TEST(EepromTlvGetIfValidTest, FailsWithTooLargeBeyondAddr) {
   EXPECT_THAT(EepromTlv::GetIfValid(eeprom), StatusIs(StatusCode::kDataLoss));
 }
 
-TEST(EepromTlvGetIfValidTest, ClearAndInitializeEeprom) {
+TEST(EepromTlvGetIfValidTest, InitializeEepromFirst) {
   EEPROMClass eeprom;
   EepromTlv::ClearAndInitializeEeprom(eeprom);
   auto status_or_eeprom_tlv = EepromTlv::GetIfValid(eeprom);
   ASSERT_STATUS_OK(status_or_eeprom_tlv.status());
+}
+
+class UnreadableEepromClass : public EEPROMClass {
+ public:
+  uint8_t read(int idx) override { return 0; }
+};
+
+TEST(EepromTlvGetOrDieDeathTest, DiesWithNoPrefix) {
+  UnreadableEepromClass eeprom;
+  // The error depends on whether MCU_DCHECK is enabled or not. Cover both
+  // cases.
+  EXPECT_DEATH(
+      EepromTlv::GetOrDie(eeprom),
+      AnyOf(HasSubstr("IsPrefixPresent"), HasSubstr("TLV Prefix missing")));
 }
 
 TEST(EepromTlvGetIfValidTest, FailsWithWrongCrc) {

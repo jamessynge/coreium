@@ -18,11 +18,13 @@ class EEPROMClass {
   // This ctor doesn't exist in the normal Arduino library, but is useful for
   // testing with various sizes of fake EEPROM.
   explicit EEPROMClass(uint16_t length = kDefaultSize);
+  virtual ~EEPROMClass() {}
 
-  // Basic user access methods.
-  uint8_t read(int idx) { return data_[idx]; }
+  // Basic user access methods. Some methods are virtual to allow overriding in
+  // test fixtures.
+  virtual uint8_t read(int idx) { return data_[idx]; }
   uint8_t operator[](const int idx) { return read(idx); }
-  void write(int idx, uint8_t val) { data_[idx] = val; }
+  virtual void write(int idx, uint8_t val) { data_[idx] = val; }
   void update(int idx, uint8_t val) { write(idx, val); }
 
   uint16_t length() { return static_cast<uint16_t>(data_.size()); }

@@ -22,11 +22,6 @@ EepromRegionReader::EepromRegionReader(EEPROMClass& eeprom,
       << MCU_FLASHSTR(" beyond EEPROM");  // COV_NF_LINE
 }
 
-EepromRegionReader::EepromRegionReader(EEPROMClass& eeprom,
-                                       EepromAddrT start_address)
-    : EepromRegionReader(eeprom, start_address,
-                         eeprom.length() - start_address) {}
-
 EepromRegionReader::EepromRegionReader()
     : eeprom_(nullptr), start_address_(0), length_(0), cursor_(0) {}
 

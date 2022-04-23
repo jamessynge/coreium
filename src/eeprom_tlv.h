@@ -73,12 +73,29 @@ class EepromTlv {
   static constexpr EepromAddrT kFixedHeaderSize = 4 + 4 + 2;
   static constexpr EepromAddrT kEntryHeaderSize = 2 + 1;
 
+  // Gets an instance of EepromTlv, if the EEPROM contains data in the expected
+  // format.
   static StatusOr<EepromTlv> GetIfValid(EEPROMClass& eeprom);
   static StatusOr<EepromTlv> GetIfValid() { return GetIfValid(EEPROM); }
 
-  // Replace any contents with the standard prefix followed by zero entries.
-  static void ClearAndInitializeEeprom(EEPROMClass& eeprom);
-  static void ClearAndInitializeEeprom() { ClearAndInitializeEeprom(EEPROM); }
+  // Format the EEPROM as an empty EepromTlv, and return an instance. Fails only
+  // if the EEPROM can't be initialized (e.g. doesn't hold the expected values
+  // after writing).
+  static StatusOr<EepromTlv> ClearAndInitializeEeprom(EEPROMClass& eeprom);
+  static StatusOr<EepromTlv> ClearAndInitializeEeprom() {
+    return ClearAndInitializeEeprom(EEPROM);
+  }
+
+  // Get an EepromTlv instance for the EEPROM. If already valid, does not modify
+  // the EEPROM; otherwise, uses ClearAndInitializeEeprom to make the EEPROM
+  // represent an empty EepromTlv instance.
+  static StatusOr<EepromTlv> Get(EEPROMClass& eeprom);
+  static StatusOr<EepromTlv> Get() { return Get(EEPROM); }
+
+  // Returns a valid EepromTlv instance, clearing the EEPROM if necessary. Fails
+  // only if a non-initialized EEPROM can't be initialized.
+  static EepromTlv GetOrDie(EEPROMClass& eeprom);
+  static EepromTlv GetOrDie() { return GetOrDie(EEPROM); }
 
   // Returns an OK Status if the instance is valid, else an appropriate error
   // Status.
@@ -215,7 +232,13 @@ class EepromTlv {
 
   Status ValidateNoTransactionIsActive() const;
 
-  EEPROMClass& eeprom_;
+  EepromAddrT eeprom_length() const {
+    return const_cast<EEPROMClass&>(*eeprom_).length();
+  }
+
+  // We use a ptr rather than a ref here to allow copy and move assignment to
+  // compile.
+  EEPROMClass* eeprom_;
 
   bool transaction_is_active_{false};
 };
