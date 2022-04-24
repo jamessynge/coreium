@@ -329,6 +329,13 @@ TEST(HexEscapedTest, LiteralWithEscapes) {
   EXPECT_EQ(count, expected.size());
 }
 
+TEST(HexEscapedTest, MacAddress) {
+  uint8_t array[] = {0x70, 0x5a, 0x0f, 0x41, 0xcc, 0x78};
+  PrintToStdString out;
+  EXPECT_EQ(PrintWithEthernetFormatting(out, array), 17);
+  EXPECT_EQ(out.str(), "70-5A-0F-41-CC-78");
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace mcucore

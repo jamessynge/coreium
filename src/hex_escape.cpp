@@ -4,6 +4,8 @@
 
 namespace mcucore {
 
+// TODO(jamessynge): Share across multiple parts of the code base, and use
+// MCU_PSD, MCU_FLASHSTR or similar.
 constexpr char kHexDigits[] AVR_PROGMEM = "0123456789ABCDEF";
 
 inline bool IsHexDigit(char c) {
@@ -91,6 +93,20 @@ size_t PrintHexEscaped::write(const uint8_t* buffer, size_t size) {
         wrapped_, static_cast<char>(buffer[ndx]), state_);
   }
   return count;
+}
+
+size_t PrintWithEthernetFormatting(Print& out, const uint8_t* ptr,
+                                   uint8_t num_bytes) {
+  size_t result = 0;
+  for (uint8_t i = 0; i < num_bytes; ++i) {
+    if (i > 0) {
+      result += out.print('-');
+    }
+    auto v = ptr[i];
+    result += out.print(kHexDigits[(v >> 4) & 0xf]);
+    result += out.print(kHexDigits[v & 0xf]);
+  }
+  return result;
 }
 
 }  // namespace mcucore

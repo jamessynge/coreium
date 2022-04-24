@@ -82,6 +82,16 @@ inline HexEscapedPrintable<T> HexEscaped(const T& like_printable) {
   return HexEscapedPrintable<T>(like_printable);
 }
 
+// Print a sequence of bytes in the standard (IEEE 802) format for printing
+// Ethernet (EUI-48) addresses, i.e. as groups of 2 hexidecimal digits separated
+// by a hyphen.
+size_t PrintWithEthernetFormatting(Print& out, const uint8_t* ptr,
+                                   uint8_t num_bytes);
+template <uint8_t N>
+size_t PrintWithEthernetFormatting(Print& out, const uint8_t (&mac_bytes)[N]) {
+  return PrintWithEthernetFormatting(out, mac_bytes, N);
+}
+
 }  // namespace mcucore
 
 #endif  // MCUCORE_SRC_HEX_ESCAPE_H_
