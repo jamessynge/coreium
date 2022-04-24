@@ -6,7 +6,7 @@ cc_library(
     hdrs = ["watchdog.h"],
     deps = [
         "//mcucore/extras/host/arduino:avr_wdt",
-        "//mcucore/src:logging",
         "//mcucore/src:mcucore_platform",
+        "//mcucore/src:progmem_string_data",
     ],
 )

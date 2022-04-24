@@ -272,6 +272,7 @@ cc_library(
         "//base:logging_extensions",
         "//glog:logging",
         "//mcucore/extras/test_tools:print_to_std_string",
+        "//mcucore/src/platform/avr:watchdog",
     ],
 )
 

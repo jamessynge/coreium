@@ -25,8 +25,8 @@
 
 #include "platform/avr/watchdog.h"
 
-#include "logging.h"
 #include "mcucore_platform.h"
+#include "progmem_string_data.h"
 
 // Not sure yet if I need to include <avr/wdt.h> to get the symbols needed here,
 // or if including the Arduino headers might be sufficient.
@@ -40,10 +40,44 @@ namespace mcucore {
 namespace avr {
 namespace {
 
+void SetControlRegister(uint8_t new_value) {
+  noInterrupts();
+
+  // Clear WDRF (Watchdog Reset Flag) in MCUSR. This is required in order to
+  // clear the WDE flag (which we may be doing).
+  MCUSR &= ~(1 << WDRF);
+
+  // Write logical one to WDCE (Change Enable) and WDE bits. This enables
+  // changing the configuration of the watchdog.
+  _WD_CONTROL_REG |= (1 << WDCE) | (1 << WDE);
+
+  // Overwrite the register.
+  _WD_CONTROL_REG = new_value;
+
+  interrupts();
+}
+
 constexpr uint8_t kMaxPrescaler = 9;  // 0b1001
 
 uint8_t PrescalerToRegisterMask(uint8_t prescaler) {
-  MCU_DCHECK_LE(prescaler, kMaxPrescaler) << prescaler;
+#ifdef MCU_ENABLE_DCHECK
+  // We can't include mcucore/src/logging.h here, else we'll create a dependency
+  // cycle, so we print directly to ::Serial if DCHECK is allowed.
+  if (prescaler > kMaxPrescaler) {
+    Serial.print(MCU_FLASHSTR("AVR WDT Prescaler out of range: "));
+    Serial.print(prescaler + 0);
+    Serial.print('>');
+    Serial.println(kMaxPrescaler + 0);
+    delay(1000);
+    // Effectively call EnableWatchdogResetMode(0), but without risking
+    // recursion into this method.
+    SetControlRegister(1 << WDE);
+    while (true) {
+      // A deliberately infinite loop.
+      delay(1000);
+    }
+  }
+#endif
   if (prescaler > kMaxPrescaler) {
     prescaler = kMaxPrescaler;
   }
@@ -61,23 +95,6 @@ uint8_t PrescalerToRegisterMask(uint8_t prescaler) {
     mask |= (1 << WDP0);
   }
   return mask;
-}
-
-void SetControlRegister(uint8_t new_value) {
-  noInterrupts();
-
-  // Clear WDRF (Watchdog Reset Flag) in MCUSR. This is required in order to
-  // clear the WDE flag (which we may be doing).
-  MCUSR &= ~(1 << WDRF);
-
-  // Write logical one to WDCE (Change Enable) and WDE bits. This enables
-  // changing the configuration of the watchdog.
-  _WD_CONTROL_REG |= (1 << WDCE) | (1 << WDE);
-
-  // Overwrite the register.
-  _WD_CONTROL_REG = new_value;
-
-  interrupts();
 }
 
 }  // namespace

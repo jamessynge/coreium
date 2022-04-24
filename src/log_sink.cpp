@@ -133,6 +133,11 @@ CheckSink::~CheckSink() {
   out_.flush();
 
 #ifdef ARDUINO
+#ifdef ARDUINO_ARCH_AVR
+  // Use the watchdog timer to reset the Arduino in a little while so that human
+  // intervention isn't required to recover.
+  avr::EnableWatchdogResetMode(4);
+#endif  // !ARDUINO_ARCH_AVR
   uint8_t seconds = 1;
   while (true) {
     if (seconds < 255) {
@@ -142,17 +147,10 @@ CheckSink::~CheckSink() {
     Announce(out_);
     out_.println();
     out_.flush();
-#ifdef ARDUINO_ARCH_AVR
-    // After we've spit out the announcement a few times, reset the
-    // Arduino so that human intervention isn't required to recover.
-    if (seconds >= 3) {
-      avr::EnableWatchdogResetMode(4);
-    }
-#endif  // !ARDUINO_ARCH_AVR
   }
 #else  // !ARDUINO
 #if MCU_HOST_TARGET
-  FlushLogFiles(base_logging::INFO);
+  FlushLogFiles(absl::LogSeverity::kInfo);
   mcucore::test::PrintToStdString ptss;
   Announce(ptss);
   CheckSinkExit(ptss.str());
