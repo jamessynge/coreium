@@ -6,9 +6,9 @@
 #include "array_view.h"              // IWYU pragma: export
 #include "counting_print.h"          // IWYU pragma: export
 #include "crc32.h"                   // IWYU pragma: export
-#include "eeprom_domain.h"           // IWYU pragma: export
 #include "eeprom_io.h"               // IWYU pragma: export
 #include "eeprom_region.h"           // IWYU pragma: export
+#include "eeprom_tag.h"              // IWYU pragma: export
 #include "eeprom_tlv.h"              // IWYU pragma: export
 #include "flash_string_table.h"      // IWYU pragma: export
 #include "has_insert_into.h"         // IWYU pragma: export

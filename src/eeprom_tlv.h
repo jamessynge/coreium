@@ -34,34 +34,16 @@
 // has been called, as it may no longer represent the location of that entry or
 // of a valid entry.
 
-#include "eeprom_domain.h"
-#include "eeprom_io.h"
 #include "eeprom_region.h"
+#include "eeprom_tag.h"
 #include "logging.h"
 #include "mcucore_platform.h"
-#include "progmem_string.h"
 #include "progmem_string_data.h"
 #include "status_or.h"
 
 namespace mcucore {
 namespace test {
 class EepromTlvTest;
-}
-
-struct EepromTag {
-  bool IsUnused() const;
-  bool operator==(const EepromTag& other) const;
-
-  void InsertInto(OPrintStream& strm) const;
-
-  // Domains are allocated to libraries or device drivers, ids are allocated
-  // within a domain. Domain zero is reserved.
-  EepromDomain domain;
-  uint8_t id;
-};
-
-inline bool operator!=(const EepromTag& a, const EepromTag& b) {
-  return !(a == b);
 }
 
 class EepromTlv {

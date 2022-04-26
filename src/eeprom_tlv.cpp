@@ -1,8 +1,8 @@
 #include "eeprom_tlv.h"
 
 #include "crc32.h"
-#include "eeprom_domain.h"
 #include "eeprom_region.h"
+#include "eeprom_tag.h"
 #include "logging.h"
 #include "mcucore_platform.h"
 #include "progmem_string_data.h"
@@ -28,15 +28,6 @@
 // depending on the needs of the called function; and of course the parameters
 // of the function could be handled using a parameter pack, just as with
 // WriteEntryToCursor.
-
-// We reserve domain 0 and domain 255 because bytes in the the EEPROM are set
-// to one of those values when cleared/erased, but it isn't clear which one, and
-// historically different EEPROM designs have used one or the other of those two
-// values. Avoiding them allows us to double check that stored domains are
-// valid. For Microchip AVR microcontrollers, it seems most likely that 255
-// 0xFF) is the cleared value.
-MCU_DEFINE_DOMAIN(0);
-MCU_DEFINE_DOMAIN(255);
 
 #define TLV_RAW_PREFIX "Tlv!"
 #define TLV_PREFIX_PSV MCU_PSV(TLV_RAW_PREFIX)
@@ -78,28 +69,15 @@ Status WrongComputedBeyondAddr() {
   return DataLossError(MCU_PSV("Computed BeyondAddr incorrect"));
 }
 
-}  // namespace
-
-bool IsReservedDomain(const EepromDomain domain) {
-  return domain == MCU_DOMAIN(0) || domain == MCU_DOMAIN(255);
-}
-
 EepromTag MakeUnusedTag() {
-  return EepromTag{.domain = MCU_DOMAIN(0), .id = 255};
+  return EepromTag{.domain = internal::MakeEepromDomain(0), .id = 255};
 }
 
-bool EepromTag::IsUnused() const {
-  return domain == MCU_DOMAIN(0) && id == 255;
+bool IsUnusedTag(EepromTag tag) {
+  return tag.domain.value() == 0 && tag.id == 255;
 }
 
-bool EepromTag::operator==(const EepromTag& other) const {
-  return domain == other.domain && id == other.id;
-}
-
-void EepromTag::InsertInto(OPrintStream& strm) const {
-  strm << MCU_FLASHSTR("{.domain=") << domain.value() << MCU_FLASHSTR(", .id=")
-       << id << '}';
-}
+}  // namespace
 
 EepromTlv::EepromTlv(EEPROMClass& eeprom) : eeprom_(&eeprom) {}
 
@@ -187,7 +165,7 @@ StatusOr<EepromAddrT> EepromTlv::ReclaimUnusedSpace() {
     MCU_DCHECK_GE(src_addr, dst_addr);
     MCU_ASSIGN_OR_RETURN(const auto next_entry_addr, FindNext(src_addr));
     MCU_VLOG_VAR(9, next_entry_addr);
-    if (ReadTag(src_addr).IsUnused()) {
+    if (IsUnusedTag(ReadTag(src_addr))) {
       // Entry is unused, so we don't need to copy its bytes.
       src_addr = next_entry_addr;
       MCU_VLOG(9) << MCU_FLASHSTR("skipping unused entry");
@@ -337,8 +315,11 @@ StatusOr<uint32_t> EepromTlv::ComputeCrc(const EepromAddrT beyond_addr) const {
   auto addr = kAddrOfFirstEntry;
   const EepromAddrT limit_addr = beyond_addr - kOffsetOfEntryData;
   while (addr <= limit_addr) {
-    MCU_DCHECK(!IsReservedDomain(ReadTag(addr).domain) ||
-               ReadTag(addr).IsUnused());
+#ifdef MCU_ENABLE_DCHECK
+    // Either the tag's domain is not reserved OR the tag is the unused tag.
+    const auto tag = ReadTag(addr);
+    MCU_DCHECK(!IsReservedDomain(tag.domain) || IsUnusedTag(tag));
+#endif
     MCU_ASSIGN_OR_RETURN(const auto next_entry_addr, FindNext(addr));
     addr += kOffsetOfEntryDataLength;
     while (addr < next_entry_addr) {
@@ -509,7 +490,7 @@ StatusOr<bool> EepromTlv::DeleteEntry(const EepromTag tag,
     if (tag == stored_tag) {
       found_tag = true;
       WriteTag(addr, MakeUnusedTag());
-    } else if (!stored_tag.IsUnused()) {
+    } else if (!IsUnusedTag(stored_tag)) {
       found_other_tags = true;
     }
     MCU_ASSIGN_OR_RETURN(addr, FindNext(addr));
@@ -554,7 +535,7 @@ void EepromTlv::InsertInto(OPrintStream& strm) const {
     strm << MCU_FLASHSTR(",\n   ");
     const auto tag = ReadTag(addr);
     strm << MCU_FLASHSTR("Entry@") << addr << MCU_FLASHSTR("{tag=") << tag;
-    if (tag.IsUnused()) {
+    if (IsUnusedTag(tag)) {
       strm << MCU_FLASHSTR(" (Unused)");
     } else if (IsReservedDomain(tag.domain)) {
       strm << MCU_FLASHSTR(" (Reserved)");

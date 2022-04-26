@@ -7,8 +7,8 @@
 
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
-#include "eeprom_domain.h"
 #include "eeprom_region.h"
+#include "eeprom_tag.h"
 #include "extras/host/eeprom/eeprom.h"
 #include "extras/test_tools/print_value_to_std_string.h"
 #include "extras/test_tools/status_or_test_utils.h"

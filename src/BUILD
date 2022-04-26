@@ -16,9 +16,9 @@ cc_library(
         ":array_view",
         ":counting_print",
         ":crc32",
-        ":eeprom_domain",
         ":eeprom_io",
         ":eeprom_region",
+        ":eeprom_tag",
         ":eeprom_tlv",
         ":flash_string_table",
         ":has_insert_into",
@@ -102,14 +102,6 @@ cc_library(
 )
 
 cc_library(
-    name = "eeprom_domain",
-    hdrs = ["eeprom_domain.h"],
-    deps = [
-        ":mcucore_platform",
-    ],
-)
-
-cc_library(
     name = "eeprom_io",
     srcs = ["eeprom_io.cc"],
     hdrs = ["eeprom_io.h"],
@@ -138,17 +130,25 @@ cc_library(
 )
 
 cc_library(
+    name = "eeprom_tag",
+    srcs = ["eeprom_tag.cc"],
+    hdrs = ["eeprom_tag.h"],
+    deps = [
+        ":logging",
+        ":mcucore_platform",
+    ],
+)
+
+cc_library(
     name = "eeprom_tlv",
     srcs = ["eeprom_tlv.cc"],
     hdrs = ["eeprom_tlv.h"],
     deps = [
         ":crc32",
-        ":eeprom_domain",
-        ":eeprom_io",
         ":eeprom_region",
+        ":eeprom_tag",
         ":logging",
         ":mcucore_platform",
-        ":progmem_string",
         ":progmem_string_data",
         ":progmem_string_view",
         ":status",

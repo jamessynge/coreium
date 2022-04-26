@@ -58,16 +58,6 @@ cc_test(
 )
 
 cc_test(
-    name = "eeprom_domain_test",
-    srcs = ["eeprom_domain_test.cc"],
-    deps = [
-        "//googletest:gunit_main",
-        "//mcucore/extras/test_tools:eeprom_example_domains",
-        "//mcucore/src:eeprom_domain",
-    ],
-)
-
-cc_test(
     name = "eeprom_io_test",
     srcs = ["eeprom_io_test.cc"],
     deps = [
@@ -96,6 +86,17 @@ cc_test(
 )
 
 cc_test(
+    name = "eeprom_tag_test",
+    srcs = ["eeprom_tag_test.cc"],
+    deps = [
+        "//googletest:gunit_main",
+        "//mcucore/extras/test_tools:eeprom_example_domains",
+        "//mcucore/extras/test_tools:print_value_to_std_string",
+        "//mcucore/src:eeprom_tag",
+    ],
+)
+
+cc_test(
     name = "eeprom_tlv_test",
     srcs = ["eeprom_tlv_test.cc"],
     deps = [
@@ -106,8 +107,8 @@ cc_test(
         "//mcucore/extras/test_tools:print_value_to_std_string",
         "//mcucore/extras/test_tools:status_or_test_utils",
         "//mcucore/extras/test_tools:status_test_utils",
-        "//mcucore/src:eeprom_domain",
         "//mcucore/src:eeprom_region",
+        "//mcucore/src:eeprom_tag",
         "//mcucore/src:eeprom_tlv",
         "//mcucore/src:mcucore_platform",
         "//mcucore/src:status",

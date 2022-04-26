@@ -1,9 +1,6 @@
 #ifndef MCUCORE_EXTRAS_TEST_TOOLS_PRINT_VALUE_TO_STD_STRING_H_
 #define MCUCORE_EXTRAS_TEST_TOOLS_PRINT_VALUE_TO_STD_STRING_H_
 
-// TODO(jamessynge): Rename to StreamValueToStdString, to better reflect what it
-// does, thus what it helps to test.
-
 // PrintToStdString helps with testing methods that accept a Print object and
 // print/write to it. And PrintValueToStdString helps with formatting values for
 // which we have Arduino compatible formatters, but not std::ostream formatters.

@@ -57,11 +57,6 @@ namespace mcucore {
 // and a message, which could in turn be used for producing a Status instance
 // where appropriate.
 
-// TODO(jamessynge): Consider adding parameters to record the location (line
-// number and file name) where the Status was created, in particular with
-// defaults provided by the non-standard functions __builtin_LINE and
-// __builtin_FILE.
-
 class Status {
  public:
   // Defaults to OK. This is different than StatusOr.

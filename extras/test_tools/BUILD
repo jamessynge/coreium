@@ -18,7 +18,7 @@ cc_library(
     name = "eeprom_example_domains",
     srcs = ["eeprom_example_domains.cc"],
     hdrs = ["eeprom_example_domains.h"],
-    deps = ["//mcucore/src:eeprom_domain"],
+    deps = ["//mcucore/src:eeprom_tag"],
 )
 
 cc_library(
