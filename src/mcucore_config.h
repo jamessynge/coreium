@@ -70,4 +70,8 @@
 #define MCU_ENABLE_DCHECK_LOCATION
 #endif
 
+// Guards blocks that print messages during compilation.
+#define MCU_CONFIG_COMPILE_TIME_MESSAGES 0
+#undef MCU_CONFIG_COMPILE_TIME_MESSAGES
+
 #endif  // MCUCORE_SRC_MCUCORE_CONFIG_H_

@@ -1,5 +1,7 @@
 #include "mcucore_platform.h"
 
+#if MCU_CONFIG_COMPILE_TIME_MESSAGES
+
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic warning "-W#pragma-messages"
@@ -28,3 +30,12 @@
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif  // __clang__
+
+#endif  // MCU_CONFIG_COMPILE_TIME_MESSAGES
+
+namespace mcucore {
+
+// See extras/futures/time.h for another approach to representing time.
+MillisT ElapsedMillis(MillisT start_time) { return millis() - start_time; }
+
+}  // namespace mcucore

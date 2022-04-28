@@ -296,6 +296,7 @@ cc_library(
 
 cc_library(
     name = "mcucore_platform",
+    srcs = ["mcucore_platform.cc"],
     hdrs = ["mcucore_platform.h"],
     deps = [
         ":mcucore_config",

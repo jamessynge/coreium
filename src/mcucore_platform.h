@@ -81,6 +81,9 @@ using EepromAddrT = decltype(EEPROM.length());
 // The types in which milliseconds and microseconds are expressed.
 using MillisT = decltype(millis());
 using MicrosT = decltype(micros());
+
+// Returns milliseconds since start_time.
+MillisT ElapsedMillis(MillisT start_time);
 }  // namespace mcucore
 
 // See absl/base/attributes.h.

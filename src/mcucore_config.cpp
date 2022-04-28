@@ -1,5 +1,7 @@
 #include "mcucore_config.h"
 
+#if MCU_CONFIG_COMPILE_TIME_MESSAGES
+
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic warning "-W#pragma-messages"
@@ -28,3 +30,5 @@
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif  // __clang__
+
+#endif  // MCU_CONFIG_COMPILE_TIME_MESSAGES

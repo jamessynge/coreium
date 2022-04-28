@@ -27,7 +27,7 @@ int strncasecmp_P(const char* s1, const char* s2, size_t n) {
 }
 
 void* memcpy_P(void* dest, const void* src, size_t n) {
-  return memcpy(dest, src, n);
+  return std::memcpy(dest, src, n);
 }
 
-const char* strrchr_P(const char* s, int val) { return strrchr(s, val); }
+const char* strrchr_P(const char* s, int val) { return std::strrchr(s, val); }
