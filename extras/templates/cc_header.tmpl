@@ -1,0 +1,27 @@
+{{$class_name := FilenameStem | UpperCamelCase -}}
+#ifndef {{CPPHeaderGuard}}
+#define {{CPPHeaderGuard}}
+
+// TODO({{Username}}): Describe why this file exists/what it provides.
+
+{{$m := Map -}}
+{{$m.Set "namespace_action" "open" -}}
+{{Template "//depot/google3/extras/templates/cc_namespaces.tmpl" $m }}
+
+class {{$class_name}} {
+ public:
+  {{$class_name}}();
+  virtual ~{{$class_name}}();
+
+  // TODO({{Username}}): Define and document methods.
+
+ protected:
+
+ private:
+  // TODO({{Username}}): Define and document private methods and fields.
+};
+
+{{$m.Set "namespace_action" "close"}}
+{{Template "//depot/google3/extras/templates/cc_namespaces.tmpl" $m }}
+
+#endif  // {{CPPHeaderGuard}}

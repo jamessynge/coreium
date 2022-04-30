@@ -1,0 +1,42 @@
+{{$trimmed_path := Filepath | GetSuffixAfter "/jamessynge/arduino/" -}}
+{{$library := "UNKNOWN" -}}
+{{if $trimmed_path | HasPrefix "mcucore/" -}}
+  {{$library = "mcucore" -}}
+{{else if $trimmed_path | HasPrefix "mcunet/" -}}
+  {{$library = "mcunet" -}}
+{{else if $trimmed_path | HasPrefix "tas/" -}}
+  {{$library = "alpaca" -}}
+{{end -}}
+{{$trimmed_path = $trimmed_path | GetSuffixAfter "/" -}}
+{{$has_namespaces := "false" -}}
+{{$namespaces := AsList -}}
+{{if $trimmed_path | HasPrefix "examples/" -}}
+  {{$has_namespaces = "true" -}}
+  {{$namespaces = AsList "example" -}}
+{{else if $trimmed_path | HasPrefix "extras/test_tools/" -}}
+  {{$has_namespaces = "true" -}}
+  {{$namespaces = AsList $library "test" -}}
+{{else if $trimmed_path | HasPrefix "extras/tests/" -}}
+  {{$has_namespaces = "true" -}}
+  {{$namespaces = AsList $library "test" -}}
+{{else if $trimmed_path | HasPrefix "src/" -}}
+  {{$has_namespaces = "true" -}}
+  {{$namespaces = AsList $library -}}
+{{end -}}
+{{if Filepath | HasSuffix "_test.cc" -}}
+  {{if $has_namespaces | eq "true" -}}
+    {{$namespaces = Append $namespaces "" -}}
+  {{else -}}
+    {{$has_namespaces = "true" -}}
+    {{$namespaces = AsList "" -}}
+  {{end -}}
+{{end -}}
+{{if $has_namespaces | eq "true" -}}
+  {{if .namespace_action | eq "open" -}}
+{{range $namespaces}}namespace {{.}} {
+{{end -}}
+  {{else -}}
+{{range $namespaces | ReverseSlice -}} }  // namespace {{.}}
+{{end -}}
+  {{end -}}
+{{end -}}

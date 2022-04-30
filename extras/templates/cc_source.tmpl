@@ -1,0 +1,16 @@
+{{$class_name := FilenameStem | UpperCamelCase -}}
+{{$file := Filepath | TrimPrefix "google3/" | TrimSuffix ".cc" -}}
+#include "{{$file}}.h"
+
+{{$m := Map -}}
+{{$m.Set "namespace_action" "open" -}}
+{{Template "//depot/google3/extras/templates/cc_namespaces.tmpl" $m }}
+
+{{$class_name}}::{{$class_name}}() {}
+
+{{$class_name}}::~{{$class_name}}() {}
+
+// TODO({{Username}}): Implement other methods.
+
+{{$m.Set "namespace_action" "close"}}
+{{Template "//depot/google3/extras/templates/cc_namespaces.tmpl" $m }}

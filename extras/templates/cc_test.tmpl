@@ -1,0 +1,61 @@
+{{$class_name := FilenameStem | UpperCamelCase -}}
+{{$g3filepath := Filepath | ToGoogle3Relative -}}
+{{if $g3filepath | Contains "/extras/tests/" -}}
+#include "{{$g3filepath | Replace "/extras/tests/" "/src/" 1 | Replace "_test.cc" ".h" 1}}"
+{{else -}}
+#include "{{$g3filepath | Replace "_test.cc" ".h" 1}}"
+{{end}}
+// TODO({{ Username }}): Trim down the includes after writing tests.
+#include "extras/test_tools/print_to_std_string.h"
+#include "extras/test_tools/print_value_to_std_string.h"
+#include "extras/test_tools/sample_printable.h"
+#include "testing/base/public/gmock.h"
+#include "testing/base/public/gunit.h"
+
+{{$m := Map -}}
+{{$m.Set "namespace_action" "open" -}}
+{{Template "//depot/google3/extras/templates/cc_namespaces.tmpl" $m }}
+
+// TODO({{ Username }}): Trim down the using declarations after writing tests.
+using ::mcucore::test::PrintToStdString;
+using ::mcucore::test::SamplePrintable;
+using ::mcucore::PrintValueToStdString;
+using ::testing::AllOf;
+using ::testing::AnyNumber;
+using ::testing::AnyOf;
+using ::testing::Contains;
+using ::testing::ContainsRegex;
+using ::testing::ElementsAre;
+using ::testing::EndsWith;
+using ::testing::Eq;
+using ::testing::HasSubstr;
+using ::testing::InSequence;
+using ::testing::IsEmpty;
+using ::testing::Mock;
+using ::testing::NiceMock;
+using ::testing::Not;
+using ::testing::Ref;
+using ::testing::Return;
+using ::testing::ReturnRef;
+using ::testing::SizeIs;
+using ::testing::StartsWith;
+using ::testing::StrictMock;
+
+TEST(NoFixture_{{$class_name}}, NoFixtureTest) {
+  // TODO({{ Username }}): Describe if not really obvious.
+  EXPECT_EQ(1, 1);
+}
+
+class {{$class_name}} : public testing::Test {
+ protected:
+  {{$class_name}} () {}
+  void SetUp() override {}
+};
+
+TEST_F({{$class_name}}, FixturedTest) {
+  // TODO({{ Username }}): Describe if not really obvious.
+  EXPECT_EQ(1, 1);
+}
+
+{{$m.Set "namespace_action" "close"}}
+{{Template "//depot/google3/extras/templates/cc_namespaces.tmpl" $m }}
