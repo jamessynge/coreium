@@ -98,7 +98,7 @@ class EepromRegionReader {
 
   // Fill the array `buf` with contiguous bytes from EEPROM. The size of buf is
   // known at compile time. Delegates to the ReadBytes implementation above.
-  template <typename SizeType, SizeType N>
+  template <EepromAddrT N>
   bool ReadBytes(uint8_t (&buf)[N]) {
     return ReadBytes(buf, N);
   }
@@ -157,7 +157,7 @@ class EepromRegion : public EepromRegionReader {
 
   // Writes all the bytes in `buf` to the EEPROM, using the WriteBytes overload
   // above. The size of buf is known at compile time.
-  template <typename SizeType, SizeType N>
+  template <EepromAddrT N>
   bool WriteBytes(const uint8_t (&buf)[N]) {
     return WriteBytes(buf, N);
   }
