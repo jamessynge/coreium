@@ -9,7 +9,7 @@
 //
 // Author: james.synge@gmail.com
 
-#include "mcucore_config.h"
+#include "mcucore_config.h"  // IWYU pragma: export
 
 #ifdef ARDUINO
 

@@ -2,7 +2,10 @@
 #define MCUCORE_SRC_MCUCORE_CONFIG_H_
 
 // Controls the set of features available (enabled/disabled) in McuCore, which
-// was originally created as part of Tiny Alpaca Server.
+// was originally created as part of Tiny Alpaca Server. Ideally I'd use a build
+// system to define these settings outside of a source code file, but Arduino
+// doesn't really have such a thing (yet?), and the target audience are folks
+// who will be using the Arduino IDE.
 //
 // See also mcucore_platform.h, which expresses the set of features provided by
 // the platform.
