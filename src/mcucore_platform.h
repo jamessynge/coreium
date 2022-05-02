@@ -125,8 +125,13 @@ MillisT ElapsedMillis(MillisT start_time);
 #define MCU_HAS_FEATURE(x) 0
 #endif
 
-#ifndef __cplusplus
-#define __cplusplus 0
+// MCU_HAVE_MEMORY_SANITIZER
+//
+// MemorySanitizer (MSan) is a detector of uninitialized reads. It consists of
+// a compiler instrumentation module and a run-time library.
+#if MCU_HAS_FEATURE(memory_sanitizer) || \
+    defined(ABSL_HAVE_MEMORY_SANITIZER) || defined(MEMORY_SANITIZER)
+#define MCU_HAVE_MEMORY_SANITIZER 1
 #endif
 
 // Concatenates macro args, which is necessary when attempting to concatenate
@@ -143,6 +148,11 @@ MillisT ElapsedMillis(MillisT start_time);
 #define MAKE_UNIQUE_NAME(base_name) MCU_CONCAT_NAME(base_name, __COUNTER__)
 #else
 #define MAKE_UNIQUE_NAME(base_name) MCU_CONCAT_NAME(base_name, __LINE__)
+#endif
+
+#ifndef __cplusplus
+// Very odd if not compiling for C++.
+#define __cplusplus 0
 #endif
 
 // For now, C++ 14 features are not enabled.
