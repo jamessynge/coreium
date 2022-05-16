@@ -98,6 +98,7 @@ cc_test(
 
 cc_test(
     name = "eeprom_tlv_test",
+    timeout = "short",
     srcs = ["eeprom_tlv_test.cc"],
     deps = [
         "//absl/strings",

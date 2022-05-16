@@ -3,6 +3,7 @@
 #include "crc32.h"
 #include "eeprom_region.h"
 #include "eeprom_tag.h"
+#include "limits.h"
 #include "logging.h"
 #include "mcucore_platform.h"
 #include "progmem_string_data.h"
@@ -54,6 +55,9 @@ static_assert(sizeof(EepromTlv::BlockLengthT) == 1);
 constexpr EepromAddrT kOffsetOfEntryDataLength = 2;
 constexpr EepromAddrT kOffsetOfEntryData = 3;
 
+static_assert(numeric_limits<EepromTlv::BlockLengthT>::max() >=
+              EepromTlv::kMaxBlockLength);
+
 static_assert(kOffsetOfEntryData == EepromTlv::kEntryHeaderSize);
 
 bool ValidateBeyondAddr(const EepromAddrT beyond_addr,
@@ -68,6 +72,8 @@ Status MissingPrefixError() {
 Status WrongComputedBeyondAddr() {
   return DataLossError(MCU_PSV("Computed BeyondAddr incorrect"));
 }
+
+Status WrongCrc() { return DataLossError(MCU_PSV("TLV CRC incorrect")); }
 
 EepromTag MakeUnusedTag() {
   return EepromTag{.domain = internal::MakeEepromDomain(0), .id = 255};
@@ -137,18 +143,11 @@ Status EepromTlv::Validate() const {
     return MissingPrefixError();
   }
   MCU_ASSIGN_OR_RETURN(const auto beyond_addr, ReadBeyondAddr());
-  MCU_ASSIGN_OR_RETURN(const auto computed_crc, ComputeCrc(beyond_addr));
-  const uint32_t stored_crc = ReadCrc();
-  if (computed_crc != stored_crc) {
-    MCU_VLOG(1) << MCU_FLASHSTR("Crc wrong: ") << stored_crc
-                << "!=" << computed_crc;
-    return Status(StatusCode::kDataLoss, MCU_PSV("TLV CRC incorrect"));
-  }
-  return OkStatus();
+  return ValidateCrc(beyond_addr);
 }
 
 StatusOr<EepromAddrT> EepromTlv::ReclaimUnusedSpace() {
-  MCU_VLOG(2) << MCU_FLASHSTR("Reclaiming deleted EepromTlv entries.");
+  MCU_VLOG(3) << MCU_FLASHSTR("Reclaiming deleted EepromTlv entries.");
 
   // Not safe to compact if ill-formed.
   MCU_RETURN_IF_ERROR(Validate());
@@ -199,7 +198,10 @@ StatusOr<EepromAddrT> EepromTlv::ReclaimUnusedSpace() {
 
   WriteBeyondAddr(new_beyond_addr);
   WriteCrc(status_or_crc.value());
-  return beyond_addr - new_beyond_addr;
+  auto reclaimed_space = beyond_addr - new_beyond_addr;
+  MCU_VLOG(2) << MCU_FLASHSTR("Reclaimed ") << reclaimed_space
+              << MCU_FLASHSTR(" EEMPROM bytes");
+  return reclaimed_space;
 }
 
 StatusOr<EepromRegionReader> EepromTlv::FindEntry(const EepromTag tag) const {
@@ -336,46 +338,63 @@ StatusOr<uint32_t> EepromTlv::ComputeCrc(const EepromAddrT beyond_addr) const {
   return status;
 }
 
-uint32_t EepromTlv::ComputeExtendedCrc(const EepromAddrT new_entry_addr,
-                                       const EepromAddrT beyond_addr) const {
+uint32_t EepromTlv::ComputeExtendedCrc(
+    const EepromAddrT new_entry_addr, const EepromAddrT new_beyond_addr) const {
   Crc32 computed_crc(ReadCrc());
   EepromAddrT addr = new_entry_addr + kOffsetOfEntryDataLength;
-  while (addr < beyond_addr) {
+  while (addr < new_beyond_addr) {
     computed_crc.appendByte(eeprom_->read(addr++));
   }
   return computed_crc.value();
 }
 
 Status EepromTlv::ValidateCrc(const EepromAddrT beyond_addr) const {
-  auto status_or_crc = ComputeCrc(beyond_addr);
-  MCU_RETURN_IF_ERROR(status_or_crc.status());
-  //  MCU_RETURN_IF_ERROR(ComputeCrc(beyond_addr));
+  MCU_ASSIGN_OR_RETURN(const auto computed_crc, ComputeCrc(beyond_addr));
+  const uint32_t stored_crc = ReadCrc();
+  if (computed_crc != stored_crc) {
+    MCU_VLOG(1) << MCU_FLASHSTR("Crc wrong: ") << stored_crc
+                << "!=" << computed_crc;
+    return WrongCrc();
+  }
   return OkStatus();
 }
 
 Status EepromTlv::StartTransaction(const EepromTag tag,
                                    const BlockLengthT minimum_length,
-                                   EepromRegion& target_region) {
+                                   EepromRegion& target_region,
+                                   const bool reclaim_unused_space_if_needed) {
   if (IsReservedDomain(tag.domain)) {
     return InvalidArgumentError(MCU_PSV("Domain is reserved"));
+  }
+  if (minimum_length > kMaxBlockLength) {
+    return InvalidArgumentError(MCU_PSV("minimum_length too large"));
   }
   MCU_RETURN_IF_ERROR(ValidateNoTransactionIsActive());
   MCU_ASSIGN_OR_RETURN(const auto new_entry_addr, ReadBeyondAddr());
   MCU_DCHECK_OK(ValidateCrc(new_entry_addr));
   const auto new_entry_data_addr = new_entry_addr + kOffsetOfEntryData;
   const auto available = eeprom_length() - new_entry_data_addr;
-  if (available < minimum_length) {
-    return Status(StatusCode::kResourceExhausted);
+  if (available >= minimum_length) {
+    EepromAddrT length;
+    if (available > kMaxBlockLength) {
+      length = kMaxBlockLength;
+    } else {
+      length = available;
+    }
+    target_region = EepromRegion(*eeprom_, new_entry_data_addr, length);
+    transaction_is_active_ = true;
+    return OkStatus();
+  } else if (reclaim_unused_space_if_needed) {
+    // There isn't enough room, but we're allowed to reclaim unused space,
+    // so let's try.
+    MCU_ASSIGN_OR_RETURN(const auto reclaimed_space, ReclaimUnusedSpace());
+    if (available + reclaimed_space >= minimum_length) {
+      // Try again, but don't try reclaiming space again.
+      return StartTransaction(tag, minimum_length, target_region,
+                              /*reclaim_unused_space_if_needed=*/false);
+    }
   }
-  EepromAddrT length;
-  if (available > kMaxBlockLength) {
-    length = kMaxBlockLength;
-  } else {
-    length = available;
-  }
-  target_region = EepromRegion(*eeprom_, new_entry_data_addr, length);
-  transaction_is_active_ = true;
-  return OkStatus();
+  return Status(StatusCode::kResourceExhausted);
 }
 
 Status EepromTlv::ValidateNoTransactionIsActive() const {
@@ -393,6 +412,9 @@ Status EepromTlv::CommitTransaction(const EepromTag tag,
     return InternalError(MCU_PSV("Write NOT in progress"));  // COV_NF_LINE
   }
   transaction_is_active_ = false;
+  if (data_length > kMaxBlockLength) {
+    return InternalError(MCU_PSV("data_length too large"));
+  }
   MCU_ASSIGN_OR_RETURN(const auto new_entry_addr, ReadBeyondAddr());
   const auto new_entry_data_addr = new_entry_addr + kOffsetOfEntryData;
   if (new_entry_data_addr != data_addr) {

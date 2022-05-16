@@ -147,6 +147,7 @@ cc_library(
         ":crc32",
         ":eeprom_region",
         ":eeprom_tag",
+        ":limits",
         ":logging",
         ":mcucore_platform",
         ":progmem_string_data",

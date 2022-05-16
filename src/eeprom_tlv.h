@@ -49,9 +49,12 @@ class EepromTlvTest;
 class EepromTlv {
  public:
   // We only have a modest amount of EEPROM altogether, so it doesn't make
-  // sense to store individual values longer than 255 bytes.
+  // sense to store individual values longer than 255 bytes, which in turn
+  // allows us to use just one byte for storing the length of the entry.
   using BlockLengthT = uint8_t;
-  static constexpr BlockLengthT kMaxBlockLength = 255;
+  // However we use an EepromAddrT (uint16_t) to encode the max length, which
+  // makes it easier to use functions such as std::min (only in tests so far).
+  static constexpr EepromAddrT kMaxBlockLength = 255;
   static constexpr EepromAddrT kFixedHeaderSize = 4 + 4 + 2;
   static constexpr EepromAddrT kEntryHeaderSize = 2 + 1;
 
@@ -120,7 +123,9 @@ class EepromTlv {
   Status WriteEntryToCursor(EepromTag tag, BlockLengthT minimum_length,
                             WRITER writer_function, ARGS&&... writer_args) {
     EepromRegion target_region;
-    MCU_RETURN_IF_ERROR(StartTransaction(tag, minimum_length, target_region));
+    MCU_RETURN_IF_ERROR(
+        StartTransaction(tag, minimum_length, target_region,
+                         /*reclaim_unused_space_if_needed=*/true));
     Status status = writer_function(target_region, writer_args...);
     if (!status.ok()) {
       AbortTransaction();
@@ -172,10 +177,11 @@ class EepromTlv {
   StatusOr<uint32_t> ComputeCrc(EepromAddrT beyond_addr) const;
 
   // Given the address of a new entry, and the address immediately beyond that
-  // entry, compute the CRC of all entries by appending just the relevant bytes
-  // of the new entry.
+  // entry, compute the CRC of all entries by starting with the already
+  // calculated CRC for the entries before the new entry, and appending the
+  // bytes of the new entry.
   uint32_t ComputeExtendedCrc(EepromAddrT new_entry_addr,
-                              EepromAddrT beyond_addr) const;
+                              EepromAddrT new_beyond_addr) const;
 
   // Returns true if the CRC value matches that computed from the entries.
   Status ValidateCrc(EepromAddrT beyond_addr) const;
@@ -183,9 +189,11 @@ class EepromTlv {
   // If there is sufficient space, start a write transaction and update
   // target_region to represent the space into which the writer can write the
   // data of a new entry; target_region will have length that is at least
-  // minimum_length.
+  // minimum_length. If there is not sufficient space, then it will attempt to
+  // reclaim unused space in order to make sufficient space.
   Status StartTransaction(EepromTag tag, BlockLengthT minimum_length,
-                          EepromRegion& target_region);
+                          EepromRegion& target_region,
+                          bool reclaim_unused_space_if_needed);
 
   // Data for a new entry has been written to:
   //     [data_entry, data_entry+data_length)

@@ -1,6 +1,8 @@
 #include "eeprom_tlv.h"
 
+#include <algorithm>
 #include <cstdint>
+#include <functional>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -369,27 +371,27 @@ TEST_F(EepromTlvTest, VariousStringEntries) {
   EXPECT_THAT(PrintValueToStdString(eeprom_tlv_), HasSubstr("(Empty)"));
 }
 
-TEST_F(EepromTlvTest, FillEeprom) {
+TEST_F(EepromTlvTest, FillEepromWithDistinctEntries) {
   // Fills the EEPROM with the same string entry again and again; once full,
   // shrink the string until we're able to write some more or the string is
   // empty.
   auto fill_function = [&](StringView s) {
-    while (true) {
+    for (int i = 0; i < eeprom_.length(); ++i) {
       ASSERT_STATUS_OK(eeprom_tlv_.Validate());
-      Status status = WriteStringEntryToCursor(MCU_DOMAIN(1), 1, s);
+      Status status = WriteStringEntryToCursor(MCU_DOMAIN(1), i, s);
       if (IsResourceExhausted(status)) {
         if (s.empty()) {
           EXPECT_EQ(eeprom_tlv_.Available(), 0);
           return;
         } else {
           s.remove_prefix(1);
+          i -= 1;
         }
       } else {
         ASSERT_STATUS_OK(status);
       }
     }
   };
-
   bool found_full = false;
   for (int string_size = 0; string_size < 5; ++string_size) {
     EepromTlv::ClearAndInitializeEeprom(eeprom_);
@@ -399,13 +401,33 @@ TEST_F(EepromTlvTest, FillEeprom) {
     if (absl::StrContains(PrintValueToStdString(eeprom_tlv_), "(Full)")) {
       found_full = true;
     }
-    // There is one valid entry at the end, and one long run before that of
-    // unused entries.
-    ASSERT_THAT(eeprom_tlv_.ReclaimUnusedSpace(), IsOkAndHolds(Gt(0)));
-    // There should now be no unused space
-    EXPECT_THAT(eeprom_tlv_.ReclaimUnusedSpace(), IsOkAndHolds(0));
   }
   EXPECT_TRUE(found_full);
+}
+
+TEST_F(EepromTlvTest, FillEepromWithReclaim) {
+  // Fills the EEPROM with the same string entry again and again.
+  // WriteEntryToCursor will automatically reclaim unused entries, i.e. the
+  // prior entries with the same tag that have been marked as invalid.
+
+  EXPECT_THAT(PrintValueToStdString(eeprom_tlv_), HasSubstr("(Empty)"));
+
+  EepromAddrT last_address = 0;
+  bool has_wrapped = false;
+  for (int i = 0; i < eeprom_.length(); ++i) {
+    auto data = absl::StrCat(">> ", i, " <<");
+    ASSERT_STATUS_OK(eeprom_tlv_.Validate());
+    ASSERT_STATUS_OK_AND_ASSIGN(auto this_address,
+                                WriteAndReadStdString(MCU_DOMAIN(1), 1, data));
+    EXPECT_NE(this_address, last_address);
+    if (this_address < last_address) {
+      has_wrapped = true;
+    }
+    last_address = this_address;
+
+    EXPECT_THAT(PrintValueToStdString(eeprom_tlv_), Not(HasSubstr("(Empty)")));
+  }
+  EXPECT_TRUE(has_wrapped);
 
   // Remove the entry with the tag, at which point the EEPROM should be empty.
   EXPECT_STATUS_OK(DeleteEntry(MCU_DOMAIN(1), 1));
@@ -555,6 +577,113 @@ TEST_F(EepromTlvTest, AbortTransaction) {
   const EepromTag tag{MCU_DOMAIN(1), 1};
   ASSERT_THAT(eeprom_tlv_.WriteEntryToCursor(tag, 1, FailToWriteFn),
               StatusIs(StatusCode::kUnknown, "FailToWriteFn"));
+}
+
+class DeleteSelectedEntriesTest : public EepromTlvTest {
+ protected:
+  static std::string MakeData(int index) {
+    return absl::StrCat(">>>>>>>>>> ", index, " <<<<<<<<<<<<");
+  }
+
+  StatusOr<int> FillEeprom() {
+    // Fill the EEPROM.
+    for (int i = 0; i < 256; ++i) {
+      MCU_RETURN_IF_ERROR(eeprom_tlv_.Validate());
+      const auto data = MakeData(i);
+      auto status = WriteAndReadStdString(MCU_DOMAIN(1), i, data);
+      EXPECT_STATUS_OK(eeprom_tlv_.Validate());
+      if (status.ok()) {
+        continue;
+      }
+      EXPECT_THAT(status, StatusIs(StatusCode::kResourceExhausted));
+      if (IsResourceExhausted(status)) {
+        EXPECT_GT(i, 2);
+        return i - 1;
+      } else {
+        return status.status();
+      }
+    }
+    ADD_FAILURE() << "Should have ended before i == 256";
+    return UnknownError();
+  }
+
+  void ConfirmExpectedContents(
+      int maximum_index,
+      const std::function<bool(int index, int maximum_index)>& delete_policy) {
+    ASSERT_STATUS_OK(eeprom_tlv_.Validate());
+    for (int i = 0; i <= maximum_index; ++i) {
+      if (delete_policy(i, maximum_index)) {
+        ASSERT_THAT(ReadStdString(MCU_DOMAIN(1), i),
+                    StatusIs(StatusCode::kNotFound));
+      } else {
+        ASSERT_THAT(ReadStdString(MCU_DOMAIN(1), i), IsOkAndHolds(MakeData(i)));
+      }
+    }
+    ASSERT_STATUS_OK(eeprom_tlv_.Validate());
+  }
+
+  void DeleteSelectedEntries(
+      int maximum_index,
+      const std::function<bool(int index, int maximum_index)>& delete_policy) {
+    ASSERT_STATUS_OK(eeprom_tlv_.Validate());
+    for (int i = 0; i <= maximum_index; ++i) {
+      if (delete_policy(i, maximum_index)) {
+        ASSERT_STATUS_OK(DeleteEntry(MCU_DOMAIN(1), i));
+        ASSERT_STATUS_OK(eeprom_tlv_.Validate());
+      }
+    }
+  }
+
+  void FillEepromAndDeleteSomeEntriesAndReclaim(
+      const std::function<bool(int index, int maximum)>& delete_policy) {
+    // Fills the EEPROM with entries with different tags and values until full.
+
+    EXPECT_THAT(PrintValueToStdString(eeprom_tlv_), HasSubstr("(Empty)"));
+    ASSERT_STATUS_OK_AND_ASSIGN(const int maximum_index, FillEeprom());
+    (void)maximum_index;
+    ConfirmExpectedContents(maximum_index,
+                            [](int index, int maximum_index) { return false; });
+    DeleteSelectedEntries(maximum_index, delete_policy);
+    ConfirmExpectedContents(maximum_index, delete_policy);
+
+    // Reclaim the deleted entries.
+    ASSERT_THAT(eeprom_tlv_.ReclaimUnusedSpace(), IsOkAndHolds(Gt(0)));
+    ASSERT_STATUS_OK(eeprom_tlv_.Validate());
+
+    // There should now be no unused space
+    ASSERT_THAT(eeprom_tlv_.ReclaimUnusedSpace(), IsOkAndHolds(0));
+    ASSERT_STATUS_OK(eeprom_tlv_.Validate());
+
+    ConfirmExpectedContents(maximum_index, delete_policy);
+  }
+};
+
+TEST_F(DeleteSelectedEntriesTest, DeleteOddEntries) {
+  FillEepromAndDeleteSomeEntriesAndReclaim(
+      [](int index, int maximum_index) -> bool {
+        return index != 0 && index != maximum_index && (index % 2) == 1;
+      });
+}
+
+TEST_F(DeleteSelectedEntriesTest, DeleteEvenEntries) {
+  FillEepromAndDeleteSomeEntriesAndReclaim(
+      [](int index, int maximum_index) -> bool {
+        return index == 0 || index == maximum_index || (index % 2) == 0;
+      });
+}
+
+TEST_F(DeleteSelectedEntriesTest, DeleteFirstAndLastEntries) {
+  FillEepromAndDeleteSomeEntriesAndReclaim(
+      [](int index, int maximum_index) -> bool {
+        return index == 0 || index == maximum_index;
+      });
+}
+
+TEST_F(DeleteSelectedEntriesTest, KeepFirstAndLastEntries) {
+  FillEepromAndDeleteSomeEntriesAndReclaim(
+      [](int index, int maximum_index) -> bool {
+        return !(index == 0 || index == maximum_index);
+      });
 }
 
 }  // namespace
