@@ -3,6 +3,7 @@
 #include "crc32.h"
 #include "eeprom_region.h"
 #include "eeprom_tag.h"
+#include "hex_escape.h"
 #include "limits.h"
 #include "logging.h"
 #include "mcucore_platform.h"
@@ -11,6 +12,8 @@
 #include "status.h"
 #include "status_code.h"
 #include "status_or.h"
+#include "string_compare.h"
+#include "string_view.h"
 
 // IDEA: consider adding something like an EepromStringView or EepromArray<T>,
 // encapsulating access to an array of chars or Ts.
@@ -30,7 +33,7 @@
 // of the function could be handled using a parameter pack, just as with
 // WriteEntryToCursor.
 
-#define TLV_RAW_PREFIX "Tlv!"
+#define TLV_RAW_PREFIX "TLV!"
 #define TLV_PREFIX_PSV MCU_PSV(TLV_RAW_PREFIX)
 #define TLV_PREFIX_SIZE (decltype(MCU_PSD(TLV_RAW_PREFIX))::size())
 
@@ -100,8 +103,8 @@ StatusOr<EepromTlv> EepromTlv::GetIfValid(EEPROMClass& eeprom) {
 }
 
 StatusOr<EepromTlv> EepromTlv::ClearAndInitializeEeprom(EEPROMClass& eeprom) {
-  int addr = 0;
-  for (const char c : TLV_PREFIX_PSV) {
+  for (int addr = 0; addr < TLV_PREFIX_SIZE; ++addr) {
+    const char c = TLV_PREFIX_PSV.at(addr);
     eeprom.write(addr++, static_cast<uint8_t>(c));
   }
   EepromTlv instance(eeprom);
@@ -268,13 +271,19 @@ Status EepromTlv::DeleteEntry(const EepromTag tag) {
 }
 
 bool EepromTlv::IsPrefixPresent() const {
-  int addr = 0;
-  for (const char c : TLV_PREFIX_PSV) {
-    if (c != static_cast<char>(eeprom_->read(addr++))) {
-      return false;
-    }
+  EepromRegionReader reader(*eeprom_, 0, TLV_PREFIX_SIZE);
+  char stored_prefix[TLV_PREFIX_SIZE + 1];
+  if (!reader.ReadString(stored_prefix, TLV_PREFIX_SIZE)) {
+    MCU_VLOG(1) << MCU_FLASHSTR("ReadString for prefix failed");
+    return false;
   }
-  return true;
+  stored_prefix[TLV_PREFIX_SIZE] = 0;
+  StringView prefix_sv(stored_prefix, TLV_PREFIX_SIZE);
+  if (ExactlyEqual(TLV_PREFIX_PSV, prefix_sv)) {
+    return true;
+  }
+  MCU_VLOG(3) << "IsPrefixPresent found (hex): " << HexEscaped(prefix_sv);
+  return false;
 }
 
 StatusOr<EepromAddrT> EepromTlv::ReadBeyondAddr() const {
