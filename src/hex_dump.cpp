@@ -11,6 +11,11 @@ constexpr char kHexDigits[] AVR_PROGMEM = "0123456789ABCDEF";
 constexpr uint_fast8_t kRowBytes = 16;
 constexpr uint_fast8_t kSeparatorWidth = 2;
 
+char NibbleToAsciiHex(uint8_t v) {
+  MCU_DCHECK_LT(v, 16);
+  return pgm_read_byte(kHexDigits + v);
+}
+
 // Compute number of digits needed for maximum label address.
 uint_fast8_t MaxLabelHexDigits(size_t start_address, size_t num_bytes) {
   // TODO implement
@@ -27,7 +32,7 @@ void HexPrintLabelAddress(Print& out, size_t address, const uint8_t digits) {
   for (size_t i = 0; i < max_digits; ++i) {
     // Format the current low nibble as hex.
     MCU_CHECK_GE(sizeof text - 2, i);
-    text[sizeof text - 2 - i] = kHexDigits[address & 0xf];
+    text[sizeof text - 2 - i] = NibbleToAsciiHex(address & 0xf);
     address >>= 4;
     if (i >= digits) {
       MCU_DCHECK_EQ(address, 0);
@@ -56,8 +61,8 @@ void HexDumpBytes(Print& out, size_t start_address, size_t num_bytes,
     for (uint_fast8_t ndx = 0; ndx < num_row_bytes; ++ndx) {
       out.print(' ');
       const auto v = get_byte_fn(start_address + ndx);
-      out.print(kHexDigits[(v >> 4) & 0xf]);
-      out.print(kHexDigits[v & 0xf]);
+      out.print(NibbleToAsciiHex((v >> 4) & 0xf));
+      out.print(NibbleToAsciiHex(v & 0xf));
     }
 
     // Print the spaces following those hex digits, allowing for the
@@ -76,6 +81,8 @@ void HexDumpBytes(Print& out, size_t start_address, size_t num_bytes,
       }
       out.print(v);
     }
+
+    out.println();
 
     // Where is the next row?
     start_address += num_row_bytes;
@@ -96,7 +103,6 @@ uint8_t GetEepromBytes(size_t address) {
   MCU_CHECK_NE(eeprom_ptr, nullptr);
   return eeprom_ptr->read(address);
 }
-
 }  // namespace
 
 void HexDumpEepromBytes(Print& out, size_t start_address, size_t num_bytes,
