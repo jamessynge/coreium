@@ -347,6 +347,12 @@ cc_library(
 )
 
 cc_library(
+    name = "progmem_pointer",
+    hdrs = ["progmem_pointer.h"],
+    deps = [":mcucore_platform"],
+)
+
+cc_library(
     name = "progmem_string",
     srcs = ["progmem_string.cc"],
     hdrs = ["progmem_string.h"],

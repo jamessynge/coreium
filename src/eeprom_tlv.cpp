@@ -103,10 +103,17 @@ StatusOr<EepromTlv> EepromTlv::GetIfValid(EEPROMClass& eeprom) {
 }
 
 StatusOr<EepromTlv> EepromTlv::ClearAndInitializeEeprom(EEPROMClass& eeprom) {
+#if 0
   for (int addr = 0; addr < TLV_PREFIX_SIZE; ++addr) {
     const char c = TLV_PREFIX_PSV.at(addr);
     eeprom.write(addr++, static_cast<uint8_t>(c));
   }
+#else
+  EepromAddrT addr = 0;
+  for (const char c : TLV_PREFIX_PSV) {
+    eeprom.write(addr++, static_cast<uint8_t>(c));
+  }
+#endif
   EepromTlv instance(eeprom);
   MCU_DCHECK(instance.IsPrefixPresent());
 
