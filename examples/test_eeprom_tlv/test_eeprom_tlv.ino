@@ -2,6 +2,8 @@
 #include <McuCore.h>
 
 using ::mcucore::EepromAddrT;
+using ::mcucore::EepromRegion;
+using ::mcucore::EepromTlv;
 using ::mcucore::LogSink;
 using ::mcucore::StringView;
 
@@ -18,98 +20,59 @@ void setup() {
   while (!Serial) {
   }
   mcucore::LogSink() << MCU_FLASHSTR("Serial ready");
-
+  mcucore::LogSink() << MCU_FLASHSTR_128(
+      "####################################################################");
+  mcucore::LogSink();
 
   mcucore::LogSink() << MCU_FLASHSTR("Flash:");
   mcucore::HexDumpLeadingFlashBytes(Serial, 64);
 
+  mcucore::LogSink();
   mcucore::LogSink() << MCU_FLASHSTR("Flash string fs1:");
   mcucore::HexDumpFlashBytes(Serial, fs1);
 
+  mcucore::LogSink();
   mcucore::LogSink() << MCU_FLASHSTR("EEPROM:");
   mcucore::HexDumpEepromBytes(Serial, 0, 64, EEPROM);
 
-  mcucore::LogSink() << MCU_FLASHSTR("Clearing EEPROM");
-  for (size_t ndx = 0; ndx < EEPROM.length(); ++ndx) {
+  mcucore::LogSink();
+  mcucore::LogSink() << MCU_FLASHSTR("Clearing start of EEPROM");
+  for (size_t ndx = 0; ndx < 128; ++ndx) {
     EEPROM[ndx] = 0;
   }
 
+  mcucore::LogSink();
   mcucore::LogSink() << MCU_FLASHSTR("EEPROM:");
   mcucore::HexDumpEepromBytes(Serial, 0, 64, EEPROM);
 
   // mcucore::LogSink() << MCU_FLASHSTR("EEPROM:");
   // mcucore::HexDumpFlashBytes(Serial, 0, 64);
 
-  // mcucore::LogSink() << MCU_FLASHSTR("Copying fs1");
+  mcucore::LogSink();
+  mcucore::LogSink() << MCU_FLASHSTR(
+      "Copying fs1 to EEPROM using EepromRegion");
+  {
+    EepromRegion region(EEPROM, 0, 128);
+    region.WriteString(fs1);
+  }
+
+  mcucore::LogSink();
+  mcucore::LogSink() << MCU_FLASHSTR("EEPROM:");
+  mcucore::HexDumpEepromBytes(Serial, 0, 64, EEPROM);
+
+  mcucore::LogSink();
+  mcucore::LogSink() << MCU_FLASHSTR("EepromTlv::ClearAndInitializeEeprom");
+  MCU_CHECK_OK(EepromTlv::ClearAndInitializeEeprom(EEPROM));
+
+  mcucore::LogSink();
+  mcucore::LogSink() << MCU_FLASHSTR("EEPROM:");
+  mcucore::HexDumpEepromBytes(Serial, 0, 64, EEPROM);
 
   // mcucore::LogSink() << MCU_FLASHSTR("EEPROM:");
   // mcucore::HexDumpEepromBytes(Serial, 0, 64, EEPROM);
 
   // mcucore
-
 }
-
-// constexpr char kHexDigits[] AVR_PROGMEM = "0123456789ABCDEF";
-//   constexpr size_t kRowBytes = 16;
-
-// void HexDumpRamBytesRow(Print& out, StringView sv) {
-//   MCU_CHECK_GT(sv.size(), 0);
-//   constexpr size_t kSeparatorWidth = 2;
-//   const size_t limit = sv.size() > kRowBytes ? kRowBytes : sv.size();
-//   for (size_t i = 0; i < limit; ++i) {
-//     if (i > 0) {
-//       out.print(' ');
-//     }
-//     const auto v = sv.at(i);
-//     out.print(kHexDigits[(v >> 4) & 0xf]);
-//     out.print(kHexDigits[v & 0xf]);
-//   }
-//   const size_t spaces = 3 * (kRowBytes - limit) + kSeparatorWidth;
-//   for (size_t i = 0; i < spaces; ++i) {
-//     out.print(' ');
-//   }
-//   // Print the ASCII graphic form, if there is one.
-//   for (size_t i = 0; i < limit; ++i) {
-//     char v = sv.at(i);
-//     if (!(' ' < v && v < 127)) {
-//       v = ' ';
-//     }
-//     out.print(v);
-//   }
-// }
-
-// // Print fixed width.
-// void HexPrintUnsignedInteger(Print& out, size_t address) {
-//   out.print('0');
-//   out.print('x');
-//   char text[1 + 2 * sizeof address];
-//   text[(sizeof text) - 1] = 0;
-//   for (size_t i = 0; i < 2 * sizeof address; ++i) {
-//     // Format the current low nibble as hex.
-//     MCU_CHECK_GE(sizeof text - 2, i);
-
-//     text[sizeof text - 2 - i] = kHexDigits[address & 0xf];
-//     address >>= 4;
-//   }
-//   out.print(text);
-// }
-
-// void HexDumpFlash(Print& out, size_t start, size_t size) {
-//   while (size > 0) {
-//     // Print start address.
-//     HexPrintUnsignedInteger(out, start );
-
-//     // Copy up to 16 bytes into a RAM buffer.
-//     // Print the RAM buffer.
-//   }
-
-//   MCU_CHECK_LT(start, end);
-
-//   char text[80];
-//   for (int i = 0; i < sizeof text; ++i) {
-//     text = ' ';
-//   }
-// }
 
 void loop() {  //
   delay(10000);

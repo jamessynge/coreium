@@ -75,9 +75,9 @@ void HexDumpBytes(Print& out, size_t start_address, size_t num_bytes,
 
     // Print the ASCII graphic form of each byte, if there is one, else a space.
     for (uint_fast8_t ndx = 0; ndx < num_row_bytes; ++ndx) {
-      auto v = get_byte_fn(start_address + ndx);
+      char v = get_byte_fn(start_address + ndx);
       if (!(' ' < v && v < 127)) {
-        v = ' ';
+        v = '.';
       }
       out.print(v);
     }

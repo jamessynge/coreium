@@ -33,7 +33,7 @@
 // of the function could be handled using a parameter pack, just as with
 // WriteEntryToCursor.
 
-#define TLV_RAW_PREFIX "TLV!"
+#define TLV_RAW_PREFIX "Tlv!"
 #define TLV_PREFIX_PSV MCU_PSV(TLV_RAW_PREFIX)
 #define TLV_PREFIX_SIZE (decltype(MCU_PSD(TLV_RAW_PREFIX))::size())
 
@@ -103,7 +103,15 @@ StatusOr<EepromTlv> EepromTlv::GetIfValid(EEPROMClass& eeprom) {
 }
 
 StatusOr<EepromTlv> EepromTlv::ClearAndInitializeEeprom(EEPROMClass& eeprom) {
-#if 0
+#if 1
+  EepromRegion region(eeprom, 0, TLV_PREFIX_SIZE);
+  MCU_CHECK(region.WriteString(TLV_PREFIX_PSV));
+  MCU_DCHECK_EQ(region.available(), 0);
+  for (int addr = 0; addr < TLV_PREFIX_SIZE; ++addr) {
+    const char c = TLV_PREFIX_PSV.at(addr);
+    eeprom.write(addr++, static_cast<uint8_t>(c));
+  }
+#elif 1
   for (int addr = 0; addr < TLV_PREFIX_SIZE; ++addr) {
     const char c = TLV_PREFIX_PSV.at(addr);
     eeprom.write(addr++, static_cast<uint8_t>(c));

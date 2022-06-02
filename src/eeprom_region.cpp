@@ -89,12 +89,22 @@ bool EepromRegion::WriteBytes(const uint8_t* ptr, const EepromAddrT length) {
   return true;
 }
 
-// Writes the characters of the string to EEPROM; see WriteBytes for behavior
-// details. The caller is required to have some means of later determining the
-// length of the string that was written in order to read it, such as writing
-// the number of bytes in the string to EEPROM prior to writing the string's
-// value, or writing a fixed size string.
 bool EepromRegion::WriteString(const StringView& t) {
   return WriteBytes(reinterpret_cast<const uint8_t*>(t.data()), t.size());
 }
+
+bool EepromRegion::WriteString(const ProgmemStringView psv) {
+  const auto size = psv.size();
+  if (size > available()) {
+    return false;
+  }
+  EepromAddrT to = start_address_ + cursor_;
+  for (ProgmemStringView::size_type ndx = 0; ndx < size; ++ndx) {
+    char c = psv.at(ndx);
+    eeprom_->write(to++, c);
+  }
+  cursor_ += size;
+  return true;
+}
+
 }  // namespace mcucore
