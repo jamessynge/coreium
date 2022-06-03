@@ -11,6 +11,10 @@
 
 namespace mcucore {
 
+// Nibble to uppercase ASCII hex character. Value of v must be in range 0
+// through 15).
+char NibbleToAsciiHex(uint8_t v);
+
 enum class EHexEscapingState : uint8_t {
   kNormal = 0,
   // Last character output was the last character output for a hex escaped

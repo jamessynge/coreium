@@ -1,12 +1,16 @@
 #include "hex_escape.h"
 
 #include "mcucore_platform.h"
+#include "logging.h"
 
 namespace mcucore {
 
-// TODO(jamessynge): Share across multiple parts of the code base, and use
-// MCU_PSD, MCU_FLASHSTR or similar.
 constexpr char kHexDigits[] AVR_PROGMEM = "0123456789ABCDEF";
+
+char NibbleToAsciiHex(uint8_t v) {
+  MCU_DCHECK_LT(v, 16);
+  return pgm_read_byte(kHexDigits + v);
+}
 
 inline bool IsHexDigit(char c) {
   if ('0' <= c && c <= '9') {
@@ -67,8 +71,8 @@ size_t PrintCharWithStateHexEscaped(Print& out, const char c,
   } else {
     total += out.print('\\');
     total += out.print('x');
-    total += out.print(kHexDigits[(c >> 4) & 0xf]);
-    total += out.print(kHexDigits[c & 0xf]);
+    total += out.print(NibbleToAsciiHex((c >> 4) & 0xf));
+    total += out.print(NibbleToAsciiHex(c & 0xf));
     state = EHexEscapingState::kHexDigitOutput;
   }
   return total;
@@ -103,8 +107,8 @@ size_t PrintWithEthernetFormatting(Print& out, const uint8_t* ptr,
       result += out.print('-');
     }
     auto v = ptr[i];
-    result += out.print(kHexDigits[(v >> 4) & 0xf]);
-    result += out.print(kHexDigits[v & 0xf]);
+    result += out.print(NibbleToAsciiHex((v >> 4) & 0xf));
+    result += out.print(NibbleToAsciiHex(v & 0xf));
   }
   return result;
 }

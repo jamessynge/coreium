@@ -50,6 +50,9 @@
 
 #endif  // USE_FNV1A
 
+// #define ENABLE_SPIN_DELAY
+#define DISABLE_SPIN_DELAY
+
 namespace mcucore {
 namespace {
 
@@ -78,9 +81,11 @@ void WaitForInterrupt() {
 // clock base. To slightly de-corrolate them, we separate reading from them
 // by some amount based on the current crc value.
 void SpinDelayBy(volatile uint16_t& loops) {
+#ifdef ENABLE_SPIN_DELAY
   while (loops > 0) {
     --loops;
   }
+#endif
 }
 
 }  // namespace
@@ -340,31 +345,48 @@ uint32_t JitterRandom::random32(
               << minimum_watchdog_interrupts;
 
   avr::EnableWatchdogInterruptMode();
-  interrupted = false;
 
   JitterRandomCollector collector(timer_counters_to_use);
   uint16_t num_watchdog_interrupts = 0;
   uint32_t start_ms = millis();
   uint32_t elapsed_ms = 0;
+  uint16_t num_already_interrupted_a = interrupted ? 1 : 0;
+  uint16_t num_already_interrupted_b = 0;
+  uint16_t num_already_interrupted_c = 0;
+  uint16_t num_already_interrupted_d = 0;
+  uint16_t num_already_interrupted_e = 0;
 
   do {
-    const auto copy_of_interrupted = interrupted;
-    MCU_VLOG_IF(2, copy_of_interrupted)
-        << MCU_FLASHSTR("loop start, already interrupted");
+    if (interrupted) {
+      // We want to have the whole WDT interrupt measured, so wait
+      // for the next WDT interrupt before starting to measure.
+      ++num_already_interrupted_b;
+      interrupted = false;
+      WaitForInterrupt();
+    }
     MCU_VLOG(4) << MCU_NAME_VAL(num_watchdog_interrupts)
                 << MCU_NAME_VAL(minimum_watchdog_interrupts)
                 << MCU_NAME_VAL(elapsed_ms);
 
     WaitForInterrupt();
     MCU_VLOG(4) << MCU_FLASHSTR("interrupt detected");
+    if (interrupted) {
+      ++num_already_interrupted_c;
+    }
 
     collector.CaptureCounters();
+    if (interrupted) {
+      ++num_already_interrupted_d;
+    }
 
     if (num_watchdog_interrupts <
         numeric_limits<decltype(num_watchdog_interrupts)>::max()) {
       num_watchdog_interrupts++;
     }
     elapsed_ms = millis() - start_ms;
+    if (interrupted) {
+      ++num_already_interrupted_e;
+    }
   } while (num_watchdog_interrupts < minimum_watchdog_interrupts ||
            elapsed_ms < minimum_time_ms);
 
@@ -376,7 +398,13 @@ uint32_t JitterRandom::random32(
               << MCU_NAME_VAL(elapsed_ms)
               << MCU_FLASHSTR(" elapsed_ms/interrupt=")
               << elapsed_ms / num_watchdog_interrupts;
-
+  MCU_VLOG(1) << MCU_FLASHSTR("JitterRandom::random32")
+              << MCU_FLASHSTR(" num_already_interrupted a=")
+              << num_already_interrupted_a << MCU_FLASHSTR(" b=")
+              << num_already_interrupted_b << MCU_FLASHSTR(" c=")
+              << num_already_interrupted_c << MCU_FLASHSTR(" d=")
+              << num_already_interrupted_d << MCU_FLASHSTR(" e=")
+              << num_already_interrupted_e;
   return result;
 }
 

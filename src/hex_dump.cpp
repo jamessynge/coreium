@@ -1,20 +1,15 @@
 
 #include "hex_dump.h"
 
+#include "hex_escape.h"
 #include "limits.h"
 #include "logging.h"
 
 namespace mcucore {
 namespace {
 
-constexpr char kHexDigits[] AVR_PROGMEM = "0123456789ABCDEF";
 constexpr uint_fast8_t kRowBytes = 16;
 constexpr uint_fast8_t kSeparatorWidth = 2;
-
-char NibbleToAsciiHex(uint8_t v) {
-  MCU_DCHECK_LT(v, 16);
-  return pgm_read_byte(kHexDigits + v);
-}
 
 // Compute number of digits needed for maximum label address.
 uint_fast8_t MaxLabelHexDigits(size_t start_address, size_t num_bytes) {
