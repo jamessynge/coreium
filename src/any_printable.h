@@ -32,9 +32,12 @@ class AnyPrintable : public Printable {
     kUnsignedInteger,
     kFloat,
     kDouble,
+    kArbitrary,
   };
 
  public:
+  using ArbitraryPrintFunction = size_t (*)(Print&, const void*);
+
   AnyPrintable();
   // For values that are clearly strings, we allow implicit conversion to
   // AnyPrintable.
@@ -54,6 +57,8 @@ class AnyPrintable : public Printable {
   explicit AnyPrintable(float value);
   explicit AnyPrintable(double value);
 
+  AnyPrintable(ArbitraryPrintFunction printer, const void* data);
+
   // If the value is an enum, convert it to an integral type.
   template <typename T, enable_if_t<is_enum<T>::value, bool> = true>
   explicit AnyPrintable(T value)
@@ -71,6 +76,11 @@ class AnyPrintable : public Printable {
   size_t printTo(Print& out) const override;
 
  private:
+  struct ArbitraryPrinter {
+    ArbitraryPrintFunction printer;
+    const void* data;    
+  };
+
   EFragmentType type_;
   union {
     ProgmemStringView psv_;
@@ -82,6 +92,7 @@ class AnyPrintable : public Printable {
     float float_;
     double double_;
     const Printable* printable_;
+    ArbitraryPrinter arbitrary_;
   };
 };
 

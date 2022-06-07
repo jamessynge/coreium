@@ -42,7 +42,7 @@
 #else  // !ARDUINO
 
 #ifndef MCU_ENABLED_VLOG_LEVEL
-#define MCU_ENABLED_VLOG_LEVEL 2
+#define MCU_ENABLED_VLOG_LEVEL 3
 #endif  //! MCU_ENABLED_VLOG_LEVEL
 
 #if !defined(MCU_ENABLE_CHECK) && !defined(MCU_DISABLE_CHECK)

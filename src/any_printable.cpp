@@ -46,6 +46,10 @@ AnyPrintable::AnyPrintable(double value)
 
 AnyPrintable::AnyPrintable(const AnyPrintable& other) { *this = other; }
 
+AnyPrintable::AnyPrintable(ArbitraryPrintFunction printer, const void* data)
+    : type_(AnyPrintable::kArbitrary),
+      arbitrary_{.printer = printer, .data = data} {}
+
 AnyPrintable& AnyPrintable::operator=(const AnyPrintable& other) {
   type_ = other.type_;
   switch (type_) {
@@ -78,6 +82,9 @@ AnyPrintable& AnyPrintable::operator=(const AnyPrintable& other) {
     case kDouble:
       double_ = other.double_;
       break;
+    case kArbitrary:
+      arbitrary_ = other.arbitrary_;
+      break;
   }
 
   return *this;
@@ -108,6 +115,8 @@ size_t AnyPrintable::printTo(Print& out) const {
       return out.print(float_);
     case kDouble:
       return out.print(double_);
+    case kArbitrary:
+      return arbitrary_.printer(out, arbitrary_.data);
   }
   return 0;
 }

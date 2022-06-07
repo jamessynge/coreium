@@ -42,5 +42,6 @@
 #include "string_view.h"             // IWYU pragma: export
 #include "tiny_string.h"             // IWYU pragma: export
 #include "type_traits.h"             // IWYU pragma: export
+#include "uuid.h"                    // IWYU pragma: export
 
 #endif  // MCUCORE_SRC_MCUCORE_H_
