@@ -98,4 +98,13 @@ bool operator!=(const StatusOr<T>& a, const StatusOr<T>& b) {
   }                                                                     \
   lhs = statusor.value();
 
+#define MCU_CHECK_OK_AND_ASSIGN(lhs, status_or_expression)                \
+  MCU_CHECK_OK_AND_ASSIGN_IMPL_(MAKE_UNIQUE_NAME(_status_or_value_), lhs, \
+                                status_or_expression)
+
+#define MCU_CHECK_OK_AND_ASSIGN_IMPL_(statusor, lhs, status_or_expression) \
+  auto statusor = status_or_expression;                                    \
+  MCU_CHECK_OK(statusor);                                                  \
+  lhs = statusor.value();
+
 #endif  // MCUCORE_SRC_STATUS_OR_H_
