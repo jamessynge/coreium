@@ -90,6 +90,16 @@ class EepromTlv {
   // unused space prior to the end of the valid entries.
   StatusOr<EepromAddrT> ReclaimUnusedSpace();
 
+  // Write `data_length` bytes as the value of an entry identified by `tag`.
+  Status WriteEntry(EepromTag tag, const uint8_t* data, size_t data_length);
+
+  // Copy the value of the entry identified by `tag` into `buffer`, as long
+  // as it isn't more that `buffer_length` bytes. If successful, returns the
+  // number of bytes copied; if too long, returns FailedPrecondition; if not
+  // found, returns NotFound.
+  StatusOr<BlockLengthT> ReadEntry(EepromTag tag, uint8_t* buffer,
+                                   size_t buffer_length) const;
+
   // Returns an EepromRegionReader for reading the data of the most recently
   // written entry with the specified tag. Returns an error if the EEPROM is not
   // properly formatted, or if a block is not found with the specified tag.
