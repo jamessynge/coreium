@@ -35,6 +35,13 @@ void Uuid::Generate() {
   for (int ndx = 0; ndx < kNumBytes; ++ndx) {
     data_[ndx] = random(256);
   }
+  // Set byte 6 to indicate this is a version 4 (random) UUID by setting
+  // the high nibble to 4.
+  data_[6] = (4 << 4) | (data_[6] & 0x0F);
+  // Set byte 8 to indicate that this is a variant 1 UUID by setting the
+  // high bit, and clearing the bit below that.
+  data_[8] &= 0b00111111;
+  data_[8] |= 0b10000000;
 }
 
 void Uuid::Zero() {
@@ -72,6 +79,31 @@ Status Uuid::WriteToEeprom(EepromTlv& tlv, EepromTag tag) const {
   return tlv.WriteEntryToCursor(tag, kNumBytes, WriteToCursorFn, this);
 }
 
+Status Uuid::ReadOrStoreEntry(EepromTlv& tlv, EepromTag tag) {
+  auto status = ReadFromEeprom(tlv, tag);
+  if (status.ok() || !IsNotFound(status)) {
+    return status;
+  }
+  Generate();
+  // Rather than assume we can read it back after storing it, we store it and
+  // then read the value. If DCHECK is enabled, then we also make sure that the
+  // value we read matches our generated value.
+#ifdef MCU_ENABLE_DCHECK
+  Uuid copy = *this;
+  MCU_DCHECK_EQ(*this, copy) << *this << '\n' << copy;
+#endif
+  MCU_RETURN_IF_ERROR(WriteToEeprom(tlv, tag));
+#ifdef MCU_ENABLE_DCHECK
+  Zero();
+#endif
+  status = ReadFromEeprom(tlv, tag);
+#ifdef MCU_ENABLE_DCHECK
+  MCU_DCHECK_OK(status);
+  MCU_DCHECK_EQ(*this, copy) << *this << '\n' << copy;
+#endif
+  return status;
+}
+
 size_t Uuid::printTo(Print& out) const {
   // Group 1: 4 bytes, 8 hexadecimal characters.
   size_t result = PrintHexBytes(out, data_, 4);
@@ -88,6 +120,10 @@ size_t Uuid::printTo(Print& out) const {
   // Group 5: 6 bytes, 12 hexadecimal characters.
   result += PrintHexBytes(out, data_ + 10, 6);
   return result;
+}
+
+bool operator==(const Uuid& a, const Uuid& b) {
+  return memcmp(a.data_, b.data_, sizeof a.data_) == 0;
 }
 
 }  // namespace mcucore

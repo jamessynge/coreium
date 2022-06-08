@@ -32,9 +32,13 @@ class Uuid {
   // and maybe a terminating null to represent as a string.
   size_t printTo(Print& out) const;
 
+  friend bool operator==(const Uuid& a, const Uuid& b);
+
  private:
   uint8_t data_[16];
 };
+
+inline bool operator!=(const Uuid& a, const Uuid& b) { return !(a == b); }
 
 }  // namespace mcucore
 
