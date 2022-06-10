@@ -16,6 +16,7 @@
 #include "progmem_string.h"
 #include "progmem_string_view.h"
 #include "string_view.h"
+#include "tiny_string.h"
 #include "type_traits.h"
 
 namespace mcucore {
@@ -39,12 +40,17 @@ class AnyPrintable : public Printable {
   using ArbitraryPrintFunction = size_t (*)(Print&, const void*);
 
   AnyPrintable();
+
   // For values that are clearly strings, we allow implicit conversion to
   // AnyPrintable.
   AnyPrintable(StringView value);                  // NOLINT
   AnyPrintable(ProgmemString value);               // NOLINT
   AnyPrintable(ProgmemStringView value);           // NOLINT
   AnyPrintable(const __FlashStringHelper* value);  // NOLINT
+  template <uint8_t N>
+  AnyPrintable(const TinyString<N>& value)  // NOLINT
+      : AnyPrintable(StringView(value.data(), value.size())) {}
+
   // To avoid implicit conversions of values that aren't (weren't) necessarily
   // strings, we require the conversion to be explicit.
   explicit AnyPrintable(Printable& value);
@@ -78,7 +84,7 @@ class AnyPrintable : public Printable {
  private:
   struct ArbitraryPrinter {
     ArbitraryPrintFunction printer;
-    const void* data;    
+    const void* data;
   };
 
   EFragmentType type_;
