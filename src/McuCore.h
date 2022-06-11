@@ -14,6 +14,7 @@
 #include "has_insert_into.h"         // IWYU pragma: export
 #include "has_print_to.h"            // IWYU pragma: export
 #include "has_progmem_char_array.h"  // IWYU pragma: export
+#include "hex_dump.h"                // IWYU pragma: export
 #include "hex_escape.h"              // IWYU pragma: export
 #include "int_helpers.h"             // IWYU pragma: export
 #include "jitter_random.h"           // IWYU pragma: export
@@ -28,6 +29,7 @@
 #include "platform/avr/watchdog.h"   // IWYU pragma: export
 #include "print_misc.h"              // IWYU pragma: export
 #include "printable_cat.h"           // IWYU pragma: export
+#include "progmem_pointer.h"         // IWYU pragma: export
 #include "progmem_string.h"          // IWYU pragma: export
 #include "progmem_string_data.h"     // IWYU pragma: export
 #include "progmem_string_view.h"     // IWYU pragma: export

@@ -161,12 +161,16 @@ class EepromRegion : public EepromRegionReader {
   bool WriteBytes(const uint8_t (&buf)[N]) {
     return WriteBytes(buf, N);
   }
+
   // Writes the characters of the string to EEPROM; see WriteBytes for behavior
   // details. The caller is required to have some means of later determining the
   // length of the string that was written in order to read it, such as writing
   // the number of bytes in the string to EEPROM prior to writing the string's
   // value, or writing a fixed size string.
   bool WriteString(const StringView& t);
+
+  // As above, but the source string is in flash memory instead of RAM.
+  bool WriteString(const ProgmemStringView psv);
 };
 
 }  // namespace mcucore

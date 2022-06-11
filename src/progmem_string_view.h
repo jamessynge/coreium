@@ -24,6 +24,7 @@
 #include "has_progmem_char_array.h"
 #include "logging.h"
 #include "mcucore_platform.h"
+#include "progmem_pointer.h"
 #include "progmem_string_data.h"
 #include "type_traits.h"
 
@@ -98,8 +99,8 @@ class ProgmemStringView {
   bool CopyTo(char* out, size_type size);
 
   // Support for iterating.
-  constexpr PGM_P begin() const { return ptr_; }
-  constexpr PGM_P end() const { return ptr_ + size_; }
+  constexpr ProgmemCharPtr begin() const { return ProgmemCharPtr(ptr_); }
+  constexpr ProgmemCharPtr end() const { return ProgmemCharPtr(ptr_ + size_); }
 
   // Returns the character the the specified position ([0..size_)) within the
   // string.
@@ -107,6 +108,9 @@ class ProgmemStringView {
 
   // Returns the number of characters in the string.
   constexpr size_type size() const { return size_; }
+
+  // Returns a pointer to the underlying data, in some address space.
+  constexpr PGM_VOID_P progmem_ptr() const { return ptr_; }
 
   // Returns a view of a portion of this view (at offset `pos` and length `n`)
   // as another StringView. Does NOT validate the parameters, so pos+n must not
@@ -123,7 +127,8 @@ class ProgmemStringView {
   size_type size_;
 };
 
-template <class PSD, typename = enable_if_t<has_progmem_char_array<PSD>::value>>
+template <class PSD,
+          typename X = enable_if_t<has_progmem_char_array<PSD>::value>>
 constexpr ProgmemStringView MakeProgmemStringView() {
   return ProgmemStringView(PSD::kData, (sizeof PSD::kData) - 1);
 }

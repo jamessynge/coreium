@@ -11,6 +11,60 @@
 
 #include <vector>
 
+class EEPROMClass;
+
+namespace internal {
+uint8_t eeprom_read_byte(EEPROMClass& eeprom, int index);
+void eeprom_write_byte(EEPROMClass& eeprom, int index, uint8_t value);
+}  // namespace internal
+
+// Simulates a reference to an EEPROM byte.
+class EERef {
+ public:
+  EERef(EEPROMClass& eeprom, const int index)
+      : eeprom_(eeprom), index_(index) {}
+
+  // Access/read members.
+  uint8_t operator*() const {
+    return internal::eeprom_read_byte(eeprom_, index_);
+  }
+  operator uint8_t() const { return **this; }  // NOLINT
+
+  // Assignment/write members.
+  EERef& operator=(const EERef& ref) { return *this = *ref; }
+  EERef& operator=(uint8_t value) {
+    internal::eeprom_write_byte(eeprom_, index_, value);
+    return *this;
+  }
+
+  /** Prefix increment/decrement **/
+  EERef& operator++() {
+    ++index_;
+    return *this;
+  }
+  EERef& operator--() {
+    --index_;
+    return *this;
+  }
+
+  /** Postfix increment/decrement **/
+  uint8_t operator++(int) {
+    auto copy = *this;
+    ++index_;
+    return copy;
+  }
+
+  uint8_t operator--(int) {
+    auto copy = *this;
+    --index_;
+    return copy;
+  }
+
+ private:
+  EEPROMClass& eeprom_;
+  int index_;
+};
+
 class EEPROMClass {
  public:
   static constexpr uint16_t kDefaultSize = 512;
@@ -20,12 +74,13 @@ class EEPROMClass {
   explicit EEPROMClass(uint16_t length = kDefaultSize);
   virtual ~EEPROMClass() {}
 
-  // Basic user access methods. Some methods are virtual to allow overriding in
-  // test fixtures.
+  // Basic user access methods. Some methods are virtual to allow overriding
+  // in test fixtures.
   virtual uint8_t read(int idx) { return data_[idx]; }
-  uint8_t operator[](const int idx) { return read(idx); }
   virtual void write(int idx, uint8_t val) { data_[idx] = val; }
   void update(int idx, uint8_t val) { write(idx, val); }
+
+  EERef operator[](const int idx) { return EERef(*this, idx); }
 
   uint16_t length() { return static_cast<uint16_t>(data_.size()); }
 

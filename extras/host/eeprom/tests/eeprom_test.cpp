@@ -36,6 +36,27 @@ TEST_F(EepromTest, StartsZeroedOut) {
   EXPECT_EQ(ReadAllBytesAllWaysAndVerify(EEPROM), zeroes);
 }
 
+TEST_F(EepromTest, ArrayAccess) {
+  for (uint8_t value = 1; true; ++value) {
+    for (int address = 0; address < 10; ++address) {
+      EXPECT_EQ(eeprom_[address], value - 1);
+      eeprom_[address] = value;
+      EXPECT_EQ(eeprom_[address], value);
+    }
+    if (value == 255) {
+      break;
+    }
+  }
+
+  for (uint8_t value = 255; value > 0; --value) {
+    for (int address = 9; address >= 0; --address) {
+      EXPECT_EQ(eeprom_[address], value);
+      eeprom_[address] = value - 1;
+      EXPECT_EQ(eeprom_[address], value - 1);
+    }
+  }
+}
+
 TEST_F(EepromTest, WritesBytes) {
   // Write values in the order determined by a hash map.
   AddressToValueMap values =

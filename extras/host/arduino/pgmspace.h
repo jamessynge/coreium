@@ -26,7 +26,11 @@ uint8_t pgm_read_byte_near(const uint8_t* ptr);
 inline uint8_t pgm_read_byte_near(const char* ptr) {
   return pgm_read_byte_near(reinterpret_cast<const uint8_t*>(ptr));
 }
-#define pgm_read_byte(ptr) pgrm_read_byte_near(ptr)
+inline uint8_t pgm_read_byte_near(size_t ptr) {
+  return pgm_read_byte_near(reinterpret_cast<const uint8_t*>(ptr));
+}
+
+#define pgm_read_byte(ptr) pgm_read_byte_near(ptr)
 uint32_t pgm_read_dword_far(const uint32_t* ptr);
 
 const void* pgm_read_ptr_far(const void* ptr);

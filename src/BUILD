@@ -24,6 +24,7 @@ cc_library(
         ":has_insert_into",
         ":has_print_to",
         ":has_progmem_char_array",
+        ":hex_dump",
         ":hex_escape",
         ":int_helpers",
         ":jitter_random",
@@ -37,6 +38,7 @@ cc_library(
         ":o_print_stream",
         ":print_misc",
         ":printable_cat",
+        ":progmem_pointer",
         ":progmem_string",
         ":progmem_string_data",
         ":progmem_string_view",
@@ -147,6 +149,7 @@ cc_library(
         ":crc32",
         ":eeprom_region",
         ":eeprom_tag",
+        ":hex_escape",
         ":limits",
         ":logging",
         ":mcucore_platform",
@@ -155,6 +158,8 @@ cc_library(
         ":status",
         ":status_code",
         ":status_or",
+        ":string_compare",
+        ":string_view",
     ],
 )
 
@@ -192,6 +197,18 @@ cc_library(
     deps = [
         ":mcucore_platform",
         ":type_traits",
+    ],
+)
+
+cc_library(
+    name = "hex_dump",
+    srcs = ["hex_dump.cc"],
+    hdrs = ["hex_dump.h"],
+    deps = [
+        ":limits",
+        ":logging",
+        ":mcucore_platform",
+        ":progmem_string_view",
     ],
 )
 
@@ -347,6 +364,16 @@ cc_library(
 )
 
 cc_library(
+    name = "progmem_pointer",
+    hdrs = ["progmem_pointer.h"],
+    deps = [
+        ":mcucore_platform",
+        "//absl/base:log_severity",
+        "//glog:logging",
+    ],
+)
+
+cc_library(
     name = "progmem_string",
     srcs = ["progmem_string.cc"],
     hdrs = ["progmem_string.h"],
@@ -372,6 +399,7 @@ cc_library(
         ":has_progmem_char_array",
         ":logging",
         ":mcucore_platform",
+        ":progmem_pointer",
         ":progmem_string_data",
         ":type_traits",
     ],

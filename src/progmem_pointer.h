@@ -1,9 +1,9 @@
-#ifndef MCUCORE_EXTRAS_FUTURES_PROGMEM_POINTER_H_
-#define MCUCORE_EXTRAS_FUTURES_PROGMEM_POINTER_H_
+#ifndef MCUCORE_SRC_PROGMEM_POINTER_H_
+#define MCUCORE_SRC_PROGMEM_POINTER_H_
 
 // In support of iterating over strings, and possibly other structures, this
 // helps to encapsulate some of the challenges of dealing with data stored in
-// PROGMEM. This is a prototype at best, not known to work.
+// PROGMEM.
 //
 // NOTE: So far this only "works" for "near" addresses, i.e. in the first 64KB.
 //
@@ -19,14 +19,14 @@ namespace mcucore {
 template <typename T, typename P = PGM_P>
 class ProgmemPtr {
  public:
-  using value_type = typename T::value_type;
+  using value_type = T;
   using reference_type = value_type&;
   using pointer_type = value_type*;
   using unit_array_type = value_type[1];
   static constexpr size_t kStepSize = sizeof(unit_array_type);
 
-  ProgmemPtr() : ProgmemPtr(0) {}
-  explicit ProgmemPtr(P ptr) : ptr_(ptr), loaded_temp_(false) {}
+  constexpr ProgmemPtr() : ProgmemPtr(0) {}
+  constexpr explicit ProgmemPtr(P ptr) : ptr_(ptr), loaded_temp_(false) {}
 
   const reference_type operator*() {
     load_temp();
@@ -41,28 +41,32 @@ class ProgmemPtr {
   // Prefix increment
   ProgmemPtr& operator++() {
     ptr_ += kStepSize;
+    loaded_temp_ = false;
     return *this;
   }
 
   // Postfix increment
   ProgmemPtr operator++(int) {
-    ProgmemPtr tmp = *this;
-    ++(*this);
+    // Make a copy to be returned.
+    ProgmemPtr tmp(ptr_);
+    // Then modify this instance.
+    ptr_ += kStepSize;
+    loaded_temp_ = false;
     return tmp;
+  }
+
+  friend bool operator==(const ProgmemPtr& a, const ProgmemPtr& b) {
+    return a.ptr_ == b.ptr_;
+  }
+
+  friend bool operator!=(const ProgmemPtr& a, const ProgmemPtr& b) {
+    return a.ptr_ != b.ptr_;
   }
 
  private:
   void load_temp() {
     if (!loaded_temp_) {
-      if (sizeof temp_ == 1) {
-        temp_ = reinterpret_cast<value_type>(pgm_read_byte(ptr_));
-      } else if (sizeof temp_ == 2) {
-        temp_ = reinterpret_cast<value_type>(pgm_read_word(ptr_));
-      } else if (sizeof temp_ == 4) {
-        temp_ = reinterpret_cast<value_type>(pgm_read_dword(ptr_));
-      } else {
-        memcpy_P(&temp_, ptr_, sizeof temp_);
-      }
+      memcpy_P(&temp_, ptr_, sizeof temp_);
       loaded_temp_ = true;
     }
   }
@@ -72,6 +76,8 @@ class ProgmemPtr {
   bool loaded_temp_;
 };
 
+using ProgmemCharPtr = ProgmemPtr<char>;
+
 }  // namespace mcucore
 
-#endif  // MCUCORE_EXTRAS_FUTURES_PROGMEM_POINTER_H_
+#endif  // MCUCORE_SRC_PROGMEM_POINTER_H_
