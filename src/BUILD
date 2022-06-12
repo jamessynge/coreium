@@ -50,6 +50,7 @@ cc_library(
         ":string_view",
         ":tiny_string",
         ":type_traits",
+        ":uuid",
         "//mcucore/src/platform/avr:watchdog",
         "//mcucore/src/semistd:utility",
     ],
@@ -64,6 +65,7 @@ cc_library(
         ":progmem_string",
         ":progmem_string_view",
         ":string_view",
+        ":tiny_string",
         ":type_traits",
     ],
 )
@@ -205,6 +207,7 @@ cc_library(
     srcs = ["hex_dump.cc"],
     hdrs = ["hex_dump.h"],
     deps = [
+        ":hex_escape",
         ":limits",
         ":logging",
         ":mcucore_platform",
@@ -216,7 +219,10 @@ cc_library(
     name = "hex_escape",
     srcs = ["hex_escape.cc"],
     hdrs = ["hex_escape.h"],
-    deps = [":mcucore_platform"],
+    deps = [
+        ":logging",
+        ":mcucore_platform",
+    ],
 )
 
 cc_library(
@@ -366,11 +372,7 @@ cc_library(
 cc_library(
     name = "progmem_pointer",
     hdrs = ["progmem_pointer.h"],
-    deps = [
-        ":mcucore_platform",
-        "//absl/base:log_severity",
-        "//glog:logging",
-    ],
+    deps = [":mcucore_platform"],
 )
 
 cc_library(
@@ -494,4 +496,19 @@ cc_library(
     name = "type_traits",
     hdrs = ["type_traits.h"],
     deps = [":mcucore_platform"],
+)
+
+cc_library(
+    name = "uuid",
+    srcs = ["uuid.cc"],
+    hdrs = ["uuid.h"],
+    deps = [
+        ":eeprom_region",
+        ":eeprom_tag",
+        ":eeprom_tlv",
+        ":hex_escape",
+        ":logging",
+        ":mcucore_platform",
+        ":status",
+    ],
 )

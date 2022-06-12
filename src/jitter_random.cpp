@@ -50,6 +50,9 @@
 
 #endif  // USE_FNV1A
 
+// #define ENABLE_SPIN_DELAY
+#define DISABLE_SPIN_DELAY
+
 namespace mcucore {
 namespace {
 
@@ -78,9 +81,11 @@ void WaitForInterrupt() {
 // clock base. To slightly de-corrolate them, we separate reading from them
 // by some amount based on the current crc value.
 void SpinDelayBy(volatile uint16_t& loops) {
+#ifdef ENABLE_SPIN_DELAY
   while (loops > 0) {
     --loops;
   }
+#endif
 }
 
 }  // namespace
@@ -189,7 +194,7 @@ class JitterRandomCollector {
 
 #if MCU_HOST_TARGET || defined(TCNT1)
     if (timer_counters_to_use_ & JitterRandom::kTimerCounter1) {
-      MCU_VLOG(3) << MCU_FLASHSTR("Disabling") << MCU_FLASHSTR(" T/C ") << 1;
+      MCU_VLOG(5) << MCU_FLASHSTR("Disabling") << MCU_FLASHSTR(" T/C ") << 1;
       noInterrupts();
       TCCR1B = 0;  // Turn off the Timer/Counter.
       interrupts();
@@ -198,7 +203,7 @@ class JitterRandomCollector {
 
 #if MCU_HOST_TARGET || defined(TCNT3)
     if (timer_counters_to_use_ & JitterRandom::kTimerCounter3) {
-      MCU_VLOG(3) << MCU_FLASHSTR("Disabling") << MCU_FLASHSTR(" T/C ") << 3;
+      MCU_VLOG(5) << MCU_FLASHSTR("Disabling") << MCU_FLASHSTR(" T/C ") << 3;
       noInterrupts();
       TCCR3B = 0;  // Turn off the Timer/Counter.
       interrupts();
@@ -207,7 +212,7 @@ class JitterRandomCollector {
 
 #if MCU_HOST_TARGET || defined(TCNT4)
     if (timer_counters_to_use_ & JitterRandom::kTimerCounter4) {
-      MCU_VLOG(3) << MCU_FLASHSTR("Disabling") << MCU_FLASHSTR(" T/C ") << 4;
+      MCU_VLOG(5) << MCU_FLASHSTR("Disabling") << MCU_FLASHSTR(" T/C ") << 4;
       noInterrupts();
       TCCR4B = 0;  // Turn off the Timer/Counter.
       interrupts();
@@ -216,7 +221,7 @@ class JitterRandomCollector {
 
 #if MCU_HOST_TARGET || defined(TCNT5)
     if (timer_counters_to_use_ & JitterRandom::kTimerCounter5) {
-      MCU_VLOG(3) << MCU_FLASHSTR("Disabling") << MCU_FLASHSTR(" T/C ") << 5;
+      MCU_VLOG(5) << MCU_FLASHSTR("Disabling") << MCU_FLASHSTR(" T/C ") << 5;
       noInterrupts();
       TCCR5B = 0;  // Turn off the Timer/Counter.
       interrupts();
@@ -335,48 +340,73 @@ uint32_t JitterRandom::random32(
   MCU_DCHECK(minimum_watchdog_interrupts > 0 || minimum_time_ms > 0);
 
   MCU_VLOG(1) << MCU_FLASHSTR("JitterRandom::random32 timer_counters_to_use: ")
-              << BaseHex << static_cast<uint32_t>(timer_counters_to_use)
+              << BaseTwo << static_cast<uint32_t>(timer_counters_to_use)
               << BaseDec << MCU_FLASHSTR(", minimum_watchdog_interrupts: ")
               << minimum_watchdog_interrupts;
 
   avr::EnableWatchdogInterruptMode();
-  interrupted = false;
 
   JitterRandomCollector collector(timer_counters_to_use);
   uint16_t num_watchdog_interrupts = 0;
   uint32_t start_ms = millis();
   uint32_t elapsed_ms = 0;
+  uint16_t num_already_interrupted_a = interrupted ? 1 : 0;
+  uint16_t num_already_interrupted_b = 0;
+  uint16_t num_already_interrupted_c = 0;
+  uint16_t num_already_interrupted_d = 0;
+  uint16_t num_already_interrupted_e = 0;
 
   do {
-    const auto copy_of_interrupted = interrupted;
-    MCU_VLOG_IF(2, copy_of_interrupted)
-        << MCU_FLASHSTR("loop start, already interrupted");
+    if (interrupted) {
+      // We want to have the whole WDT interrupt measured, so wait
+      // for the next WDT interrupt before starting to measure.
+      ++num_already_interrupted_b;
+      interrupted = false;
+      WaitForInterrupt();
+    }
     MCU_VLOG(4) << MCU_NAME_VAL(num_watchdog_interrupts)
                 << MCU_NAME_VAL(minimum_watchdog_interrupts)
                 << MCU_NAME_VAL(elapsed_ms);
 
     WaitForInterrupt();
     MCU_VLOG(4) << MCU_FLASHSTR("interrupt detected");
+    if (interrupted) {
+      ++num_already_interrupted_c;
+    }
 
     collector.CaptureCounters();
+    if (interrupted) {
+      ++num_already_interrupted_d;
+    }
 
     if (num_watchdog_interrupts <
         numeric_limits<decltype(num_watchdog_interrupts)>::max()) {
-      num_watchdog_interrupts++;
+      ++num_watchdog_interrupts;
     }
     elapsed_ms = millis() - start_ms;
+    if (interrupted) {
+      ++num_already_interrupted_e;
+    }
   } while (num_watchdog_interrupts < minimum_watchdog_interrupts ||
            elapsed_ms < minimum_time_ms);
+
+  MCU_VLOG(1) << MCU_FLASHSTR("JitterRandom::random32")
+              << MCU_FLASHSTR(" num_already_interrupted a=")
+              << num_already_interrupted_a << MCU_FLASHSTR(" b=")
+              << num_already_interrupted_b << MCU_FLASHSTR(" c=")
+              << num_already_interrupted_c << MCU_FLASHSTR(" d=")
+              << num_already_interrupted_d << MCU_FLASHSTR(" e=")
+              << num_already_interrupted_e;
 
   avr::DisableWatchdog();
 
   const auto result = collector.value();
-  MCU_VLOG(1) << MCU_FLASHSTR("JitterRandom::random32") << MCU_NAME_VAL(result)
+  MCU_VLOG(1) << MCU_FLASHSTR("JitterRandom::random32") << BaseHex
+              << MCU_NAME_VAL(result) << BaseDec
               << MCU_NAME_VAL(num_watchdog_interrupts)
               << MCU_NAME_VAL(elapsed_ms)
               << MCU_FLASHSTR(" elapsed_ms/interrupt=")
               << elapsed_ms / num_watchdog_interrupts;
-
   return result;
 }
 

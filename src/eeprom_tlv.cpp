@@ -222,6 +222,33 @@ StatusOr<EepromAddrT> EepromTlv::ReclaimUnusedSpace() {
   return reclaimed_space;
 }
 
+Status EepromTlv::WriteEntry(const EepromTag tag, const uint8_t* const data,
+                             const size_t data_length) {
+  if (data_length > kMaxBlockLength) {
+    return InvalidArgumentError(MCU_PSV("Entry data too big"));
+  }
+  EepromRegion target_region;
+  MCU_RETURN_IF_ERROR(
+      StartTransaction(tag, data_length, target_region,
+                       /*reclaim_unused_space_if_needed=*/true));
+  if (!target_region.WriteBytes(data, data_length)) {
+    return UnknownError(MCU_PSV("WriteBytes failed"));
+  }
+  return OkStatus();
+}
+
+StatusOr<EepromTlv::BlockLengthT> EepromTlv::ReadEntry(
+    EepromTag tag, uint8_t* const buffer, size_t buffer_length) const {
+  MCU_ASSIGN_OR_RETURN(auto region, FindEntry(tag));
+  if (buffer_length < region.length()) {
+    return FailedPreconditionError(MCU_PSV("Entry too big"));
+  }
+  if (!region.ReadBytes(buffer, region.length())) {
+    return UnknownError(MCU_PSV("ReadBytes failed"));
+  }
+  return region.length();
+}
+
 StatusOr<EepromRegionReader> EepromTlv::FindEntry(const EepromTag tag) const {
   MCU_ASSIGN_OR_RETURN(const auto beyond_addr, ReadBeyondAddr());
   EepromAddrT found = 0;

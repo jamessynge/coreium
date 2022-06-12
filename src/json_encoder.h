@@ -10,6 +10,14 @@
 //
 // Usage examples can be found in the test file.
 //
+// TODO(jamessynge): Support treating any type that satisfies has_print_to
+// or has_insert_into for adding a string value, alongside AnyPrintable. That
+// would require template methods; could be implemented such that it effectively
+// creates an AnyPrintable::ArbitraryPrinter.
+//
+// TODO(jamessynge): Consider supporting ProgmemStringView, or similar, for
+// property names.
+//
 // Author: james.synge@gmail.com
 
 #include "any_printable.h"

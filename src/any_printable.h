@@ -16,6 +16,7 @@
 #include "progmem_string.h"
 #include "progmem_string_view.h"
 #include "string_view.h"
+#include "tiny_string.h"
 #include "type_traits.h"
 
 namespace mcucore {
@@ -32,16 +33,24 @@ class AnyPrintable : public Printable {
     kUnsignedInteger,
     kFloat,
     kDouble,
+    kArbitrary,
   };
 
  public:
+  using ArbitraryPrintFunction = size_t (*)(Print&, const void*);
+
   AnyPrintable();
+
   // For values that are clearly strings, we allow implicit conversion to
   // AnyPrintable.
   AnyPrintable(StringView value);                  // NOLINT
   AnyPrintable(ProgmemString value);               // NOLINT
   AnyPrintable(ProgmemStringView value);           // NOLINT
   AnyPrintable(const __FlashStringHelper* value);  // NOLINT
+  template <uint8_t N>
+  AnyPrintable(const TinyString<N>& value)  // NOLINT
+      : AnyPrintable(StringView(value.data(), value.size())) {}
+
   // To avoid implicit conversions of values that aren't (weren't) necessarily
   // strings, we require the conversion to be explicit.
   explicit AnyPrintable(Printable& value);
@@ -53,6 +62,8 @@ class AnyPrintable : public Printable {
   explicit AnyPrintable(uint32_t value);
   explicit AnyPrintable(float value);
   explicit AnyPrintable(double value);
+
+  AnyPrintable(ArbitraryPrintFunction printer, const void* data);
 
   // If the value is an enum, convert it to an integral type.
   template <typename T, enable_if_t<is_enum<T>::value, bool> = true>
@@ -71,6 +82,11 @@ class AnyPrintable : public Printable {
   size_t printTo(Print& out) const override;
 
  private:
+  struct ArbitraryPrinter {
+    ArbitraryPrintFunction printer;
+    const void* data;
+  };
+
   EFragmentType type_;
   union {
     ProgmemStringView psv_;
@@ -82,6 +98,7 @@ class AnyPrintable : public Printable {
     float float_;
     double double_;
     const Printable* printable_;
+    ArbitraryPrinter arbitrary_;
   };
 };
 
