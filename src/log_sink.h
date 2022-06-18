@@ -58,6 +58,13 @@ class CheckSink : public MessageSinkBase {
  public:
   CheckSink(const __FlashStringHelper* file, uint16_t line_number,
             const __FlashStringHelper* expression_message);
+
+  // TODO(jamessynge): Mark the dtor as [[noreturn]], if it helps with writing
+  // non-void functions that end with an MCU_CHECK (i.e. so we don't have to add
+  // a return statement after that). If that attribute works as desired, we'll
+  // have to change the tests which make use of SetCheckSinkExitFn, such as by
+  // eliminating that function and/or by adding a separate DebugCheckSink class,
+  // whose dtor is not marked with [[noreturn]], and a SetDebugCheckSinkExitFn.
   ~CheckSink();
 
  private:

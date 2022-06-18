@@ -10,8 +10,8 @@ class Adafruit_MLX90614 {
   Adafruit_MLX90614() {}
   bool begin() { return true; }
 
-  double readObjectTempC();
-  double readAmbientTempC();
+  double readObjectTempC() { return 0.0; }
+  double readAmbientTempC() { return 20.0; }
 };
 
 #endif  // MCUCORE_EXTRAS_HOST_MLX90614_MLX90614_H_
