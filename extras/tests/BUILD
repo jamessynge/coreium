@@ -376,3 +376,19 @@ cc_test(
         "//mcucore/src:type_traits",
     ],
 )
+
+cc_test(
+    name = "uuid_test",
+    srcs = ["uuid_test.cc"],
+    deps = [
+        "//googletest:gunit_main",
+        "//mcucore/extras/host/eeprom",
+        "//mcucore/extras/test_tools:print_value_to_std_string",
+        "//mcucore/extras/test_tools:status_or_test_utils",
+        "//mcucore/extras/test_tools:status_test_utils",
+        "//mcucore/src:eeprom_tag",
+        "//mcucore/src:eeprom_tlv",
+        "//mcucore/src:status_code",
+        "//mcucore/src:uuid",
+    ],
+)

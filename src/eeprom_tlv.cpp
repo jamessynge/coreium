@@ -231,10 +231,15 @@ Status EepromTlv::WriteEntry(const EepromTag tag, const uint8_t* const data,
   MCU_RETURN_IF_ERROR(
       StartTransaction(tag, data_length, target_region,
                        /*reclaim_unused_space_if_needed=*/true));
+  MCU_VLOG(5) << MCU_FLASHSTR("WriteEntry to region ") << target_region;
   if (!target_region.WriteBytes(data, data_length)) {
+    AbortTransaction();
     return UnknownError(MCU_PSV("WriteBytes failed"));
   }
-  return OkStatus();
+  MCU_VLOG(5) << MCU_FLASHSTR("Successful write, region ") << target_region;
+  MCU_DCHECK_EQ(target_region.cursor(), data_length);
+  return CommitTransaction(tag, target_region.start_address(),
+                           target_region.cursor());
 }
 
 StatusOr<EepromTlv::BlockLengthT> EepromTlv::ReadEntry(

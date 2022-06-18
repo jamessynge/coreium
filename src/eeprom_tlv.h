@@ -93,8 +93,8 @@ class EepromTlv {
   // Write `data_length` bytes as the value of an entry identified by `tag`.
   Status WriteEntry(EepromTag tag, const uint8_t* data, size_t data_length);
 
-  // Copy the value of the entry identified by `tag` into `buffer`, as long
-  // as it isn't more that `buffer_length` bytes. If successful, returns the
+  // Copy the value of the entry identified by `tag` into `buffer`, if the entry
+  // length is less than or equal to `buffer_length`. If successful, returns the
   // number of bytes copied; if too long, returns FailedPrecondition; if not
   // found, returns NotFound.
   StatusOr<BlockLengthT> ReadEntry(EepromTag tag, uint8_t* buffer,

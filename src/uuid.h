@@ -1,7 +1,8 @@
 #ifndef MCUCORE_SRC_UUID_H_
 #define MCUCORE_SRC_UUID_H_
 
-#include "eeprom_region.h"
+#include <cstdint>  // pragma: keep standard include
+
 #include "eeprom_tag.h"
 #include "eeprom_tlv.h"
 #include "mcucore_platform.h"
@@ -14,10 +15,12 @@ class Uuid {
   void Zero();
   void Generate();
 
-  Status ReadFromRegion(EepromRegionReader& region);
-  Status WriteToRegion(EepromRegion& region) const;
-
+  // Read 16 bytes from the entry identified by `tag` in the EEPROM managed by
+  // `tlv`. Returns an error if it fails, else OK.
   Status ReadFromEeprom(EepromTlv& tlv, EepromTag tag);
+
+  // Write data_ into the EEPROM identified by `tag`, replacing any previous
+  // entry with the same tag. Returns an error if it fails, else OK.
   Status WriteToEeprom(EepromTlv& tlv, EepromTag tag) const;
 
   // Read from EEPROM. If not present, generate a value and store
@@ -26,11 +29,19 @@ class Uuid {
   Status ReadOrStoreEntry(EepromTlv& tlv, EepromTag tag);
 
   // Print in standard UUID format, five groups of hexadecimal characters,
-  // separated by hyphens, in the form 8-4-4-4-12. Requires 36 characters,
-  // and maybe a terminating null to represent as a string.
+  // separated by hyphens, in the form 8-4-4-4-12 (i.e. 36 characters).
   size_t printTo(Print& out) const;
 
+  // Compares two Uuids for equality.
   friend bool operator==(const Uuid& a, const Uuid& b);
+
+  template <int N>
+  void SetForTest(const uint8_t (&data)[N]) {
+    static_assert(N == 16);
+    for (uint_fast8_t ndx = 0; ndx < 16; ++ndx) {
+      data_[ndx] = data[ndx];
+    }
+  }
 
  private:
   uint8_t data_[16];

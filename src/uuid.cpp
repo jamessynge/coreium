@@ -8,11 +8,7 @@ namespace mcucore {
 namespace {
 constexpr uint_fast8_t kNumBytes = 16;
 
-Status NotEnoughRoom() {
-  return ResourceExhaustedError(
-      MCU_PSV("Not enough bytes in EEPROM region for a UUID"));
-}
-
+// TODO(jamessynge): Move this to hex_dump or hex_escape.
 size_t PrintHexBytes(Print& out, const uint8_t* bytes,
                      const uint_fast8_t num_bytes) {
   size_t result = 0;
@@ -23,10 +19,6 @@ size_t PrintHexBytes(Print& out, const uint8_t* bytes,
     result += out.print(NibbleToAsciiHex(v & 0xf));
   }
   return result;
-}
-
-Status WriteToCursorFn(EepromRegion& region, const Uuid* uuid) {
-  return uuid->WriteToRegion(region);
 }
 
 }  // namespace
@@ -50,33 +42,12 @@ void Uuid::Zero() {
   }
 }
 
-Status Uuid::ReadFromRegion(EepromRegionReader& region) {
-  if (region.available() < kNumBytes) {
-    return NotEnoughRoom();
-  }
-  if (!region.ReadBytes(data_)) {
-    return UnknownError(MCU_PSV("Failed to read UUID from EEPROM"));
-  }
-  return OkStatus();
-}
-
-Status Uuid::WriteToRegion(EepromRegion& region) const {
-  if (region.available() < kNumBytes) {
-    return NotEnoughRoom();
-  }
-  if (!region.WriteBytes(data_)) {
-    return UnknownError(MCU_PSV("Failed to read UUID from EEPROM"));
-  }
-  return OkStatus();
-}
-
 Status Uuid::ReadFromEeprom(EepromTlv& tlv, EepromTag tag) {
-  MCU_ASSIGN_OR_RETURN(auto region, tlv.FindEntry(tag));
-  return ReadFromRegion(region);
+  return tlv.ReadEntry(tag, data_, kNumBytes);
 }
 
 Status Uuid::WriteToEeprom(EepromTlv& tlv, EepromTag tag) const {
-  return tlv.WriteEntryToCursor(tag, kNumBytes, WriteToCursorFn, this);
+  return tlv.WriteEntry(tag, data_, kNumBytes);
 }
 
 Status Uuid::ReadOrStoreEntry(EepromTlv& tlv, EepromTag tag) {
