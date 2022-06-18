@@ -2,7 +2,9 @@
 #define MCUCORE_EXTRAS_TEST_TOOLS_JSON_DECODER_H_
 
 // JsonValue::Parse is a trivial JSON decoder, intended only to support testing
-// whether the responses from Tiny Alpaca Server are correct.
+// whether the responses from Tiny Alpaca Server are correct. There is no intent
+// for it to be fast, and it isn't complete (i.e. no Unicode support, just
+// ASCII).
 //
 // Author: james.synge@gmail.com
 
@@ -104,6 +106,7 @@ class JsonValue {
   const JsonObject& as_object() const;
   const JsonArray& as_array() const;
 
+  // ---------------------------------------------------------------------------
   // The following methods allow for tests to be written without too much
   // disassembly of the JSON object/arrays that a payload may contain. These
   // would not be suitable for a production JSON application.
@@ -125,6 +128,21 @@ class JsonValue {
   // returns the value of the specified index in the array; otherwise returns a
   // JsonValue of type kUnset.
   JsonValue GetElement(size_t index) const;
+
+  // ---------------------------------------------------------------------------
+  // The above Has* and Get* methods work fine, but sometimes it is nice to use
+  // ASSERT_OK and ASSERT_OK_AND_ASSIGN so that the error is reported more
+  // explicitly. These methods achieve that.
+
+  // Returns the value of the property with the specified key if this value is
+  // an object, the object has a property with the specified key, and the value
+  // of that property is of the specified type.
+  absl::StatusOr<JsonValue> GetValueOfType(const std::string& key,
+                                           EType required_type) const;
+
+  // Returns OK if this value is an object, the object has a property with the
+  // specified key, and the value of that property is of the specified type.
+  absl::Status HasKeyOfType(const std::string& key, EType required_type) const;
 
   // Returns the size of the value, if the value is a string, an array or an
   // object.
@@ -189,6 +207,14 @@ template <typename T>
 bool operator!=(T a, const JsonValue& b) {
   return !(b == a);
 }
+
+#define RETURN_ERROR_IF_JSON_VALUE_NOT_TYPE(json_value, json_type)             \
+  if ((json_value.type()) == (json_type))                                      \
+    ;                                                                          \
+  else                                                                         \
+    return absl::InvalidArgumentError(absl::StrCat(                            \
+        "JSON value does not have the desired type (" #json_type "); value: ", \
+        json_value.ToDebugString()))
 
 }  // namespace test
 }  // namespace mcucore

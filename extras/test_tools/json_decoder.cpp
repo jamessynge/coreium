@@ -21,6 +21,7 @@
 #include "absl/strings/str_cat.h"
 #include "glog/logging.h"
 #include "gtest/gtest.h"
+#include "mcucore_platform.h"
 #include "util/task/status_macros.h"
 
 namespace mcucore {
@@ -31,6 +32,7 @@ std::string CharToStr(char c) { return std::string(1, c); }
 
 std::string CharToQuotedStr(char c) { return '\'' + std::string(1, c) + '\''; }
 
+// Remove leading whitespace, i.e. at the start of str.
 void SkipLeadingWhitespace(std::string_view& str) {
   auto pos = str.find_first_not_of(" \t\r\n");
   if (pos == std::string_view::npos) {
@@ -40,15 +42,22 @@ void SkipLeadingWhitespace(std::string_view& str) {
   }
 }
 
+// Remove leading whitespace, i.e. at the start of str. By interior we mean that
+// we're parsing something that may start with whitespace, but after that there
+// should be some character, not the end of the string. Returns an error if str
+// is empty after removing leading whitespace.
 absl::Status SkipInteriorWhitespace(std::string_view& str) {
   SkipLeadingWhitespace(str);
   if (str.empty()) {
-    return absl::InvalidArgumentError("Expected a value, not end-of-input");
+    return absl::InvalidArgumentError("Expected a value, not end-of-input.");
   } else {
     return absl::OkStatus();
   }
 }
 
+// Skip leading whitespace, confirm that the next character is the specified
+// delimiter (e.g. a comma), and if so skip it and return OK. If unable to
+// confirm that, returns an error.
 absl::Status SkipRequiredDelimiter(std::string_view& str,
                                    const char delimiter) {
   RETURN_IF_ERROR(SkipInteriorWhitespace(str))
@@ -63,17 +72,21 @@ absl::Status SkipRequiredDelimiter(std::string_view& str,
   return absl::OkStatus();
 }
 
+// Skip leading whitespace, confirm that the next characters after that match
+// word, and if so skip word and return OK. If unable to confirm that, returns
+// an error.
 absl::Status SkipRequiredWord(std::string_view& str,
                               const std::string_view word) {
-  RETURN_IF_ERROR(SkipInteriorWhitespace(str))
-      << "Expected " << word << ", not end-of-input.";
+  RETURN_IF_ERROR(SkipInteriorWhitespace(str)) << "; expected " << word;
   if (!absl::StartsWith(str, word)) {
-    return absl::InvalidArgumentError(absl::StrCat("Expected ", word));
+    return absl::InvalidArgumentError(
+        absl::StrCat("Expected ", word, ", not '", str, "'"));
   }
   str.remove_prefix(word.size());
   return absl::OkStatus();
 }
 
+// Forward declaration so that we can have recursion.
 absl::StatusOr<JsonValue> ParseValue(std::string_view& str);
 
 absl::StatusOr<JsonValue> ParseString(std::string_view& str) {
@@ -121,9 +134,11 @@ absl::StatusOr<JsonValue> ParseString(std::string_view& str) {
           result.append(1, '\t');
           break;
         case 'u':
-          QCHECK(false) << "Decoding of unicode code points not supported: "
-                        << str;
-          break;
+          return absl::InvalidArgumentError(absl::StrCat(
+              "Decoding of unicode code points not supported: \\u", str));
+        default:
+          return absl::InvalidArgumentError(
+              absl::StrCat("Not a valid string escape: \\", CharToStr(c), str));
       }
     } else {
       result.append(1, c);
@@ -148,8 +163,7 @@ absl::StatusOr<JsonValue> ParseFalse(std::string_view& str) {
 }
 
 absl::StatusOr<JsonValue> ParseNumber(std::string_view& str) {
-  RETURN_IF_ERROR(SkipInteriorWhitespace(str))
-      << "Expected a number, not end-of-input.";
+  RETURN_IF_ERROR(SkipInteriorWhitespace(str)) << "; expected number";
 
   // First decode as a floating-point number.
   double value;
@@ -314,6 +328,31 @@ JsonValue JsonValue::GetElement(size_t index) const {
   return JsonValue();
 }
 
+absl::StatusOr<JsonValue> JsonValue::GetValueOfType(const std::string& key,
+                                                    EType required_type) const {
+  // TODO(jamessynge): Add ToString for EType.
+  if (!is_object()) {
+    return absl::FailedPreconditionError(
+        absl::StrCat("Expected an object, but is: ", ToDebugString()));
+  }
+  if (!HasKey(key)) {
+    return absl::FailedPreconditionError(
+        absl::StrCat("Object does not have key '", key, "'"));
+  }
+  auto value = GetValue(key);
+  if (value.type() != required_type) {
+    return absl::FailedPreconditionError(
+        absl::StrCat("Value of key '", key,
+                     "' is not of expected type; is: ", value.ToDebugString()));
+  }
+  return value;
+}
+
+absl::Status JsonValue::HasKeyOfType(const std::string& key,
+                                     EType required_type) const {
+  return GetValueOfType(key, required_type).status();
+}
+
 size_t JsonValue::size() const {
   switch (type()) {
     case JsonValue::kString:
@@ -323,7 +362,8 @@ size_t JsonValue::size() const {
     case JsonValue::kArray:
       return as_array().size();
     default:
-      LOG(FATAL) << ToDebugString();
+      LOG(DFATAL) << ToDebugString();
+      return 0;
   }
 }
 
@@ -369,6 +409,7 @@ std::ostream& operator<<(std::ostream& os, const JsonValue& jv) {
       return os << "Array, value: " << ::testing::PrintToString(jv.as_array())
                 << "}";
   }
+  MCU_UNREACHABLE;
 }
 
 bool operator==(const JsonValue& jv, nullptr_t) {
@@ -455,6 +496,7 @@ bool operator==(const JsonValue& a, const JsonValue& b) {
     case JsonValue::kArray:
       return a.as_array() == b.as_array();
   }
+  MCU_UNREACHABLE;
 }
 
 bool JsonObject::HasKey(const std::string& key) const {

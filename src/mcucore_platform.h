@@ -170,4 +170,14 @@ MillisT ElapsedMillis(MillisT start_time);
 
 #endif  // MCU_HAS_CXX14_FEATURES
 
+#if defined(__clang__) || defined(__GNUC__)
+#define MCU_UNREACHABLE __builtin_unreachable()
+#elif defined _MSC_VER  // MSVC
+#define MCU_UNREACHABLE __assume(false)
+#elif MCU_HAS_FEATURE(__cpp_lib_unreachable)
+#define MCU_UNREACHABLE std::unreachable()  // Requires <utility>
+#else
+#define MCU_UNREACHABLE (void)0
+#endif
+
 #endif  // MCUCORE_SRC_MCUCORE_PLATFORM_H_

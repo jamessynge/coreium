@@ -83,6 +83,7 @@ cc_library(
         "//glog:logging",
         "//googletest:gunit_headers",
         "//mcucore/src:logging",
+        "//mcucore/src:mcucore_platform",
         "//util/task:status",
     ],
 )
@@ -92,7 +93,9 @@ cc_test(
     srcs = ["json_decoder_test.cc"],
     deps = [
         ":json_decoder",
+        "//absl/status",
         "//absl/status:statusor",
+        "//absl/strings",
         "//googletest:gunit_main",
         "//util/task:status",
     ],
