@@ -10,7 +10,6 @@
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
-#include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "extras/test_tools/json_decoder.h"
@@ -110,10 +109,9 @@ absl::StatusOr<HttpResponse> HttpResponse::Make(std::string response) {
 
   hr.http_version = status_parts[0];
 
-  if (!absl::SimpleAtoi(status_parts[1], &hr.status_code)) {
-    return absl::InvalidArgumentError(
-        "Unable to parse status code as an integer: " + status_parts[1]);
-  }
+  ASSIGN_OR_RETURN(
+      hr.status_code, StringToNumber<size_t>(status_parts[1]),
+      _ << "Unable to parse status code as an integer: " << status_parts[1]);
 
   if (status_parts.size() > 2) {
     hr.status_message = status_parts[2];
@@ -154,6 +152,15 @@ absl::StatusOr<HttpResponse> HttpResponse::Make(std::string response) {
   ASSIGN_OR_RETURN(hr.json_value, JsonValue::Parse(json_text));
 
   return hr;
+}
+
+absl::Status HttpResponse::IsOk() const {
+  if (http_version == "HTTP/1.1" && status_code == 200 &&
+      status_message == "OK") {
+    return absl::OkStatus();
+  }
+  return absl::FailedPreconditionError(
+      absl::StrCat(http_version, " ", status_code, " ", status_message));
 }
 
 std::vector<std::string> HttpResponse::GetHeaderValues(

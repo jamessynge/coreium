@@ -2,7 +2,8 @@
 #define MCUCORE_EXTRAS_TEST_TOOLS_HTTP_RESPONSE_H_
 
 // Provides a trivial parser of HTTP/1 responses. There is no validation that
-// the strings make sense, only that the delimiters are in the right places.
+// the strings make sense, only that the delimiters are in the right places,
+// and that the status_code is a non-negative integer.
 //
 // Author: james.synge@gmail.com
 
@@ -23,6 +24,10 @@ struct HttpResponse {
   // Returns an HttpResponse based on the provided string, if it can be parsed
   // as such, else returns an error.
   static absl::StatusOr<HttpResponse> Make(std::string response);
+
+  // Returns OK if is an OK response, else returns an error that explains what
+  // it actually is.
+  absl::Status IsOk() const;
 
   std::vector<std::string> GetHeaderValues(const std::string& name) const;
   absl::StatusOr<std::string> GetSoleHeaderValue(const std::string& name) const;
