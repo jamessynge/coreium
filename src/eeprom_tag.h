@@ -1,10 +1,10 @@
 #ifndef MCUCORE_SRC_EEPROM_TAG_H_
 #define MCUCORE_SRC_EEPROM_TAG_H_
 
-// EepromTag, and its contained EepromDomain, is used to identify entries in
+// An EepromTag, and its contained EepromDomain, is used to identify an entry in
 // EEPROM, as managed by EepromTlv. The `domain` field of an EepromTag is used
 // to provide each subsystem (e.g. a network driver or instance of an ASCOM
-// Alpaca device) with a unique identifier (or multiple, if necessary), that is
+// Alpaca device) with a unique identifier (or multiple, if necessary) that is
 // distinct from the domain used by all other pieces of code. To enable a
 // subsystem to identify multiple items of data that aren't stored and loaded
 // together (e.g. when some attributes are optional), an EepromTag has an `id`
@@ -12,59 +12,71 @@
 //
 // Author: james.synge@gmail.com
 //
-// =============================================================================
+// =================================== Usage ===================================
 //
-// To define a domain N (where N is a C++ decimal literal, 1 to 255), put the
-// following in the SOURCE file (not header file) of the code that creates
-// EepromTags with domain N, and do so at file scope (i.e. not inside a
-// namespace):
+// All domains have a unique numeric value N, where N is a C++ decimal literal,
+// 1 to 255, and may have a unique NAME (e.g. DeviceFoo). We'll get to
+// definition and declaration in a moment, but to use the domain, we use the
+// macro MCU_DOMAIN(x), where x is N or NAME. For example, to create an
+// EepromTag, we could use the following expression:
 //
-//     #include <McuCore.h>
+//     EepromTag{.domain=MCU_DOMAIN(N), .id=123}
+//
+// Or:
+//
+//     EepromTag{MCU_DOMAIN(NAME), 123}
+//
+// For example, we might define (and export via a header declaration), a
+// function for creating tags for a particular domain, e.g.
+//
+//     EepromTag CreateDeviceFooTag(uint8_t id) {
+//       return EepromTag{MCU_DOMAIN(DeviceFoo), id};
+//     }
+//
+// ================================= Definition ================================
+//
+// The domain *must* be defined in a SOURCE file (not header file). If the exact
+// name or value of the domain (NAME or N) is only going to be used in that one
+// file, then we can declare the domain as follows:
+//
+//     MCU_DEFINE_CONSTEXPR_DOMAIN(N);
+//
+// Or:
+//
+//     MCU_DEFINE_CONSTEXPR_NAMED_DOMAIN(NAME, N);
+//
+// This form allows the domain to be used in constexpr expressions, such as a
+// constexpr aggregate initializer for a structure we want to store in PROGMEM.
+//
+// .............................................................................
+//
+// If we really *must* use the domains name or value in (non-constexpr) literal
+// expressions in another file, rather than calling a function such as
+// CreateDeviceFooTag above, then we must define the domain in one SOURCE file
+// as follows:
+//
 //     MCU_DEFINE_DOMAIN(N);
 //
 // Or:
 //
-//     #include <McuCore.h>
 //     MCU_DEFINE_NAMED_DOMAIN(MyDomainName, N);
 //
-// Where `MyDomainName` is a unique, unqualified C++ identifier for your domain.
+// And we must declare it in the appropriate header file as follows:
 //
-// To create an instance of EepromDomain (i.e. for creating an EepromTag), use
-// the following expression:
-//
-//     MCU_DOMAIN(N)
-//
-// Or:
-//
-//     MCU_DOMAIN(MyDomainName)
-//
-// If more than one source file is likely to need to create instances of this
-// domain, add the following to a shared header file, again at file scope:
-//
-//     #include <McuCore.h>
 //     MCU_DECLARE_DOMAIN(N);
 //
 // Or:
 //
-//     #include <McuCore.h>
 //     MCU_DECLARE_NAMED_DOMAIN(MyDomainName, N);
-//
-// Alternately, you can provide an EepromTag factory function via a header:
-//
-//     #include <McuCore.h>
-//     namespace my_ns {
-//     mcucore::EepromTag MakeMyFirstTag();
-//     mcucore::EepromTag MakeMyTag(uint8_t id);
-//     }
 //
 // =============================================================================
 // ============================ COLLISION DETECTION ============================
 // =============================================================================
 //
-// The MCU_DEFINE_DOMAIN macro is designed to help with detecting (at link time)
-// when two source files accidently use the same domain number. If this happens,
-// you should see an error when the program is linked together; for example, if
-// two source files define the domain 17, you might see this error:
+// The MCU_DEFINE*DOMAIN macros are designed to help with detecting (at link
+// time) when two source files accidently use the same domain number. If this
+// happens, you should see an error when the program is linked together; for
+// example, if two source files define the domain 17, you might see this error:
 //
 //    ld: error: duplicate symbol: _MakeEepromDomain_17_CollisionDetector()
 
@@ -91,13 +103,13 @@ class EepromDomain {
 
  private:
   constexpr explicit EepromDomain(uint8_t value) : value_(value) {}
-  friend EepromDomain MakeEepromDomain(uint8_t);
+  friend constexpr EepromDomain MakeEepromDomain(uint8_t);
   uint8_t value_;
 };
 
 /////////////////////////////////////////////////////
 // Do not call this directly, use MCU_DOMAIN instead.
-inline EepromDomain MakeEepromDomain(uint8_t value) {
+constexpr EepromDomain MakeEepromDomain(uint8_t value) {
   return EepromDomain(value);
 }
 /////////////////////////////////////////////////////
@@ -151,18 +163,25 @@ inline bool operator!=(const EepromTag& a, const EepromTag& b) {
   MCU_DECLARE_DOMAIN(DOMAIN);                  \
   MCU_DECLARE_DOMAIN(NAME)
 
-#define _MCU_DEFINE_DOMAIN_INNER(NAME, DOMAIN)                             \
-  ::mcucore::EepromDomain _MakeEepromDomain_##NAME##_CollisionDetector() { \
-    return ::mcucore::internal::MakeEepromDomain(DOMAIN);                  \
+#define _MCU_DEFINE_DOMAIN_INNER(SPECIFIER, NAME, DOMAIN) \
+  SPECIFIER ::mcucore::EepromDomain                       \
+      _MakeEepromDomain_##NAME##_CollisionDetector() {    \
+    return ::mcucore::internal::MakeEepromDomain(DOMAIN); \
   }
 
-#define MCU_DEFINE_DOMAIN(DOMAIN) _MCU_DEFINE_DOMAIN_INNER(DOMAIN, DOMAIN)
+#define MCU_DEFINE_DOMAIN(DOMAIN) _MCU_DEFINE_DOMAIN_INNER(, DOMAIN, DOMAIN)
 
-// For now this is the same as MCU_DEFINE_DOMAIN.
 #define MCU_DEFINE_NAMED_DOMAIN(NAME, DOMAIN) \
-  MCU_DEFINE_DOMAIN(DOMAIN);                  \
-  _MCU_DEFINE_DOMAIN_INNER(NAME, DOMAIN)
+  _MCU_DEFINE_DOMAIN_INNER(, DOMAIN, DOMAIN); \
+  _MCU_DEFINE_DOMAIN_INNER(, NAME, DOMAIN)
 
 #define MCU_DOMAIN(DOMAIN) (::_MakeEepromDomain_##DOMAIN##_CollisionDetector())
+
+#define MCU_DEFINE_CONSTEXPR_DOMAIN(DOMAIN) \
+  _MCU_DEFINE_DOMAIN_INNER(constexpr, DOMAIN, DOMAIN)
+
+#define MCU_DEFINE_CONSTEXPR_NAMED_DOMAIN(NAME, DOMAIN) \
+  _MCU_DEFINE_DOMAIN_INNER(constexpr, DOMAIN, DOMAIN);  \
+  _MCU_DEFINE_DOMAIN_INNER(constexpr, NAME, DOMAIN)
 
 #endif  // MCUCORE_SRC_EEPROM_TAG_H_
