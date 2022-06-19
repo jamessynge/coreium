@@ -369,6 +369,17 @@ cc_test(
 )
 
 cc_test(
+    name = "tiny_string_test",
+    srcs = ["tiny_string_test.cc"],
+    deps = [
+        "//googletest:gunit_main",
+        "//mcucore/extras/test_tools:print_value_to_std_string",
+        "//mcucore/extras/test_tools:test_strings",
+        "//mcucore/src:tiny_string",
+    ],
+)
+
+cc_test(
     name = "type_traits_test",
     srcs = ["type_traits_test.cc"],
     deps = [

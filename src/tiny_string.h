@@ -15,7 +15,7 @@
 
 namespace mcucore {
 
-// A very, very small string class with an embedded char array and size.
+// The maximum maximum_size (N) is 255.
 template <uint8_t N>
 class TinyString {
  public:
@@ -36,12 +36,6 @@ class TinyString {
     return true;
   }
 
-  const char* data() const { return data_; }
-  char* data() { return data_; }
-
-  size_type size() const { return size_; }
-  static constexpr size_type maximum_size() { return N; }
-
   // Set the size explicitly. This allows for data to be copied into here from
   // PROGMEM by a caller, without having to add PROGMEM support here.
   // Returns false if size is too large.
@@ -53,6 +47,16 @@ class TinyString {
     size_ = size;
     return true;
   }
+
+  char* data() { return data_; }
+  const char* data() const { return data_; }
+
+  size_type size() const { return size_; }
+  static constexpr size_type maximum_size() { return N; }
+  bool empty() const { return size_ == 0; }
+
+  // Print the string to the provided Print instance.
+  size_t printTo(Print& out) const { return out.write(data_, size_); }
 
  private:
   uint8_t size_{0};
