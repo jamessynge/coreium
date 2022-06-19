@@ -1,8 +1,6 @@
 #ifndef MCUCORE_SRC_UUID_H_
 #define MCUCORE_SRC_UUID_H_
 
-#include <cstdint>  // pragma: keep standard include
-
 #include "eeprom_tag.h"
 #include "eeprom_tlv.h"
 #include "mcucore_platform.h"
@@ -12,6 +10,8 @@ namespace mcucore {
 
 class Uuid {
  public:
+  static constexpr uint_fast8_t kNumBytes = 16;
+
   void Zero();
   void Generate();
 

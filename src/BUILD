@@ -503,7 +503,6 @@ cc_library(
     srcs = ["uuid.cc"],
     hdrs = ["uuid.h"],
     deps = [
-        ":eeprom_region",
         ":eeprom_tag",
         ":eeprom_tlv",
         ":hex_escape",

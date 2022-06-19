@@ -6,7 +6,6 @@
 
 namespace mcucore {
 namespace {
-constexpr uint_fast8_t kNumBytes = 16;
 
 // TODO(jamessynge): Move this to hex_dump or hex_escape.
 size_t PrintHexBytes(Print& out, const uint8_t* bytes,
