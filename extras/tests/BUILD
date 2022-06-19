@@ -238,6 +238,16 @@ cc_test(
 )
 
 cc_test(
+    name = "print_to_buffer_test",
+    srcs = ["print_to_buffer_test.cc"],
+    deps = [
+        "//googletest:gunit_main",
+        "//mcucore/extras/test_tools:test_strings",
+        "//mcucore/src:print_to_buffer",
+    ],
+)
+
+cc_test(
     name = "printable_cat_test",
     srcs = ["printable_cat_test.cc"],
     deps = [

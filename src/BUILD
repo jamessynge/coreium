@@ -358,6 +358,17 @@ cc_library(
 )
 
 cc_library(
+    name = "print_to_buffer",
+    srcs = ["print_to_buffer.cc"],
+    hdrs = ["print_to_buffer.h"],
+    deps = [
+        ":mcucore_platform",
+        ":string_view",
+        ":tiny_string",
+    ],
+)
+
+cc_library(
     name = "printable_cat",
     srcs = ["printable_cat.cc"],
     hdrs = ["printable_cat.h"],
