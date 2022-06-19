@@ -37,7 +37,7 @@ size_t PrintToBuffer::write(const uint8_t* buffer, size_t size) {
 }
 
 size_t PrintToBuffer::data_size() const {
-  return std::min(bytes_written_, buffer_size_);
+  return min(bytes_written_, buffer_size_);
 }
 
 bool PrintToBuffer::has_buffer_overflow() const {
