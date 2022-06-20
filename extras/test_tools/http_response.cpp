@@ -10,7 +10,9 @@
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
 #include "extras/test_tools/json_decoder.h"
 #include "util/task/status_macros.h"
@@ -43,7 +45,7 @@ absl::StatusOr<T> StringToNumber(std::string_view str) {
 }
 
 // Consider adding support for determining whether a particular header's value
-// is a comma separated list, of which I know these headers:
+// is a comma separated list, of which I know of these headers:
 //
 //  Content-Encoding
 //  Transfer-Encoding
@@ -203,6 +205,73 @@ bool HttpResponse::HasHeaderValue(const std::string& name,
 absl::StatusOr<size_t> HttpResponse::GetContentLength() const {
   ASSIGN_OR_RETURN(auto str, GetSoleHeaderValue("Content-Length"));
   return StringToNumber<size_t>(str);
+}
+
+absl::StatusOr<std::string> AssembleHttpResponseMessage(
+    int status_code,
+    const std::vector<std::pair<std::string, std::string>>& headers,
+    const std::string& body, bool add_content_length_header) {
+  std::string status_line = absl::StrCat("HTTP/1.1 ", status_code);
+  // Just the status codes supported by TinyAlpacaServer (as of writing).
+  switch (status_code) {
+    case 200:
+      absl::StrAppend(&status_line, " OK");
+      break;
+    case 400:
+      absl::StrAppend(&status_line, " Bad Request");
+      break;
+    case 404:
+      absl::StrAppend(&status_line, " Not Found");
+      break;
+    case 405:
+      absl::StrAppend(&status_line, " Method Not Allowed");
+      break;
+    case 406:
+      absl::StrAppend(&status_line, " Not Acceptable");
+      break;
+    case 411:
+      absl::StrAppend(&status_line, " Length Required");
+      break;
+    case 413:
+      absl::StrAppend(&status_line, " Payload Too Large");
+      break;
+    case 415:
+      absl::StrAppend(&status_line, " Unsupported Media Type");
+      break;
+    case 431:
+      absl::StrAppend(&status_line, " Request Header Fields Too Large");
+      break;
+    case 500:
+      absl::StrAppend(&status_line, " Internal Server Error");
+      break;
+    case 501:
+      absl::StrAppend(&status_line, " Not Implemented");
+      break;
+    case 505:
+      absl::StrAppend(&status_line, " HTTP Version Not Supported");
+      break;
+  }
+  std::vector<std::string> parts = {status_line};
+  bool saw_content_length = false;
+  for (const auto& [name, value] : headers) {
+    parts.push_back(absl::StrCat(name, ": ", value));
+    if (absl::AsciiStrToLower(name) == "content-length") {
+      if (saw_content_length) {
+        return absl::InvalidArgumentError(
+            absl::StrCat("Contains duplicate header: ", parts.back()));
+      }
+      saw_content_length = true;
+    }
+  }
+  if (add_content_length_header) {
+    if (saw_content_length) {
+      return absl::InvalidArgumentError("Contains unexpected Content-Length");
+    }
+    parts.push_back(absl::StrCat("Content-Length: ", body.size()));
+  }
+  parts.push_back("");
+  parts.push_back(body);
+  return absl::StrJoin(parts, "\r\n");
 }
 
 }  // namespace test

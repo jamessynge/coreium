@@ -141,6 +141,40 @@ TEST(HttpResponseTest, CorruptJsonResponse) {
       << status_or.status();
 }
 
+TEST(AssembleHttpResponseMessageTest, Minimal) {
+  EXPECT_THAT(
+      AssembleHttpResponseMessage(500, {}),
+      IsOkAndHolds(
+          "HTTP/1.1 500 Internal Server Error\r\nContent-Length: 0\r\n\r\n"));
+}
+
+TEST(AssembleHttpResponseMessageTest, DuplicateContentLength) {
+  EXPECT_THAT(AssembleHttpResponseMessage(
+                  400, {{"content-LENGTH", "1"}, {"Content-Length", "1"}}),
+              StatusIs(absl::StatusCode::kInvalidArgument,
+                       HasSubstr("Contains duplicate header:")));
+}
+
+TEST(AssembleHttpResponseMessageTest, UnexpectedContentLength) {
+  EXPECT_THAT(AssembleHttpResponseMessage(100, {{"content-LENGTH", "1"}}),
+              StatusIs(absl::StatusCode::kInvalidArgument,
+                       HasSubstr("Contains unexpected Content-Length")));
+}
+
+TEST(AssembleHttpResponseMessageTest, AllFeatures) {
+  EXPECT_THAT(AssembleHttpResponseMessage(200,
+                                          {
+                                              {"Host", "example.com"},
+                                              {"Content-Length", "4"},
+                                          },
+                                          "body plus some other stuff", false),
+              IsOkAndHolds("HTTP/1.1 200 OK\r\n"
+                           "Host: example.com\r\n"
+                           "Content-Length: 4\r\n"
+                           "\r\n"
+                           "body plus some other stuff"));
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace mcucore

@@ -61,6 +61,13 @@ struct HttpResponse {
   JsonValue json_value;
 };
 
+// A helper for creating a response in tests of working with HTTP responses
+// (initially in tests of AlpacaResponseValidator).
+absl::StatusOr<std::string> AssembleHttpResponseMessage(
+    int status_code,
+    const std::vector<std::pair<std::string, std::string>>& headers,
+    const std::string& body = "", bool add_content_length_header = true);
+
 }  // namespace test
 }  // namespace mcucore
 
