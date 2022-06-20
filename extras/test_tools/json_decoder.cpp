@@ -257,6 +257,19 @@ absl::StatusOr<JsonValue> ParseValue(std::string_view& str) {
 
 }  // namespace
 
+bool JsonObject::HasKey(const std::string& key) const {
+  return find(key) != end();
+}
+
+JsonValue JsonObject::GetValue(const std::string& key) const {
+  auto iter = find(key);
+  if (iter == end()) {
+    return JsonValue();
+  } else {
+    return iter->second;
+  }
+}
+
 JsonValue::JsonValue() : value_(Undefined{}) {}
 JsonValue::JsonValue(nullptr_t) : value_(nullptr) {}
 JsonValue::JsonValue(bool v) : value_(v) {}
@@ -497,19 +510,6 @@ bool operator==(const JsonValue& a, const JsonValue& b) {
       return a.as_array() == b.as_array();
   }
   MCU_UNREACHABLE;
-}
-
-bool JsonObject::HasKey(const std::string& key) const {
-  return find(key) != end();
-}
-
-JsonValue JsonObject::GetValue(const std::string& key) const {
-  auto iter = find(key);
-  if (iter == end()) {
-    return JsonValue();
-  } else {
-    return iter->second;
-  }
 }
 
 }  // namespace test

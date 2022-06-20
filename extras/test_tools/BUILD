@@ -245,3 +245,11 @@ cc_library(
     srcs = ["test_strings.cc"],
     hdrs = ["test_strings.h"],
 )
+
+cc_library(
+    name = "uuid_utils",
+    hdrs = ["uuid_utils.h"],
+    deps = [
+        "//googletest:gunit_headers",
+    ],
+)
