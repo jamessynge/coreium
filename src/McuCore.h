@@ -28,6 +28,7 @@
 #include "o_print_stream.h"          // IWYU pragma: export
 #include "platform/avr/watchdog.h"   // IWYU pragma: export
 #include "print_misc.h"              // IWYU pragma: export
+#include "print_to_buffer.h"         // IWYU pragma: export
 #include "printable_cat.h"           // IWYU pragma: export
 #include "progmem_pointer.h"         // IWYU pragma: export
 #include "progmem_string.h"          // IWYU pragma: export

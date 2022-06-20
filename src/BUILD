@@ -37,6 +37,7 @@ cc_library(
         ":mcucore_platform",
         ":o_print_stream",
         ":print_misc",
+        ":print_to_buffer",
         ":printable_cat",
         ":progmem_pointer",
         ":progmem_string",
