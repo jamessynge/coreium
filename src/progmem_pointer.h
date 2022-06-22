@@ -1,11 +1,16 @@
 #ifndef MCUCORE_SRC_PROGMEM_POINTER_H_
 #define MCUCORE_SRC_PROGMEM_POINTER_H_
 
-// In support of iterating over strings, and possibly other structures, this
-// helps to encapsulate some of the challenges of dealing with data stored in
-// PROGMEM.
+// ProgmemPtr provides an encapsulated pointer to PROGMEM, i.e. to data stored
+// in the Flash memory of an AVR microcontroller, where that Flash memory is in
+// a different address space from RAM (i.e. address 10 can refer to a byte of
+// RAM or a byte of Flash or a byte of EEPROM).
 //
-// NOTE: So far this only "works" for "near" addresses, i.e. in the first 64KB.
+// Sadly it is far too easy to use a flash memory address (pointer) as if it
+// were in RAM; this is because C++ 11 has no notion of address spaces.
+//
+// NOTE: So far this only "works" for "near" addresses, i.e. in the first 64KB,
+// because PGM_P is a 16-bit value, and memcpy_P works with 16-bit addresses.
 //
 // Learn more about writing custom iterators here:
 //    https://internalpointers.com/post/writing-custom-iterators-modern-cpp

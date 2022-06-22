@@ -23,3 +23,19 @@ and also supporting embedded unit testing of Arduino code:
 *   https://github.com/bxparks/EpoxyDuino
 *   https://github.com/mmurdoch/arduinounit
 *   https://github.com/bxparks/AUnit
+
+## Planning
+
+*   MAYBE: Support copying literal (e.g. PROGMEM) strings into stack variables
+    for temporary needs. For example, use a template class with a field of type
+    char[N], where N is the length of the literal (without a terminating NUL),
+    copy the literal into the field at construction time, and provide the
+    ability to construct a mcucore::StringView from it.
+
+    *   This could be implemented with a TinyString<T> ctor or member. Today
+        this can be achieved using PrintToBuffer writing to a TinyString.
+
+*   Add support for reading files from the SDcard, and maybe writing them. I'm
+    planning to use Bill Greiman's SdFat library which supports long file names
+    (127 ASCII characters). Non-normalized paths should be rejected (e.g. those
+    with `//`, `/../`, or `/./`).
