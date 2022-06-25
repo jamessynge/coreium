@@ -20,8 +20,8 @@ class Stream : public Print {
   virtual int read() = 0;
 
   // Returns, but does not consume, the first byte of incoming data available,
-  // or -1 if no data is available currently (i.e. this is a
-  // non-blocking method).
+  // or -1 if no data is available currently (i.e. this is a non-blocking
+  // method).
   virtual int peek() = 0;
 };
 
