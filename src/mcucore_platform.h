@@ -21,6 +21,7 @@
 #include <EEPROM.h>
 
 #ifdef ARDUINO_ARCH_AVR
+using ssize_t = int;  // avr-libc doesn't include a ssize_t definition.
 #include <avr/pgmspace.h>
 #define AVR_PROGMEM PROGMEM
 #else
