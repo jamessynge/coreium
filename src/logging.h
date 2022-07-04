@@ -241,13 +241,14 @@
 
 #ifdef MCU_ENABLE_CHECK
 
-#define MCU_CHECK_INTERNAL_(expression, message)                          \
-  switch (0)                                                              \
-  default:                                                                \
-    (expression) ? (void)0                                                \
-                 : ::mcucore::LogSinkVoidify() &&                         \
-                       ::mcucore::CheckSink(MCU_CHECK_LOCATION(__FILE__), \
-                                            __LINE__, MCU_FLASHSTR(message))
+#define MCU_CHECK_INTERNAL_(expression, message)                           \
+  switch (0)                                                               \
+  default:                                                                 \
+    (expression)                                                           \
+        ? (void)0                                                          \
+        : ::mcucore::LogSinkVoidify() &&                                   \
+              ::mcucore::CheckSink(MCU_CHECK_LOCATION(__FILE__), __LINE__, \
+                                   MCU_FLASHSTR_128(message))
 
 #else  // !MCU_ENABLE_CHECK
 
