@@ -9,7 +9,7 @@
 class __FlashStringHelper;
 
 // It turns out that absl/meta/type_traits.h uses the symbol F in a template
-// definition, and the arduino definition interferes. Commenting out here; see
+// definition, and the Arduino definition interferes. Commenting out here; see
 // MCU_FLASHSTR in progmem_string_data.h for an alternative solution that
 // collapses multiple copies of a string literal at build time, and FLASHSTR in
 // mcucore_platform.h for a version of F that works without using such a short,

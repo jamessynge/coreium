@@ -6,10 +6,8 @@
 //
 // Author: james.synge@gmail.com
 
+#include <stddef.h>
 #include <stdint.h>
-
-#include <cstddef>
-#include <ostream>
 
 #include "extras/host/arduino/wstring.h"
 
@@ -19,10 +17,6 @@ class Printable {
  public:
   virtual ~Printable();
   virtual size_t printTo(Print& p) const = 0;
-
-  // Support for tests and logging.
-  friend std::ostream& operator<<(std::ostream& out,
-                                  const Printable& printable);
 };
 
 #define DEC 10
@@ -103,7 +97,7 @@ class Print {
  private:
   size_t printDouble(double value, int digits);
 
-  int write_error_;
+  int write_error_{0};
 };
 
 #endif  // MCUCORE_EXTRAS_HOST_ARDUINO_PRINT_H_

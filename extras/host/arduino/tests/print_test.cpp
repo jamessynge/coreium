@@ -172,17 +172,6 @@ TEST(PrintTest, SamplePrintable) {
   EXPECT_EQ(out.str(), absl::StrCat(kText, "\n", kText));
 }
 
-TEST(PrintTest, StreamPrintable) {
-  constexpr char kText[] = "sdlkadkjfdakjklaj";
-  SamplePrintable sp;
-  sp.str = kText;
-  {
-    std::ostringstream oss;
-    oss << sp << '\n' << sp;
-    EXPECT_EQ(oss.str(), absl::StrCat(kText, "\n", kText));
-  }
-}
-
 TEST(PrintTest, Misc) {
   PrintToStdString out;
   out.println();

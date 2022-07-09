@@ -66,7 +66,7 @@ cc_library(
     hdrs = ["print.h"],
     deps = [
         ":wstring",
-        "//glog:logging",
+        "//absl/log:check",
     ],
 )
 

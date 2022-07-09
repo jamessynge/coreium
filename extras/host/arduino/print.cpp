@@ -8,7 +8,7 @@
 #include <string>
 #include <type_traits>
 
-#include "glog/logging.h"
+#include "absl/log/check.h"
 
 namespace {
 
@@ -51,24 +51,24 @@ Printable::~Printable() {}
 Print::Print() {}
 Print::~Print() {}
 
-size_t Print::write(const char* str) {
-  if (str == nullptr) return 0;
+size_t Print::write(const char* const str) {
+  if (str == nullptr) {
+    return 0;
+  }
   return write(reinterpret_cast<const uint8_t*>(str), strlen(str));
 }
 
-size_t Print::write(const char* buffer, size_t size) {
+size_t Print::write(const char* const buffer, size_t size) {
   return write(reinterpret_cast<const uint8_t*>(buffer), size);
 }
 
 int Print::availableForWrite() { return 0; }
 
-size_t Print::print(const __FlashStringHelper* str) {
+size_t Print::print(const __FlashStringHelper* const str) {
   // Assuming here that PROGMEM is meaningless on the host (i.e. that I haven't
   // implemented some fancy emulation).
   return write(reinterpret_cast<const char*>(str));
 }
-
-size_t print(const __FlashStringHelper* str);
 
 size_t Print::print(const char str[]) { return write(str); }
 
@@ -192,34 +192,4 @@ size_t Print::printDouble(double value, int digits) {
   CHECK_EQ(buffer[len], '\0');
 
   return print(buffer);
-}
-
-namespace {
-class PrintToStdOStream : public Print {
- public:
-  explicit PrintToStdOStream(std::ostream& out) : Print(), out_(out) {}
-
-  size_t write(uint8_t b) override {
-    out_.write(reinterpret_cast<char*>(&b), 1);
-    return 1;
-  }
-
-  size_t write(const uint8_t* buffer, size_t size) override {
-    out_.write(reinterpret_cast<const char*>(buffer), size);
-    return size;
-  }
-
-  // // Pull in the other variants of write; otherwise, only the above two are
-  // // visible.
-  // using Print::write;
-
- private:
-  std::ostream& out_;
-};
-}  // namespace
-
-std::ostream& operator<<(std::ostream& out, const Printable& printable) {
-  PrintToStdOStream adapter(out);
-  printable.printTo(adapter);
-  return out;
 }
