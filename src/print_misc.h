@@ -15,6 +15,12 @@ namespace mcucore {
 size_t PrintUnknownEnumValueTo(const __FlashStringHelper* name, uint32_t v,
                                Print& out);
 
+// Prints the specified flash string, whose length is known, to out. This
+// provides an optimization for AVR chips by copying sections of the string into
+// RAM, then printing those.
+size_t PrintFlashStringOfLength(const __FlashStringHelper* ptr, size_t length,
+                                Print& out);
+
 }  // namespace mcucore
 
 #endif  // MCUCORE_SRC_PRINT_MISC_H_

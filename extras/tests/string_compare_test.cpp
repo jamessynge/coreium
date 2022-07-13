@@ -86,29 +86,6 @@ TEST(StringCompareTest, NotEqualValues) {
   }
 }
 
-TEST(StringCompareTest, StartsWith) {
-  {
-    ProgmemStringView psv("prefix");
-    StringView sv("prefix suffix");
-    EXPECT_TRUE(StartsWith(sv, psv));
-  }
-  {
-    ProgmemStringView psv("not prefix");
-    StringView sv("prefix suffix");
-    EXPECT_FALSE(StartsWith(sv, psv));
-  }
-  {
-    ProgmemStringView psv("suffix");
-    StringView sv("prefix suffix");
-    EXPECT_FALSE(StartsWith(sv, psv));
-  }
-  {
-    ProgmemStringView psv("too long to be a prefix");
-    StringView sv("short");
-    EXPECT_FALSE(StartsWith(sv, psv));
-  }
-}
-
 TEST(StringCompareTest, LoweredEqual) {
   {
     ProgmemStringView psv("all equal");
@@ -129,6 +106,58 @@ TEST(StringCompareTest, LoweredEqual) {
     StringView sv("not equal");
     ProgmemStringView psv("not the same");
     EXPECT_FALSE(LoweredEqual(psv, sv));
+  }
+}
+
+TEST(StringCompareTest, StartsWith) {
+  {
+    ProgmemStringView psv("prefix");
+    StringView sv("prefix suffix");
+    EXPECT_TRUE(StartsWith(sv, psv));
+    EXPECT_FALSE(StartsWith(psv, sv));
+  }
+  {
+    ProgmemStringView psv("exactly the same");
+    StringView sv("exactly the same");
+    EXPECT_TRUE(StartsWith(sv, psv));
+    EXPECT_TRUE(StartsWith(psv, sv));
+  }
+  {
+    ProgmemStringView psv("prefix suffix");
+    StringView sv("prefix");
+    EXPECT_TRUE(StartsWith(psv, sv));
+    EXPECT_FALSE(StartsWith(sv, psv));
+  }
+  {
+    ProgmemStringView psv("not prefix");
+    StringView sv("prefix suffix");
+    EXPECT_FALSE(StartsWith(sv, psv));
+  }
+  {
+    ProgmemStringView psv("suffix");
+    StringView sv("prefix suffix");
+    EXPECT_FALSE(StartsWith(sv, psv));
+  }
+  {
+    ProgmemStringView psv("too long to be a prefix");
+    StringView sv("short");
+    EXPECT_FALSE(StartsWith(sv, psv));
+  }
+}
+
+TEST(StringCompareTest, SkipPrefix) {
+  {
+    ProgmemStringView psv("prefix");
+    StringView sv("prefix suffix");
+    EXPECT_TRUE(SkipPrefix(sv, psv));
+    EXPECT_EQ(sv, " suffix");
+  }
+  {
+    ProgmemStringView psv("not prefix");
+    const StringView original("prefix suffix");
+    StringView sv(original);
+    EXPECT_FALSE(SkipPrefix(sv, psv));
+    EXPECT_EQ(sv, original);
   }
 }
 

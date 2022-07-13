@@ -54,7 +54,7 @@ inline void CheckSinkExit(std::string_view message) {
   if (the_check_sink_exit_fn != nullptr) {
     (*the_check_sink_exit_fn)(message);
   } else {
-    LOG(FATAL) << message;
+    LOG(FATAL) << message;  // COV_NF_LINE
   }
 }
 

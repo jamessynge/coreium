@@ -105,7 +105,8 @@ std::ostream& operator<<(std::ostream& os, StatusCode v) {
     case StatusCode::kNotFound:
       return os << "NotFound";
   }
-  return os << "Unknown StatusCode, value=" << static_cast<int64_t>(v);
+  // This should match the formatting by PrintUnknownEnumValueTo.
+  return os << "Undefined StatusCode (" << static_cast<uint32_t>(v) << ")";
 }
 
 #endif  // MCU_HOST_TARGET

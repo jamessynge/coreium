@@ -7,6 +7,8 @@
 // NOTE: So far this only works if the table is stored in the first 64KB of
 // flash because this uses the "near pointer" API.
 //
+// TODO(jamessynge): Add examples showing how to use this.
+//
 // Author: james.synge@gmail.com
 
 #include "mcucore_platform.h"
@@ -14,7 +16,9 @@
 namespace mcucore {
 namespace flash_string_table_internal {
 
-// A pointer to flash stored in flash.
+// Holds a pointer to a string stored in flash, where the instance is itself
+// stored in flash, so we must call ToFlashStringHelper to read the pointer from
+// flash.
 class FlashStringTableElement {
  public:
   constexpr FlashStringTableElement(const __FlashStringHelper* ptr)  // NOLINT

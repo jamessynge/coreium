@@ -4,6 +4,7 @@
 // cycle, and hence a BUILD dependency sycle.
 
 #include "has_print_to.h"
+#include "print_misc.h"
 
 namespace mcucore {
 namespace {
@@ -16,21 +17,8 @@ inline char pgm_read_char_near(PGM_P ptr) {
 
 size_t ProgmemStringView::printTo(Print& out) const {
   static_assert(has_print_to<decltype(*this)>{}, "has_print_to should be true");
-  char buffer[32];
-  const char* next = ptr_;
-  size_t remaining = size_;
-  size_t total = 0;
-  while (remaining > sizeof buffer) {
-    memcpy_P(buffer, next, sizeof buffer);
-    total += out.write(buffer, sizeof buffer);
-    next += sizeof buffer;
-    remaining -= sizeof buffer;
-  }
-  if (remaining > 0) {
-    memcpy_P(buffer, next, remaining);
-    total += out.write(buffer, remaining);
-  }
-  return total;
+  return PrintFlashStringOfLength(
+      reinterpret_cast<const __FlashStringHelper*>(ptr_), size_, out);
 }
 
 bool ProgmemStringView::operator==(const ProgmemStringView& other) const {

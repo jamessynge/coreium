@@ -18,4 +18,23 @@ size_t PrintUnknownEnumValueTo(const __FlashStringHelper* name, uint32_t v,
   return counter.count();
 }
 
+size_t PrintFlashStringOfLength(const __FlashStringHelper* const ptr,
+                                size_t length, Print& out) {
+  char buffer[32];
+  const char* next = reinterpret_cast<const char*>(ptr);
+  size_t remaining = length;
+  size_t total = 0;
+  while (remaining > sizeof buffer) {
+    memcpy_P(buffer, next, sizeof buffer);
+    total += out.write(buffer, sizeof buffer);
+    next += sizeof buffer;
+    remaining -= sizeof buffer;
+  }
+  if (remaining > 0) {
+    memcpy_P(buffer, next, remaining);
+    total += out.write(buffer, remaining);
+  }
+  return total;
+}
+
 }  // namespace mcucore

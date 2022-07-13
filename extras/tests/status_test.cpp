@@ -2,6 +2,8 @@
 
 #include <stdint.h>
 
+#include <map>
+#include <sstream>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -9,7 +11,9 @@
 #include "extras/test_tools/print_to_std_string.h"
 #include "extras/test_tools/progmem_string_view_utils.h"
 #include "extras/test_tools/status_test_utils.h"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "o_print_stream.h"
 #include "progmem_string_data.h"
 #include "progmem_string_view.h"
 #include "status_code.h"
@@ -18,6 +22,8 @@ namespace mcucore {
 namespace test {
 namespace {
 
+using ::testing::AllOf;
+using ::testing::HasSubstr;
 using ::testing::Not;
 using ::testing::StartsWith;
 
@@ -188,6 +194,63 @@ TEST(StatusTest, ReturnIfErrorWithOk) {
   };
   EXPECT_TRUE(IsNotFound(do_not_return(OkStatus())));
   EXPECT_TRUE(reached_endpoint);
+}
+
+TEST(StatusTest, FormatStatusCode) {
+  // Using a switch here to ensure that each valid status code is included in
+  // the map.
+  std::map<StatusCode, std::string> code_to_name;
+  volatile StatusCode v = StatusCode::kOk;
+
+#define HANDLE_CODE(CODE)                      \
+  case StatusCode::k##CODE:                    \
+    code_to_name[StatusCode::k##CODE] = #CODE; \
+    MCU_FALLTHROUGH_INTENDED;
+
+  switch (v) {
+    HANDLE_CODE(Ok);
+    HANDLE_CODE(Unknown);
+    HANDLE_CODE(ResourceExhausted);
+    HANDLE_CODE(FailedPrecondition);
+    HANDLE_CODE(OutOfRange);
+    HANDLE_CODE(Unimplemented);
+    HANDLE_CODE(Internal);
+    HANDLE_CODE(DataLoss);
+    HANDLE_CODE(InvalidArgument);
+    HANDLE_CODE(NotFound);
+    default:
+      break;
+  }
+
+  for (const auto [code, str] : code_to_name) {
+    PrintToStdString p2ss;
+    OPrintStream strm(p2ss);
+    strm << code;
+    EXPECT_EQ(p2ss.str(), str);
+    std::ostringstream std_strm;
+    std_strm << code;
+    EXPECT_EQ(p2ss.str(), std_strm.str());
+  }
+
+  // Find an unknown status code. This acts as a indirect test of
+  // PrintUnknownEnumValueTo.
+  for (int i = 0; i < 1000; ++i) {
+    const auto code = static_cast<StatusCode>(i);
+    if (code_to_name.count(code) == 1) {
+      continue;
+    }
+    // This is not a valid code.
+    PrintToStdString p2ss;
+    OPrintStream strm(p2ss);
+    strm << code;
+    EXPECT_THAT(p2ss.str(),
+                AllOf(HasSubstr("Undefined"), HasSubstr("StatusCode"),
+                      HasSubstr(absl::StrCat("(", i, ")"))));
+    std::ostringstream std_strm;
+    std_strm << code;
+    EXPECT_EQ(p2ss.str(), std_strm.str());
+    break;
+  }
 }
 
 }  // namespace

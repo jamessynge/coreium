@@ -9,7 +9,12 @@
 
 #include "extras/test_tools/print_to_std_string.h"
 #include "extras/test_tools/sample_printable.h"
+#include "extras/test_tools/test_strings.h"
 #include "gtest/gtest.h"
+#include "mcucore_platform.h"
+#include "progmem_string.h"
+#include "progmem_string_data.h"
+#include "progmem_string_view.h"
 
 // It is deliberate that these tests are defined outside of the mcucore
 // namespace, as a test of whether OPrintStream can use ADL to locate the
@@ -102,11 +107,13 @@ template <typename T>
 void VerifyOPrintStreamBases(const T value, std::string_view decimal_expected,
                              std::string_view hexadecimal_expected,
                              std::string_view binary_expected,
-                             std::string_view base36_expected) {
+                             std::string_view base36_expected,
+                             std::string_view base8_expected) {
   VerifyOPrintStreamManipulator<T>(BaseDec, value, decimal_expected);
   VerifyOPrintStreamManipulator<T>(BaseHex, value, hexadecimal_expected);
   VerifyOPrintStreamManipulator<T>(BaseTwo, value, binary_expected);
   VerifyOPrintStreamManipulator<T>(SetBase(36), value, base36_expected);
+  VerifyOPrintStreamManipulator<T>(SetBase(8), value, base8_expected);
 }
 
 template <typename T>
@@ -115,61 +122,84 @@ void VerifyOPrintStreamBaseless(const T value, std::string_view expected) {
   VerifyOPrintStreamManipulator<T>(BaseHex, value, expected);
   VerifyOPrintStreamManipulator<T>(BaseTwo, value, expected);
   VerifyOPrintStreamManipulator<T>(SetBase(36), value, expected);
+  VerifyOPrintStreamManipulator<T>(SetBase(8), value, expected);
 }
 
 TEST(OPrintStreamTest, BuiltInTypes) {
+  VerifyOPrintStreamBaseless<bool>(false, "false");
+  VerifyOPrintStreamBaseless<bool>(true, "true");
+
   VerifyOPrintStreamBaseless<char>('a', "a");
   VerifyOPrintStreamBaseless<char>('\0', std::string_view("\0", 1));
 
-  VerifyOPrintStreamBases<unsigned char>(0, "0", "0", "0", "0");
-  VerifyOPrintStreamBases<unsigned char>(255, "255", "0xFF", "0b11111111",
-                                         "73");
+  VerifyOPrintStreamBases<unsigned char>(0, "0", "0", "0", "0", "0");
+  VerifyOPrintStreamBases<unsigned char>(1, "1", "0x1", "0b1", "1", "01");
+  VerifyOPrintStreamBases<unsigned char>(255, "255", "0xFF", "0b11111111", "73",
+                                         "0377");
 
   VerifyOPrintStreamBases<signed char>(-128, "-128", "-0x80", "-0b10000000",
-                                       "-3K");
-  VerifyOPrintStreamBases<signed char>(0, "0", "0", "0", "0");
-  VerifyOPrintStreamBases<signed char>(127, "127", "0x7F", "0b1111111", "3J");
+                                       "-3K", "-0200");
+  VerifyOPrintStreamBases<signed char>(-127, "-127", "-0x7F", "-0b1111111",
+                                       "-3J", "-0177");
+  VerifyOPrintStreamBases<signed char>(-1, "-1", "-0x1", "-0b1", "-1", "-01");
+  VerifyOPrintStreamBases<signed char>(0, "0", "0", "0", "0", "0");
+  VerifyOPrintStreamBases<signed char>(1, "1", "0x1", "0b1", "1", "01");
+  VerifyOPrintStreamBases<signed char>(127, "127", "0x7F", "0b1111111", "3J",
+                                       "0177");
 
   VerifyOPrintStreamBases<int16_t>(-32768, "-32768", "-0x8000",
-                                   "-0b1000000000000000", "-PA8");
-  VerifyOPrintStreamBases<int16_t>(0, "0", "0", "0", "0");
+                                   "-0b1000000000000000", "-PA8", "-0100000");
+  VerifyOPrintStreamBases<int16_t>(-32767, "-32767", "-0x7FFF",
+                                   "-0b111111111111111", "-PA7", "-077777");
+  VerifyOPrintStreamBases<int16_t>(-1, "-1", "-0x1", "-0b1", "-1", "-01");
+  VerifyOPrintStreamBases<int16_t>(0, "0", "0", "0", "0", "0");
+  VerifyOPrintStreamBases<int16_t>(1, "1", "0x1", "0b1", "1", "01");
   VerifyOPrintStreamBases<int16_t>(32767, "32767", "0x7FFF",
-                                   "0b111111111111111", "PA7");
+                                   "0b111111111111111", "PA7", "077777");
 
-  VerifyOPrintStreamBases<uint16_t>(0, "0", "0", "0", "0");
+  VerifyOPrintStreamBases<uint16_t>(0, "0", "0", "0", "0", "0");
+  VerifyOPrintStreamBases<uint16_t>(1, "1", "0x1", "0b1", "1", "01");
   VerifyOPrintStreamBases<uint16_t>(65535, "65535", "0xFFFF",
-                                    "0b1111111111111111", "1EKF");
+                                    "0b1111111111111111", "1EKF", "0177777");
 
   VerifyOPrintStreamBases<int32_t>(-2147483648, "-2147483648", "-0x80000000",
                                    "-0b10000000000000000000000000000000",
-                                   "-ZIK0ZK");
-  VerifyOPrintStreamBases<int32_t>(0, "0", "0", "0", "0");
+                                   "-ZIK0ZK", "-020000000000");
+  VerifyOPrintStreamBases<int32_t>(-1, "-1", "-0x1", "-0b1", "-1", "-01");
+  VerifyOPrintStreamBases<int32_t>(0, "0", "0", "0", "0", "0");
+  VerifyOPrintStreamBases<int32_t>(1, "1", "0x1", "0b1", "1", "01");
   VerifyOPrintStreamBases<int32_t>(2147483647, "2147483647", "0x7FFFFFFF",
                                    "0b1111111111111111111111111111111",
-                                   "ZIK0ZJ");
+                                   "ZIK0ZJ", "017777777777");
 
-  VerifyOPrintStreamBases<uint32_t>(0, "0", "0", "0", "0");
+  VerifyOPrintStreamBases<uint32_t>(0, "0", "0", "0", "0", "0");
+  VerifyOPrintStreamBases<uint32_t>(1, "1", "0x1", "0b1", "1", "01");
   VerifyOPrintStreamBases<uint32_t>(4294967295, "4294967295", "0xFFFFFFFF",
                                     "0b11111111111111111111111111111111",
-                                    "1Z141Z3");
+                                    "1Z141Z3", "037777777777");
 
   VerifyOPrintStreamBases<int64_t>(
       std::numeric_limits<int64_t>::min(), "-9223372036854775808",
       "-0x8000000000000000",
       "-0b1000000000000000000000000000000000000000000000000000000000000000",
-      "-1Y2P0IJ32E8E8");
-  VerifyOPrintStreamBases<int64_t>(0, "0", "0", "0", "0");
+      "-1Y2P0IJ32E8E8", "-01000000000000000000000");
+  VerifyOPrintStreamBases<int64_t>(-1, "-1", "-0x1", "-0b1", "-1", "-01");
+  VerifyOPrintStreamBases<int64_t>(0, "0", "0", "0", "0", "0");
+  VerifyOPrintStreamBases<int64_t>(1, "1", "0x1", "0b1", "1", "01");
   VerifyOPrintStreamBases<int64_t>(
       std::numeric_limits<int64_t>::max(), "9223372036854775807",
       "0x7FFFFFFFFFFFFFFF",
       "0b111111111111111111111111111111111111111111111111111111111111111",
-      "1Y2P0IJ32E8E7");
+      "1Y2P0IJ32E8E7", "0777777777777777777777");
 
+  VerifyOPrintStreamBases<uint64_t>(std::numeric_limits<uint64_t>::min(), "0",
+                                    "0", "0", "0", "0");
+  VerifyOPrintStreamBases<uint64_t>(1, "1", "0x1", "0b1", "1", "01");
   VerifyOPrintStreamBases<uint64_t>(
       std::numeric_limits<uint64_t>::max(), "18446744073709551615",
       "0xFFFFFFFFFFFFFFFF",
       "0b1111111111111111111111111111111111111111111111111111111111111111",
-      "3W5E11264SGSF");
+      "3W5E11264SGSF", "01777777777777777777777");
 
   // 2 digits to the right of the decimal point, unless more features are added
   // to OPrintStream to allow specifying these values, as std::basic_ostream
@@ -180,6 +210,23 @@ TEST(OPrintStreamTest, BuiltInTypes) {
   VerifyOPrintStreamBaseless<double>(-1, "-1.00");
   VerifyOPrintStreamBaseless<double>(0, "0.00");
   VerifyOPrintStreamBaseless<double>(0.99999, "1.00");
+}
+
+TEST(OPrintStreamTest, FlashStrings) {
+  {
+    PrintToStdString p2ss;
+    OPrintStream out(p2ss);
+    out << FLASHSTR("abc") << MCU_FLASHSTR("def") << MCU_PSD("ghi")
+        << MCU_PSD("") << MCU_PSV("jkl")
+        << mcucore::ProgmemString(FLASHSTR("mno"));
+    EXPECT_EQ(p2ss.str(), "abcdefghijklmno");
+  }
+  {
+    PrintToStdString p2ss;
+    OPrintStream out(p2ss);
+    out << MCU_PSD_1024(TEST_STR_1023);
+    EXPECT_EQ(p2ss.str(), TEST_STR_1023);
+  }
 }
 
 TEST(OPrintStreamTest, StringLiteral) {
@@ -332,7 +379,7 @@ TEST(OPrintStreamTest, ValidEnum) {
     OPrintStream out(p2ss);
     out << ESignedInt16::kMinusOne << " " << BaseHex << ESignedInt16::kMinusOne
         << ' ' << BaseTwo << ESignedInt16::kMinusOne;
-    EXPECT_EQ(p2ss.str(), "-1 -0xFFFF -0b1111111111111111");
+    EXPECT_EQ(p2ss.str(), "-1 -0x1 -0b1");
   }
 
   {

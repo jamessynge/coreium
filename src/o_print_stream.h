@@ -33,8 +33,11 @@
 
 #include "has_insert_into.h"
 #include "has_print_to.h"
+#include "has_progmem_char_array.h"
 #include "int_helpers.h"
+#include "limits.h"
 #include "mcucore_platform.h"
+#include "print_misc.h"
 #include "progmem_string_data.h"
 #include "type_traits.h"
 
@@ -149,7 +152,7 @@ class OPrintStream {
   // Ideally the compiled code is as specific to the inserted type as possible
   // so that most stream insertions require as little code as possible.
   //
-  // NOTE: The value (1, 10, etc. below) assigned to the type produced by
+  // NOTE: The value (10, 20, etc. below) assigned to the type produced by
   // enable_if_t is used to address the problem described as follows by
   // https://en.cppreference.com/w/cpp/types/enable_if:
   //
@@ -158,12 +161,16 @@ class OPrintStream {
   //   declarations are treated as redeclarations of the same function template
   //   (default template arguments are not accounted for in function template
   //   equivalence).
+  //
+  // Eventually I want to use a priority tag to force the order of matching,
+  // which should eliminate the need to use enable_if<!X> to avoid conflicting
+  // matches that arent' desired.
 
   // The value is of type char, but not signed char or unsigned char. We want
   // single characters (e.g. '\n') to be streamed as characters, but want small
   // numbers represented in bytes (e.g. uint8_t(10) or int8_t(-1)) to be
   // formatted as integers, i.e. handled by the Integer case below.
-  template <typename Char, enable_if_t<is_char<Char>::value, int> = 1>
+  template <typename Char, enable_if_t<is_char<Char>::value, int> = 10>
   inline void PrintValue(const Char char_value) {
     out_.print(char_value);
   }
@@ -173,17 +180,27 @@ class OPrintStream {
   // anything else that we may allow to be changed in the OPrintStream, so we
   // pass the function an OPrintStream with the same Print instance.
   template <typename HasInsertInto,
-            enable_if_t<has_insert_into<HasInsertInto>::value, int> = 5>
+            enable_if_t<has_insert_into<HasInsertInto>::value, int> = 20>
   inline void PrintValue(const HasInsertInto& value_has_insert_into) {
     OPrintStream strm(out_);
     value_has_insert_into.InsertInto(strm);
   }
 
-  // Reserving 10 for HasInsertValueInto.
+  // Reserving 30 for HasInsertValueInto.
+
+  // The value's type has a progmem_char_array member function, i.e. it is a
+  // ProgmemStringData.
+  template <typename PSD,
+            enable_if_t<has_progmem_char_array<PSD>::value, int> = 40>
+  inline void PrintValue(const PSD str) {
+    PrintFlashStringOfLength(
+        reinterpret_cast<const __FlashStringHelper*>(str.progmem_char_array()),
+        str.size(), out_);
+  }
 
   // The value is of a class type for which the class has a printTo function.
   template <typename HasPrintTo,
-            enable_if_t<has_print_to<HasPrintTo>::value, int> = 15>
+            enable_if_t<has_print_to<HasPrintTo>::value, int> = 50>
   inline void PrintValue(const HasPrintTo value_has_print_to) {
     value_has_print_to.printTo(out_);
   }
@@ -193,7 +210,7 @@ class OPrintStream {
   template <typename HasPrintValueTo,
             enable_if_t<has_print_value_to<HasPrintValueTo>::value &&
                             !is_char<HasPrintValueTo>::value,
-                        int> = 20>
+                        int> = 60>
   inline void PrintValue(const HasPrintValueTo can_print_value_to) {
     PrintValueTo(can_print_value_to, out_);
   }
@@ -201,7 +218,7 @@ class OPrintStream {
   // The value is a bool and there is no PrintValueTo function defined for bool.
   template <typename Bool, enable_if_t<is_same<Bool, bool>::value &&
                                            !has_print_value_to<Bool>::value,
-                                       int> = 25>
+                                       int> = 70>
   inline void PrintValue(const Bool value) {
     out_.print(value ? MCU_FLASHSTR("true") : MCU_FLASHSTR("false"));
   }
@@ -215,7 +232,7 @@ class OPrintStream {
       enable_if_t<is_integral<Integer>::value && !is_char<Integer>::value &&
                       !is_same<Integer, bool>::value &&
                       !has_print_value_to<Integer>::value,
-                  int> = 30>
+                  int> = 80>
   inline void PrintValue(const Integer integer_value) {
     PrintInteger(integer_value);
   }
@@ -224,7 +241,7 @@ class OPrintStream {
   // function.
   template <typename Float, enable_if_t<is_floating_point<Float>::value &&
                                             !has_print_value_to<Float>::value,
-                                        int> = 35>
+                                        int> = 90>
   inline void PrintValue(const Float fp_value) {
     out_.print(fp_value);
   }
@@ -233,7 +250,7 @@ class OPrintStream {
   template <typename Pointer,
             enable_if_t<is_pointer<Pointer>::value &&
                             !has_print_value_to<Pointer>::value,
-                        int> = 40>
+                        int> = 100>
   inline void PrintValue(const Pointer pointer_value) {
     PrintPointer(pointer_value);
   }
@@ -242,7 +259,7 @@ class OPrintStream {
   // Print it as an integer of the underlying type.
   template <typename Enum, enable_if_t<is_enum<Enum>::value &&
                                            !has_print_value_to<Enum>::value,
-                                       int> = 45>
+                                       int> = 110>
   inline void PrintValue(const Enum value) {
     PrintInteger(static_cast<underlying_type_t<Enum>>(value));
   }
@@ -256,8 +273,9 @@ class OPrintStream {
               !has_print_to<Others>::value && !is_pointer<Others>::value &&
               !is_integral<Others>::value &&
               !is_floating_point<Others>::value &&
-              !has_print_value_to<Others>::value && !is_enum<Others>::value,
-          int> = 50>
+              !has_print_value_to<Others>::value &&
+              !has_progmem_char_array<Others>::value && !is_enum<Others>::value,
+          int> = 200>
   inline void PrintValue(const Others other_type_value) {
     out_.print(other_type_value);
   }
@@ -296,7 +314,7 @@ class OPrintStream {
   // Print integers.
 
   template <typename T>
-  void PrintInteger(const T value) {
+  void PrintInteger(T value) {
     // Print.print(T value, int base) can print integer values of type T in any
     // base in the range [2, 36]; if the base is outside of that range, it
     // prints in base 10. Note that we don't include the base prefix if the
@@ -304,16 +322,28 @@ class OPrintStream {
     if (value == 0 || base_ == 10 || base_ < 2 || base_ > 36) {
       out_.print(value, 10);
     } else {
-      if (value <= 0) {
+      using UT = decltype(ToUnsigned(value));
+      UT unsigned_value;
+      if (value >= 0) {
+        unsigned_value = value;
+      } else {
         // Print the negative sign before the value because Arduino's Print
         // class won't do so for signed values when printing with a base other
         // than 10.
         out_.print('-');
+
+        // Implement (approximately) `UT unsigned_value = abs(value)`. We assume
+        // here that signed integers are represented with twos complement
+        // values, and thus that abs(numeric_limits<T>::min()) can't be
+        // represented as a T.
+        unsigned_value = (numeric_limits<UT>::max() - value) + 1;
       }
-      const auto unsigned_value = ToUnsigned(value);
+
       // There are standard prefixes for base-2, base-8 and base-16, but not
       // for the other bases.
       if (base_ == 16) {
+        // We treat base-16 separately so that we can share the PrintHex
+        // implementation with PrintPointer.
         PrintHex(unsigned_value);
       } else {
         if (base_ == 2) {

@@ -233,7 +233,12 @@ cc_test(
         "//googletest:gunit_main",
         "//mcucore/extras/test_tools:print_to_std_string",
         "//mcucore/extras/test_tools:sample_printable",
+        "//mcucore/extras/test_tools:test_strings",
+        "//mcucore/src:mcucore_platform",
         "//mcucore/src:o_print_stream",
+        "//mcucore/src:progmem_string",
+        "//mcucore/src:progmem_string_data",
+        "//mcucore/src:progmem_string_view",
     ],
 )
 
@@ -333,6 +338,7 @@ cc_test(
         "//mcucore/extras/test_tools:print_to_std_string",
         "//mcucore/extras/test_tools:progmem_string_view_utils",
         "//mcucore/extras/test_tools:status_test_utils",
+        "//mcucore/src:o_print_stream",
         "//mcucore/src:progmem_string_data",
         "//mcucore/src:progmem_string_view",
         "//mcucore/src:status",
