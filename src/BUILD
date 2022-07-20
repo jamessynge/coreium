@@ -356,6 +356,7 @@ cc_library(
     hdrs = ["print_misc.h"],
     deps = [
         ":counting_print",
+        ":has_progmem_char_array",
         ":mcucore_platform",
         ":progmem_string_data",
     ],

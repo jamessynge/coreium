@@ -193,9 +193,7 @@ class OPrintStream {
   template <typename PSD,
             enable_if_t<has_progmem_char_array<PSD>::value, int> = 40>
   inline void PrintValue(const PSD str) {
-    PrintFlashStringOfLength(
-        reinterpret_cast<const __FlashStringHelper*>(str.progmem_char_array()),
-        str.size(), out_);
+    PrintProgmemStringData(str, out_);
   }
 
   // The value is of a class type for which the class has a printTo function.

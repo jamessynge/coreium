@@ -6,6 +6,7 @@
 //
 // Author: james.synge@gmail.com
 
+#include "has_progmem_char_array.h"
 #include "mcucore_platform.h"
 
 namespace mcucore {
@@ -20,6 +21,15 @@ size_t PrintUnknownEnumValueTo(const __FlashStringHelper* name, uint32_t v,
 // RAM, then printing those.
 size_t PrintFlashStringOfLength(const __FlashStringHelper* ptr, size_t length,
                                 Print& out);
+
+// Print the specified ProgmemStringData to out.
+template <typename PSD,
+          typename = enable_if_t<has_progmem_char_array<PSD>::value>>
+inline size_t PrintProgmemStringData(const PSD str, Print& out) {
+  return PrintFlashStringOfLength(
+      reinterpret_cast<const __FlashStringHelper*>(str.progmem_char_array()),
+      str.size(), out);
+}
 
 }  // namespace mcucore
 
