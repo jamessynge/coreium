@@ -177,6 +177,13 @@ cc_library(
 )
 
 cc_library(
+    name = "fnv1a",
+    srcs = ["fnv1a.cc"],
+    hdrs = ["fnv1a.h"],
+    deps = [":logging"],
+)
+
+cc_library(
     name = "has_insert_into",
     hdrs = ["has_insert_into.h"],
     deps = [
@@ -241,6 +248,7 @@ cc_library(
     hdrs = ["jitter_random.h"],
     deps = [
         ":crc32",
+        ":fnv1a",
         ":limits",
         ":logging",
         ":mcucore_platform",

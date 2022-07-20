@@ -129,6 +129,21 @@ cc_test(
 )
 
 cc_test(
+    name = "fnv1a_test",
+    srcs = ["fnv1a_test.cc"],
+    deps = [
+        "//absl/container:btree",
+        "//absl/strings",
+        "//googletest:gunit_main",
+        "//mcucore/extras/test_tools:print_to_std_string",
+        "//mcucore/extras/test_tools:random_utils",
+        "//mcucore/extras/test_tools:sample_printable",
+        "//mcucore/src:fnv1a",
+        "//mcucore/src:logging",
+    ],
+)
+
+cc_test(
     name = "has_insert_into_test",
     srcs = ["has_insert_into_test.cc"],
     deps = [

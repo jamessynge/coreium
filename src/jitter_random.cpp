@@ -29,6 +29,7 @@
 #include "jitter_random.h"
 
 #include "crc32.h"
+#include "fnv1a.h"
 #include "limits.h"
 #include "logging.h"
 #include "o_print_stream.h"
@@ -39,16 +40,6 @@
 // compared to CRC-32 which apparently has patterns (clumps) in the space of
 // hash values.
 #define USE_FNV1A  // Otherwise use CRC32
-
-#ifdef USE_FNV1A
-
-#define FNV1A_PRIME 0x01000193  // 2^24 + 2^8 + 0x93
-#define FNV1A_INITIAL_VALUE 2166136261
-#define FNV1A_BIT_SHIFT_INSTEAD_OF_MULTIPLY  // Measure whether this has any
-                                             // benefit on the 8-bit AVR
-                                             // processors.
-
-#endif  // USE_FNV1A
 
 // #define ENABLE_SPIN_DELAY
 #define DISABLE_SPIN_DELAY
@@ -234,7 +225,7 @@ class JitterRandomCollector {
     // before reading the next register, where that little bit is a function
     // of the accumulated value so that it isn't the same every time.
 
-    AppendByte(TCNT0);
+    hasher_.appendByte(TCNT0);
 
 #if MCU_HOST_TARGET || defined(TCNT1)
     {
@@ -283,53 +274,18 @@ class JitterRandomCollector {
 #endif
   }
 
-  uint32_t value() const {
-#ifdef USE_FNV1A
-    return hash_;
-#else
-    return crc_.value();
-#endif  // USE_FNV1A
-  }
+  uint32_t value() const { return hasher_.value(); }
 
  private:
   void Append(uint16_t value) {
-    AppendByte(static_cast<uint8_t>(value & 0xFF));
-    AppendByte(static_cast<uint8_t>((value >> 8) & 0xFF));
-  }
-
-  void AppendByte(const uint8_t value) {
-#ifdef USE_FNV1A
-    // XOR the low order byte with value.
-    MCU_DCHECK_EQ((hash_ ^ value), (hash_ ^ static_cast<uint32_t>(value)));
-    hash_ ^= static_cast<uint32_t>(value);
-
-    // Multiply by the 32 bit FNV magic prime, mod 2^32. The mod 2^32 is
-    // required by the C++ (and C?) standard. See:
-    //  https://en.cppreference.com/w/cpp/language/operator_arithmetic#Overflows
-    // Here this means that while the intermediate result is (logically) a
-    // uint64_t, it is converted to a uint32_t by retaining only the low 32 bits
-    // of that intermediate result, and thus loses the information in the high
-    // 32 bits.
-
-#ifdef FNV1A_BIT_SHIFT_INSTEAD_OF_MULTIPLY
-    // This could probably be further optimized for an 8-bit processor.
-    hash_ += (hash_ << 1) + (hash_ << 4) + (hash_ << 7) + (hash_ << 8) +
-             (hash_ << 24);
-#else   // !FNV1A_BIT_SHIFT_INSTEAD_OF_MULTIPLY
-    hash_ *= FNV1A_PRIME;
-#endif  // FNV1A_BIT_SHIFT_INSTEAD_OF_MULTIPLY
-#else   // !USE_FNV1A
-    crc_.appendByte(value);
-#endif  // USE_FNV1A
-
-    MCU_VLOG(4) << MCU_FLASHSTR("AppendByte ") << BaseHex << value
-                << MCU_FLASHSTR(", value is now ") << this->value();
+    hasher_.appendByte(static_cast<uint8_t>(value & 0xFF));
+    hasher_.appendByte(static_cast<uint8_t>((value >> 8) & 0xFF));
   }
 
 #ifdef USE_FNV1A
-  uint32_t hash_ = FNV1A_INITIAL_VALUE;
+  Fnv1a hasher_;
 #else   // !USE_FNV1A
-  Crc32 crc_;
+  Crc32 hasher_;
 #endif  // USE_FNV1A
   const JitterRandom::ETimerCounterSelection timer_counters_to_use_;
 };
