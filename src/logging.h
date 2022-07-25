@@ -70,13 +70,13 @@
 // reached, regardless of whether MCU_ENABLE_CHECK is defined:
 //
 //     MCU_CHECK(InitializeHardware())
-//         << MCU_FLASHSTR("Failed to initialize hardware.");
+//         << MCU_PSD("Failed to initialize hardware.");
 //
 // This allows you to make extensive use of MCU_CHECK, yet know that the
 // compiled size of the statement will shrink to that of the expression when
 // MCU_ENABLE_CHECK is not defined.
 //
-// Note that we use the MCU_FLASHSTR macro here so that when compiling for AVR
+// Note that we use the MCU_PSD macro here so that when compiling for AVR
 // microcontrollers the string is stored only in Flash (PROGMEM), and is not
 // copied to RAM.
 //
@@ -110,7 +110,7 @@
 // MCU_NAME_VAL Usage:
 //
 // MCU_VLOG(level) << MCU_NAME_VAL(var);
-// MCU_CHECK(expression) << MCU_FLASHSTR("some text") << MCU_NAME_VAL(var);
+// MCU_CHECK(expression) << MCU_PSD("some text") << MCU_NAME_VAL(var);
 //
 // Inserts " <var>=<value>" into the log stream, where <var> is the name of the
 // variable `var`, and <value> is the value of the variable.
@@ -230,7 +230,7 @@
 #endif
 
 // Macro to simplify logging the name and value of a variable.
-#define MCU_NAME_VAL(var_name) MCU_FLASHSTR(" " #var_name "=") << var_name
+#define MCU_NAME_VAL(var_name) MCU_PSD(" " #var_name "=") << var_name
 #define MCU_VLOG_VAR(level, var_name) MCU_VLOG(level) << MCU_NAME_VAL(var_name)
 
 // Note that if we wanted optional support for further reducing the program
