@@ -21,3 +21,16 @@ cc_test(
         "//mcucore/extras/test_tools:sample_printable",
     ],
 )
+
+cc_test(
+    name = "wcharacter_test",
+    srcs = ["wcharacter_test.cc"],
+    deps = [
+        "//googletest:gunit_main",
+        "//mcucore/extras/host/arduino:wcharacter",
+        "//mcucore/extras/test_tools:print_to_std_string",
+        "//mcucore/extras/test_tools:print_value_to_std_string",
+        "//mcucore/extras/test_tools:sample_printable",
+        "//mcucore/src:string_view",
+    ],
+)
