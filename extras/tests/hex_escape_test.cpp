@@ -329,6 +329,45 @@ TEST(HexEscapedTest, LiteralWithEscapes) {
   EXPECT_EQ(count, expected.size());
 }
 
+TEST(HexEscapedTest, HexEscapedViaOPrintStream) {
+  {
+    PrintToStdString out;
+    const size_t count = out.print(HexEscaped('\r'));
+
+    const std::string expected = R"("\r")";
+    EXPECT_EQ(out.str(), expected);
+    EXPECT_EQ(count, expected.size());
+  }  // namespace
+  {
+    auto printable = HexEscaped('\r');
+    PrintToStdString out;
+    const size_t count = out.print(printable);
+
+    const std::string expected = R"("\r")";
+    EXPECT_EQ(out.str(), expected);
+    EXPECT_EQ(count, expected.size());
+  }
+  {
+    auto printable = HexEscaped(1234);
+    PrintToStdString out;
+    const size_t count = out.print(printable);
+
+    const std::string expected = R"("1234")";
+    EXPECT_EQ(out.str(), expected);
+    EXPECT_EQ(count, expected.size());
+  }
+  {
+    SampleHasPrintValueTo sample("\t abc\r\n");
+    auto printable = HexEscaped(sample);
+    PrintToStdString out;
+    const size_t count = out.print(printable);
+
+    const std::string expected = R"("\x09 abc\r\n")";
+    EXPECT_EQ(out.str(), expected);
+    EXPECT_EQ(count, expected.size());
+  }
+}
+
 TEST(HexEscapedTest, MacAddress) {
   uint8_t array[] = {0x70, 0x5a, 0x0f, 0x41, 0xcc, 0x78};
   PrintToStdString out;

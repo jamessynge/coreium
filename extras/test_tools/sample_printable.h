@@ -38,6 +38,16 @@ struct SampleHasPrintTo {
   std::string str;
 };
 
+struct SampleHasPrintValueTo {
+  SampleHasPrintValueTo() {}
+  explicit SampleHasPrintValueTo(const std::string& value) : str(value) {}
+
+  std::string str;
+};
+inline void PrintValueTo(const SampleHasPrintValueTo& sample, ::Print& p) {
+  p.write(sample.str.data(), sample.str.size());
+}
+
 }  // namespace test
 }  // namespace mcucore
 

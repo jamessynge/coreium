@@ -228,8 +228,12 @@ cc_library(
     srcs = ["hex_escape.cc"],
     hdrs = ["hex_escape.h"],
     deps = [
+        ":counting_print",
+        ":has_print_to",
         ":logging",
         ":mcucore_platform",
+        ":o_print_stream",
+        ":type_traits",
     ],
 )
 

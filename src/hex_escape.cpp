@@ -41,7 +41,10 @@ size_t PrintCharWithStateHexEscaped(Print& out, const char c,
 #if MCU_HOST_TARGET
         } else if (c == '?') {
           // C++ 14 and before support trigraphs as a way of representing
-          // characters. If that is important, modify the #if around this.
+          // characters. This is enabled for the host target so that I can copy
+          // and paste escaped text into C++ source. If that is important for
+          // the embedded target, we've moved beyond C++ 14 for all targets,
+          // modify the #if around this as appropriate.
           if (old_state == EHexEscapingState::kQuestionMarkOutput) {
             total += out.print('\\');
           }

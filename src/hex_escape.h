@@ -7,7 +7,11 @@
 //
 // Author: james.synge@gmail.com
 
+#include "counting_print.h"
+#include "has_print_to.h"
 #include "mcucore_platform.h"
+#include "o_print_stream.h"
+#include "type_traits.h"
 
 namespace mcucore {
 
@@ -78,12 +82,45 @@ class HexEscapedPrintable : public Printable {
   const T& wrapped_;
 };
 
-// NOTE: We could use trait has_print_to to limit this to types that support
-// printTo. Obviously it will fail to compile today, but the error will be
-// different.
-template <typename T>
-inline HexEscapedPrintable<T> HexEscaped(const T& like_printable) {
-  return HexEscapedPrintable<T>(like_printable);
+template <typename HasPrintTo,
+          enable_if_t<has_print_to<HasPrintTo>::value, int> = 0>
+inline HexEscapedPrintable<HasPrintTo> HexEscaped(const HasPrintTo& v) {
+  return HexEscapedPrintable<HasPrintTo>(v);
+}
+
+template <class T>
+class HexEscapedViaOPrintStream : public Printable {
+ public:
+  explicit HexEscapedViaOPrintStream(T wrapped) : wrapped_(wrapped) {}
+
+  size_t printTo(Print& raw_out) const override {
+    CountingPrint counting_print(raw_out);
+    counting_print.print('"');
+    {
+      PrintHexEscaped print_hex_escaped(counting_print);
+      OPrintStream strm(print_hex_escaped);
+      strm << wrapped_;
+    }
+    counting_print.print('"');
+    return counting_print.count();
+  }
+
+ private:
+  const T wrapped_;
+};
+
+template <typename T,
+          enable_if_t<!has_print_to<T>::value && is_union_or_class<T>::value,
+                      int> = 1>
+inline HexEscapedViaOPrintStream<const T&> HexEscaped(const T& t) {
+  return HexEscapedViaOPrintStream<const T&>(t);
+}
+
+template <typename T,
+          enable_if_t<!has_print_to<T>::value && !is_union_or_class<T>::value,
+                      int> = 1>
+inline HexEscapedViaOPrintStream<T> HexEscaped(const T& t) {
+  return HexEscapedViaOPrintStream<T>(t);
 }
 
 // Print a sequence of bytes in the standard (IEEE 802) format for printing

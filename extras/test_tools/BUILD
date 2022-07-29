@@ -162,6 +162,7 @@ cc_library(
     hdrs = ["print_value_to_std_string.h"],
     deps = [
         ":print_to_std_string",
+        "//mcucore/src:hex_escape",
         "//mcucore/src:o_print_stream",
     ],
 )
