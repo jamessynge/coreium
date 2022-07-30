@@ -254,3 +254,12 @@ cc_library(
         "//googletest:gunit_headers",
     ],
 )
+
+cc_library(
+    name = "progmem_string_utils",
+    hdrs = ["progmem_string_utils.h"],
+    deps = [
+        ":print_value_to_std_string",
+        "//mcucore/src:progmem_string",
+    ],
+)
