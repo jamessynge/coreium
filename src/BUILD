@@ -504,7 +504,6 @@ cc_library(
     hdrs = ["string_view.h"],
     deps = [
         ":has_print_to",
-        ":has_progmem_char_array",
         ":hex_escape",
         ":logging",
         ":mcucore_platform",

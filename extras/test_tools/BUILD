@@ -168,6 +168,15 @@ cc_library(
 )
 
 cc_library(
+    name = "progmem_string_utils",
+    hdrs = ["progmem_string_utils.h"],
+    deps = [
+        ":print_value_to_std_string",
+        "//mcucore/src:progmem_string",
+    ],
+)
+
+cc_library(
     name = "progmem_string_view_utils",
     hdrs = ["progmem_string_view_utils.h"],
     deps = [
@@ -252,14 +261,5 @@ cc_library(
     hdrs = ["uuid_utils.h"],
     deps = [
         "//googletest:gunit_headers",
-    ],
-)
-
-cc_library(
-    name = "progmem_string_utils",
-    hdrs = ["progmem_string_utils.h"],
-    deps = [
-        ":print_value_to_std_string",
-        "//mcucore/src:progmem_string",
     ],
 )
