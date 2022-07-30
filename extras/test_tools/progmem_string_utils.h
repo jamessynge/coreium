@@ -39,11 +39,6 @@ inline bool operator==(const ProgmemString& str1, std::string_view str2) {
   return PrintValueToStdString(str1) == PrintValueToStdString(str2);
 }
 
-// template <typename T>
-// inline bool operator==(const ProgmemString& str1, T str2) {
-//   return PrintValueToStdString(str1) == PrintValueToStdString(str2);
-// }
-
 }  // namespace mcucore
 
 #endif  // MCUCORE_EXTRAS_TEST_TOOLS_PROGMEM_STRING_UTILS_H_
