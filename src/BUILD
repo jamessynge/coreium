@@ -21,6 +21,7 @@ cc_library(
         ":eeprom_tag",
         ":eeprom_tlv",
         ":flash_string_table",
+        ":fnv1a",
         ":has_insert_into",
         ":has_print_to",
         ":has_progmem_char_array",

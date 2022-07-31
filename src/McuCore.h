@@ -1,6 +1,11 @@
 #ifndef MCUCORE_SRC_MCUCORE_H_
 #define MCUCORE_SRC_MCUCORE_H_
 
+// This file acts to export all of the headers that would be needed by a program
+// (i.e. an Arduino Sketch file) using this library.
+//
+// Author: james.synge@gmail.com
+
 #include "any_printable.h"           // IWYU pragma: export
 #include "array.h"                   // IWYU pragma: export
 #include "array_view.h"              // IWYU pragma: export
@@ -11,6 +16,7 @@
 #include "eeprom_tag.h"              // IWYU pragma: export
 #include "eeprom_tlv.h"              // IWYU pragma: export
 #include "flash_string_table.h"      // IWYU pragma: export
+#include "fnv1a.h"                   // IWYU pragma: export
 #include "has_insert_into.h"         // IWYU pragma: export
 #include "has_print_to.h"            // IWYU pragma: export
 #include "has_progmem_char_array.h"  // IWYU pragma: export
