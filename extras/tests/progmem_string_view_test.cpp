@@ -2,6 +2,7 @@
 
 #include <cstring>
 #include <iosfwd>
+#include <limits>
 #include <string>
 
 #include "absl/strings/string_view.h"
@@ -182,6 +183,34 @@ TEST(ProgmemStringViewTest, Copy) {
   EXPECT_EQ(std::string_view(buffer), kMixedStr);
   EXPECT_TRUE(psv.CopyTo(buffer, sizeof buffer));
   EXPECT_EQ(std::string_view(buffer), kMixedStr);
+}
+
+TEST(ProgmemStringViewTest, Contains) {
+#define CONTAINS_EXAMPLE "!#$%&'*+-.^_`|~"
+  const std::string kStdStringExample(CONTAINS_EXAMPLE);
+  {
+    const auto psv = MCU_PSV(CONTAINS_EXAMPLE);
+    char c = std::numeric_limits<char>::min();
+    do {
+      if (kStdStringExample.find(c) == std::string::npos) {
+        EXPECT_FALSE(psv.contains(c));
+      } else {
+        EXPECT_TRUE(psv.contains(c));
+      }
+
+    } while (c++ < std::numeric_limits<char>::max());
+  }
+  {
+    char c = std::numeric_limits<char>::min();
+    do {
+      if (kStdStringExample.find(c) == std::string::npos) {
+        EXPECT_FALSE(MCU_PSV(CONTAINS_EXAMPLE).contains(c));
+      } else {
+        EXPECT_TRUE(MCU_PSV(CONTAINS_EXAMPLE).contains(c));
+      }
+
+    } while (c++ < std::numeric_limits<char>::max());
+  }
 }
 
 TEST(ProgmemStringViewTest, PrintTo) {

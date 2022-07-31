@@ -21,6 +21,8 @@
 //
 // Author: james.synge@gmail.com
 
+#include <string.h>
+
 #include "logging.h"
 #include "mcucore_platform.h"
 #include "o_print_stream.h"
@@ -123,20 +125,11 @@ class StringView {
   }
 
   // Returns true if this view contains c.
-  bool contains(char c) const {
-    // Consider whether to use memchr.
-    // return memchr(ptr_, c, size_) != nullptr;
-    for (int ndx = 0; ndx < size_; ++ndx) {
-      if (ptr_[ndx] == c) {
-        return true;
-      }
-    }
-    return false;
-  }
+  bool contains(char c) const { return memchr(ptr_, c, size_) != nullptr; }
 
   // Returns true if this view contains the other as a substring.
-  // This is only used in one place in the decoder, and probably only for
-  // PUT requests, so making this as simple as possible.
+  // At the moment (July, 2022) this is unused, so making this as simple as
+  // possible. Note that memmem() could be used to implement this.
   bool contains(const StringView& other) const {
     StringView copy(*this);
     while (copy.size() >= other.size()) {

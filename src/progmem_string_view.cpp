@@ -4,6 +4,7 @@
 // cycle, and hence a BUILD dependency sycle.
 
 #include "has_print_to.h"
+#include "mcucore_platform.h"
 #include "print_misc.h"
 
 namespace mcucore {
@@ -87,6 +88,10 @@ bool ProgmemStringView::CopyTo(char* out, size_type size) {
   }
   memcpy_P(out, ptr_, size_);
   return true;
+}
+
+bool ProgmemStringView::contains(const char ch) const {
+  return memchr_P(ptr_, ch, size_) != nullptr;
 }
 
 char ProgmemStringView::at(size_type pos) const {

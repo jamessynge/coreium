@@ -98,6 +98,9 @@ class ProgmemStringView {
   // string into *out. No NUL terminator is copied.
   bool CopyTo(char* out, size_type size);
 
+  // Returns true if the string contains the specified character.
+  bool contains(char c) const;
+
   // Support for iterating.
   constexpr ProgmemCharPtr begin() const { return ProgmemCharPtr(ptr_); }
   constexpr ProgmemCharPtr end() const { return ProgmemCharPtr(ptr_ + size_); }

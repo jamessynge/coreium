@@ -16,8 +16,16 @@ const void* pgm_read_ptr_far(const void* ptr) {
 
 const void* pgm_read_ptr_near(const void* ptr) { return pgm_read_ptr_far(ptr); }
 
+const void* memchr_P(const void* s, int ch, size_t n) {
+  return std::memchr(s, ch, n);
+}
+
 int memcmp_P(const void* lhs, const void* rhs, size_t count) {
   return std::memcmp(lhs, rhs, count);
+}
+
+void* memcpy_P(void* dest, const void* src, size_t n) {
+  return std::memcpy(dest, src, n);
 }
 
 int strncasecmp_P(const char* s1, const char* s2, size_t n) {
@@ -26,8 +34,4 @@ int strncasecmp_P(const char* s1, const char* s2, size_t n) {
   return strncasecmp(s1, s2, n);
 }
 
-void* memcpy_P(void* dest, const void* src, size_t n) {
-  return std::memcpy(dest, src, n);
-}
-
-const char* strrchr_P(const char* s, int val) { return std::strrchr(s, val); }
+const char* strrchr_P(const char* s, int ch) { return std::strrchr(s, ch); }

@@ -3,10 +3,22 @@
 #include <cstring>
 #include <string_view>
 
-#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
 namespace {
+
+TEST(ProgramSpace, memchr_P) {
+  const char kStr[] = "abc";
+  EXPECT_EQ(memchr_P(kStr, 'a', 3), kStr + 0);
+  EXPECT_EQ(memchr_P(kStr, 'b', 3), kStr + 1);
+  EXPECT_EQ(memchr_P(kStr, 'c', 3), kStr + 2);
+
+  EXPECT_EQ(memchr_P(kStr, '\0', 3), nullptr);
+  EXPECT_EQ(memchr_P(kStr, ' ', 3), nullptr);
+  EXPECT_EQ(memchr_P(kStr, 'A', 3), nullptr);
+  EXPECT_EQ(memchr_P(kStr, 'Z', 3), nullptr);
+  EXPECT_EQ(memchr_P(kStr, 'd', 3), nullptr);
+}
 
 TEST(ProgramSpace, memcmp_P) {
   EXPECT_EQ(memcmp_P("abc", "abd", 2), 0);

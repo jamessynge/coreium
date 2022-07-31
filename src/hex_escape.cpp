@@ -1,5 +1,7 @@
 #include "hex_escape.h"
 
+#include <ctype.h>
+
 #include "logging.h"
 #include "mcucore_platform.h"
 
@@ -10,18 +12,6 @@ constexpr char kHexDigits[] AVR_PROGMEM = "0123456789ABCDEF";
 char NibbleToAsciiHex(uint8_t v) {
   MCU_DCHECK_LT(v, 16);
   return pgm_read_byte(kHexDigits + v);
-}
-
-inline bool IsHexDigit(char c) {
-  if ('0' <= c && c <= '9') {
-    return true;
-  }
-  // lc_c is lower case c IFF c was originally upper case.
-  c |= static_cast<char>(0x20);
-  if ('a' <= c && c <= 'f') {
-    return true;
-  }
-  return false;
 }
 
 size_t PrintCharWithStateHexEscaped(Print& out, const char c,
@@ -52,7 +42,7 @@ size_t PrintCharWithStateHexEscaped(Print& out, const char c,
           state = EHexEscapingState::kQuestionMarkOutput;
 #endif
         } else if (old_state == EHexEscapingState::kHexDigitOutput &&
-                   IsHexDigit(c)) {
+                   isxdigit(c)) {
           // Need to hex escape this character.
           break;
         } else {

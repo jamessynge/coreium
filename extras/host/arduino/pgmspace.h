@@ -36,9 +36,11 @@ uint32_t pgm_read_dword_far(const uint32_t* ptr);
 const void* pgm_read_ptr_far(const void* ptr);
 const void* pgm_read_ptr_near(const void* ptr);
 
+const void* memchr_P(const void* s, int ch, size_t n);
 int memcmp_P(const void* lhs, const void* rhs, size_t count);
-int strncasecmp_P(const char* s1, const char* s2, size_t n);
 void* memcpy_P(void* dest, const void* src, size_t n);
-const char* strrchr_P(const char* s, int val);
+
+int strncasecmp_P(const char* s1, const char* s2, size_t n);
+const char* strrchr_P(const char* s, int ch);
 
 #endif  // MCUCORE_EXTRAS_HOST_ARDUINO_PGMSPACE_H_

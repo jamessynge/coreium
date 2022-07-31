@@ -47,7 +47,7 @@ constexpr uint32_t kMaxUInt = 0xFFFFFFFF;
 constexpr uint32_t kMaxUIntDiv10 = kMaxUInt / 10;
 
 bool AddOnesPlace(uint32_t& value, const char c) {
-  if (!('0' <= c && c <= '9')) {
+  if (!isdigit(c)) {
     return false;
   }
   if (value > kMaxUIntDiv10) {
@@ -63,7 +63,7 @@ bool AddOnesPlace(uint32_t& value, const char c) {
 }
 
 bool AddOnesPlace(double& value, const char c) {
-  if (!('0' <= c && c <= '9')) {
+  if (!isdigit(c)) {
     return false;
   }
   value *= 10;
