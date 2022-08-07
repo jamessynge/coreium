@@ -42,6 +42,15 @@ bool StringView::operator!=(const char* other) const {
   return !(*this == other);
 }
 
+StringView::size_type StringView::find_first_not_of(char c) const {
+  for (size_type pos = 0; pos < size_; ++pos) {
+    if (at(pos) != c) {
+      return pos;
+    }
+  }
+  return kMaxSize;
+}
+
 namespace {
 constexpr uint32_t kMaxUInt = 0xFFFFFFFF;
 constexpr uint32_t kMaxUIntDiv10 = kMaxUInt / 10;

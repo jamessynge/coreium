@@ -7,7 +7,7 @@
 // Inspired by and based on std::string_view and absl::string_view, with copies
 // of some of the comments and definitions. However, since an embedded system
 // doesn't have much logging or debugging support, the caller needs to know what
-// they're doing. So we have some DCHECKS, but we don't otherwise prevent
+// they're doing; we do have some DCHECKS, but we don't otherwise prevent
 // invalid requests, including not throwing any exceptions. Callers should use
 // extensive testing, including fuzz testing, to find bugs.
 //
@@ -123,6 +123,10 @@ class StringView {
     MCU_DCHECK(!empty());
     return ptr_[size_ - 1];
   }
+
+  // Returns the position of the first character not == c. Returns kMaxSize if
+  // no such character is found.
+  size_type find_first_not_of(char c) const;
 
   // Returns true if this view contains c.
   bool contains(char c) const { return memchr(ptr_, c, size_) != nullptr; }

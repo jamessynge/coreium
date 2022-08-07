@@ -3,6 +3,7 @@
 // Author: james.synge@gmail.com
 
 #include <cstdint>
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -206,6 +207,27 @@ TEST(StringViewTest, Equals) {
   // Case: same length, different values.
   EXPECT_NE(StringView("123"), StringView("abc"));
   EXPECT_NE(StringView("123"), "abc");
+}
+
+TEST(StringViewTest, FindFirstNotOfChar) {
+  {
+    StringView view("abcdefghijkl", 9);
+    EXPECT_EQ(view.find_first_not_of('a'), 1);
+    EXPECT_EQ(view.find_first_not_of('b'), 0);
+    EXPECT_EQ(view.find_first_not_of('\0'), 0);
+    EXPECT_EQ(view.find_first_not_of('A'), 0);
+  }
+  {
+    StringView view("aaaaaaaaa", 9);
+    EXPECT_EQ(view.find_first_not_of('a'), StringView::kMaxSize);
+    EXPECT_EQ(view.find_first_not_of('b'), 0);
+  }
+  {
+    StringView view;
+    EXPECT_EQ(view.find_first_not_of('\0'), StringView::kMaxSize);
+    EXPECT_EQ(view.find_first_not_of('z'), StringView::kMaxSize);
+    EXPECT_EQ(view.find_first_not_of('A'), StringView::kMaxSize);
+  }
 }
 
 TEST(StringViewTest, ContainsChar) {
