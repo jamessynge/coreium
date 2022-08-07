@@ -12,11 +12,11 @@ size_t Status::printTo(Print& out) const {
   CountingPrint counter(out);
   OPrintStream strm(counter);
   if (ok()) {
-    strm << MCU_FLASHSTR("OK");
+    strm << MCU_PSD("OK");
   } else {
-    strm << MCU_FLASHSTR("{.code=") << code_;
+    strm << MCU_PSD("{.code=") << code_;
     if (message_.size()) {
-      strm << MCU_FLASHSTR(", .message=") << HexEscaped(message_);
+      strm << MCU_PSD(", .message=") << HexEscaped(message_);
     }
     strm << '}';
   }

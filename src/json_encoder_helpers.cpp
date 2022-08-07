@@ -11,8 +11,8 @@ size_t PrintableJsonObject::printTo(Print& out) const {
   JsonObjectEncoder::Encode(source_, counter);
 #if SIZE_MAX < UINT32_MAX
   MCU_DCHECK_LE(counter.count(), SIZE_MAX)
-      << MCU_FLASHSTR("size_t max (") << SIZE_MAX
-      << MCU_FLASHSTR(") is too small for ") << counter.count();
+      << MCU_PSD("size_t max (") << SIZE_MAX << MCU_PSD(") is too small for ")
+      << counter.count();
 #endif
   return counter.count();
 }

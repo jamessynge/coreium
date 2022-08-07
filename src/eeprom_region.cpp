@@ -15,11 +15,11 @@ EepromRegionReader::EepromRegionReader(EEPROMClass& eeprom,
       cursor_(0) {
   static_assert(is_same<EepromAddrT, decltype(eeprom.length())>::value);
   MCU_DCHECK_LE(start_address, eeprom.length())
-      << MCU_FLASHSTR("Starts")           // COV_NF_LINE
-      << MCU_FLASHSTR(" beyond EEPROM");  // COV_NF_LINE
+      << MCU_PSD("Starts")           // COV_NF_LINE
+      << MCU_PSD(" beyond EEPROM");  // COV_NF_LINE
   MCU_DCHECK_LE(length, eeprom.length() - start_address)
-      << MCU_FLASHSTR("Extends")          // COV_NF_LINE
-      << MCU_FLASHSTR(" beyond EEPROM");  // COV_NF_LINE
+      << MCU_PSD("Extends")          // COV_NF_LINE
+      << MCU_PSD(" beyond EEPROM");  // COV_NF_LINE
 }
 
 EepromRegionReader::EepromRegionReader()
@@ -66,9 +66,9 @@ bool EepromRegionReader::ReadString(char* ptr, const EepromAddrT length) {
 // Prints fields, in support of googletest using OPrintStream and
 // PrintValueToStdString.
 void EepromRegionReader::InsertInto(OPrintStream& strm) const {
-  strm << MCU_FLASHSTR("{.start=") << start_address_
-       << MCU_FLASHSTR(", .length=") << length_ << MCU_FLASHSTR(", .cursor=")
-       << cursor_ << MCU_FLASHSTR(", .available=") << available() << '}';
+  strm << MCU_PSD("{.start=") << start_address_ << MCU_PSD(", .length=")
+       << length_ << MCU_PSD(", .cursor=") << cursor_
+       << MCU_PSD(", .available=") << available() << '}';
 }
 
 bool EepromRegion::WriteBytes(const uint8_t* ptr, const EepromAddrT length) {

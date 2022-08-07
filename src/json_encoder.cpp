@@ -41,7 +41,7 @@ void PrintCharJsonEscaped(Print& out, const char c) {
   } else {
     // This used to be a DCHECK, but a VLOG is better because the character
     // could come from client input.
-    MCU_VLOG(4) << MCU_FLASHSTR("Unsupported JSON character: ") << BaseHex
+    MCU_VLOG(4) << MCU_PSD("Unsupported JSON character: ") << BaseHex
                 << (c + 0);
   }
 }

@@ -109,7 +109,7 @@ class JitterRandomCollector {
 
 #if MCU_HOST_TARGET || defined(TCNT1)
     if (timer_counters_to_use_ & JitterRandom::kTimerCounter1) {
-      MCU_VLOG(3) << MCU_FLASHSTR("Initializing") << MCU_FLASHSTR(" T/C ") << 1;
+      MCU_VLOG(3) << MCU_PSD("Initializing") << MCU_PSD(" T/C ") << 1;
 
       // We wait for a watchdog interrupt before starting the Timer/Counter;
       // this is an attempt to its correlation with the previously started T/Cs
@@ -133,7 +133,7 @@ class JitterRandomCollector {
 
 #if MCU_HOST_TARGET || defined(TCNT3)
     if (timer_counters_to_use_ & JitterRandom::kTimerCounter3) {
-      MCU_VLOG(3) << MCU_FLASHSTR("Initializing") << MCU_FLASHSTR(" T/C ") << 3;
+      MCU_VLOG(3) << MCU_PSD("Initializing") << MCU_PSD(" T/C ") << 3;
       WaitForInterrupt();
       noInterrupts();
       TIMSK3 = 0;     // Disable interrupts from the Timer/Counter.
@@ -149,7 +149,7 @@ class JitterRandomCollector {
 
 #if MCU_HOST_TARGET || defined(TCNT4)
     if (timer_counters_to_use_ & JitterRandom::kTimerCounter4) {
-      MCU_VLOG(3) << MCU_FLASHSTR("Initializing") << MCU_FLASHSTR(" T/C ") << 4;
+      MCU_VLOG(3) << MCU_PSD("Initializing") << MCU_PSD(" T/C ") << 4;
       WaitForInterrupt();
       noInterrupts();
       TIMSK4 = 0;     // Disable interrupts from the Timer/Counter.
@@ -165,7 +165,7 @@ class JitterRandomCollector {
 
 #if MCU_HOST_TARGET || defined(TCNT5)
     if (timer_counters_to_use_ & JitterRandom::kTimerCounter5) {
-      MCU_VLOG(3) << MCU_FLASHSTR("Initializing") << MCU_FLASHSTR(" T/C ") << 5;
+      MCU_VLOG(3) << MCU_PSD("Initializing") << MCU_PSD(" T/C ") << 5;
       WaitForInterrupt();
       noInterrupts();
       TIMSK5 = 0;     // Disable interrupts from the Timer/Counter.
@@ -185,7 +185,7 @@ class JitterRandomCollector {
 
 #if MCU_HOST_TARGET || defined(TCNT1)
     if (timer_counters_to_use_ & JitterRandom::kTimerCounter1) {
-      MCU_VLOG(5) << MCU_FLASHSTR("Disabling") << MCU_FLASHSTR(" T/C ") << 1;
+      MCU_VLOG(5) << MCU_PSD("Disabling") << MCU_PSD(" T/C ") << 1;
       noInterrupts();
       TCCR1B = 0;  // Turn off the Timer/Counter.
       interrupts();
@@ -194,7 +194,7 @@ class JitterRandomCollector {
 
 #if MCU_HOST_TARGET || defined(TCNT3)
     if (timer_counters_to_use_ & JitterRandom::kTimerCounter3) {
-      MCU_VLOG(5) << MCU_FLASHSTR("Disabling") << MCU_FLASHSTR(" T/C ") << 3;
+      MCU_VLOG(5) << MCU_PSD("Disabling") << MCU_PSD(" T/C ") << 3;
       noInterrupts();
       TCCR3B = 0;  // Turn off the Timer/Counter.
       interrupts();
@@ -203,7 +203,7 @@ class JitterRandomCollector {
 
 #if MCU_HOST_TARGET || defined(TCNT4)
     if (timer_counters_to_use_ & JitterRandom::kTimerCounter4) {
-      MCU_VLOG(5) << MCU_FLASHSTR("Disabling") << MCU_FLASHSTR(" T/C ") << 4;
+      MCU_VLOG(5) << MCU_PSD("Disabling") << MCU_PSD(" T/C ") << 4;
       noInterrupts();
       TCCR4B = 0;  // Turn off the Timer/Counter.
       interrupts();
@@ -212,7 +212,7 @@ class JitterRandomCollector {
 
 #if MCU_HOST_TARGET || defined(TCNT5)
     if (timer_counters_to_use_ & JitterRandom::kTimerCounter5) {
-      MCU_VLOG(5) << MCU_FLASHSTR("Disabling") << MCU_FLASHSTR(" T/C ") << 5;
+      MCU_VLOG(5) << MCU_PSD("Disabling") << MCU_PSD(" T/C ") << 5;
       noInterrupts();
       TCCR5B = 0;  // Turn off the Timer/Counter.
       interrupts();
@@ -295,9 +295,9 @@ uint32_t JitterRandom::random32(
     const uint8_t minimum_watchdog_interrupts, const uint32_t minimum_time_ms) {
   MCU_DCHECK(minimum_watchdog_interrupts > 0 || minimum_time_ms > 0);
 
-  MCU_VLOG(1) << MCU_FLASHSTR("JitterRandom::random32 timer_counters_to_use: ")
+  MCU_VLOG(1) << MCU_PSD("JitterRandom::random32 timer_counters_to_use: ")
               << BaseTwo << static_cast<uint32_t>(timer_counters_to_use)
-              << BaseDec << MCU_FLASHSTR(", minimum_watchdog_interrupts: ")
+              << BaseDec << MCU_PSD(", minimum_watchdog_interrupts: ")
               << minimum_watchdog_interrupts;
 
   avr::EnableWatchdogInterruptMode();
@@ -325,7 +325,7 @@ uint32_t JitterRandom::random32(
                 << MCU_NAME_VAL(elapsed_ms);
 
     WaitForInterrupt();
-    MCU_VLOG(4) << MCU_FLASHSTR("interrupt detected");
+    MCU_VLOG(4) << MCU_PSD("interrupt detected");
     if (interrupted) {
       ++num_already_interrupted_c;
     }
@@ -346,22 +346,21 @@ uint32_t JitterRandom::random32(
   } while (num_watchdog_interrupts < minimum_watchdog_interrupts ||
            elapsed_ms < minimum_time_ms);
 
-  MCU_VLOG(1) << MCU_FLASHSTR("JitterRandom::random32")
-              << MCU_FLASHSTR(" num_already_interrupted a=")
-              << num_already_interrupted_a << MCU_FLASHSTR(" b=")
-              << num_already_interrupted_b << MCU_FLASHSTR(" c=")
-              << num_already_interrupted_c << MCU_FLASHSTR(" d=")
-              << num_already_interrupted_d << MCU_FLASHSTR(" e=")
+  MCU_VLOG(1) << MCU_PSD("JitterRandom::random32")
+              << MCU_PSD(" num_already_interrupted a=")
+              << num_already_interrupted_a << MCU_PSD(" b=")
+              << num_already_interrupted_b << MCU_PSD(" c=")
+              << num_already_interrupted_c << MCU_PSD(" d=")
+              << num_already_interrupted_d << MCU_PSD(" e=")
               << num_already_interrupted_e;
 
   avr::DisableWatchdog();
 
   const auto result = collector.value();
-  MCU_VLOG(1) << MCU_FLASHSTR("JitterRandom::random32") << BaseHex
+  MCU_VLOG(1) << MCU_PSD("JitterRandom::random32") << BaseHex
               << MCU_NAME_VAL(result) << BaseDec
               << MCU_NAME_VAL(num_watchdog_interrupts)
-              << MCU_NAME_VAL(elapsed_ms)
-              << MCU_FLASHSTR(" elapsed_ms/interrupt=")
+              << MCU_NAME_VAL(elapsed_ms) << MCU_PSD(" elapsed_ms/interrupt=")
               << elapsed_ms / num_watchdog_interrupts;
   return result;
 }
@@ -371,8 +370,7 @@ void JitterRandom::setRandomSeed(ETimerCounterSelection timer_counters_to_use,
                                  const uint32_t minimum_time_ms) {
   uint32_t seed = random32(timer_counters_to_use, minimum_watchdog_interrupts,
                            minimum_time_ms);
-  MCU_VLOG(1) << MCU_FLASHSTR("JitterRandom::setRandomSeed to ") << BaseHex
-              << seed;
+  MCU_VLOG(1) << MCU_PSD("JitterRandom::setRandomSeed to ") << BaseHex << seed;
   randomSeed(seed);
 }
 

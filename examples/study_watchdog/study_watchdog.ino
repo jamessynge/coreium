@@ -15,10 +15,10 @@ const auto SEP = MCU_FLASHSTR(", ");
 
 struct EightBitTimerCounterConfig {
   void InsertInto(OPrintStream& strm) const {
-    strm << BaseTwo << MCU_FLASHSTR("TCCRnA=") << tccr_a << SEP  // Split
-         << MCU_FLASHSTR("TCCRnB=") << tccr_b << SEP             // lines
-         << MCU_FLASHSTR("OCRnA=") << ocr_a << SEP               // here.
-         << MCU_FLASHSTR("OCRnB=") << ocr_b;
+    strm << BaseTwo << MCU_PSD("TCCRnA=") << tccr_a << SEP  // Split
+         << MCU_PSD("TCCRnB=") << tccr_b << SEP             // lines
+         << MCU_PSD("OCRnA=") << ocr_a << SEP               // here.
+         << MCU_PSD("OCRnB=") << ocr_b;
   }
 
   uint8_t tccr_a;
@@ -36,7 +36,7 @@ struct TimerCounter0Config : EightBitTimerCounterConfig {
   }
 
   void InsertInto(OPrintStream& strm) const {
-    strm << MCU_FLASHSTR("T/C 0 Config: ");
+    strm << MCU_PSD("T/C 0 Config: ");
     EightBitTimerCounterConfig::InsertInto(strm);
   }
 };
@@ -51,9 +51,9 @@ struct TimerCounter2Config : EightBitTimerCounterConfig {
   }
 
   void InsertInto(OPrintStream& strm) const {
-    strm << MCU_FLASHSTR("T/C 2 Config: ");
+    strm << MCU_PSD("T/C 2 Config: ");
     EightBitTimerCounterConfig::InsertInto(strm);
-    strm << BaseTwo << SEP << MCU_FLASHSTR("ASSR=") << assr;
+    strm << BaseTwo << SEP << MCU_PSD("ASSR=") << assr;
   }
 
   uint8_t assr;
@@ -63,14 +63,14 @@ struct SixteenBitTimerCounterConfig {
   explicit SixteenBitTimerCounterConfig(uint8_t tc_num) : tc_num(tc_num) {}
 
   void InsertInto(OPrintStream& strm) const {
-    strm << MCU_FLASHSTR("T/C ") << BaseDec << tc_num  // Force
-         << MCU_FLASHSTR(" Config: ") << BaseTwo       // formatter
-         << MCU_FLASHSTR("TCCRnA=") << tccr_a << SEP   // to split
-         << MCU_FLASHSTR("TCCRnB=") << tccr_b << SEP   // lines
-         << MCU_FLASHSTR("TCCRnC=") << tccr_c << SEP   // here
-         << MCU_FLASHSTR("OCRnA=") << ocr_a << SEP     // and
-         << MCU_FLASHSTR("OCRnB=") << ocr_b << SEP     // here.
-         << MCU_FLASHSTR("OCRnC=") << ocr_c;
+    strm << MCU_PSD("T/C ") << BaseDec << tc_num  // Force
+         << MCU_PSD(" Config: ") << BaseTwo       // formatter
+         << MCU_PSD("TCCRnA=") << tccr_a << SEP   // to split
+         << MCU_PSD("TCCRnB=") << tccr_b << SEP   // lines
+         << MCU_PSD("TCCRnC=") << tccr_c << SEP   // here
+         << MCU_PSD("OCRnA=") << ocr_a << SEP     // and
+         << MCU_PSD("OCRnB=") << ocr_b << SEP     // here.
+         << MCU_PSD("OCRnC=") << ocr_c;
   }
 
   const uint8_t tc_num;
@@ -125,13 +125,13 @@ struct TimerCounter5Config : SixteenBitTimerCounterConfig {
 
 struct TimerCapture {
   void InsertInto(OPrintStream& strm) const {
-    strm << ms << MCU_FLASHSTR("ms") << SEP  // Split
-         << us << MCU_FLASHSTR("us") << SEP  // lines
-         << tc0 << SEP                       // here,
-         << tc1 << SEP                       // here,
-         << tc2 << SEP                       // here,
-         << tc3 << SEP                       // and
-         << tc4 << SEP                       // here.
+    strm << ms << MCU_PSD("ms") << SEP  // Split
+         << us << MCU_PSD("us") << SEP  // lines
+         << tc0 << SEP                  // here,
+         << tc1 << SEP                  // here,
+         << tc2 << SEP                  // here,
+         << tc3 << SEP                  // and
+         << tc4 << SEP                  // here.
          << tc5;
   }
 
@@ -181,9 +181,9 @@ void setup() {
   }
   const auto us = micros();
 
-  LogSink() << MCU_FLASHSTR("\nSerial ready @ ") << us << MCU_FLASHSTR("us");
-  LogSink() << MCU_FLASHSTR("Counter configs before init:\n");
-  LogSink() << MCU_FLASHSTR("Watchdog Control Register: ") << BaseTwo
+  LogSink() << MCU_PSD("\nSerial ready @ ") << us << MCU_PSD("us");
+  LogSink() << MCU_PSD("Counter configs before init:\n");
+  LogSink() << MCU_PSD("Watchdog Control Register: ") << BaseTwo
             << global_watchdog_config;
   LogSink() << global_tc0_config;
   LogSink() << global_tc1_config;
@@ -192,23 +192,21 @@ void setup() {
   LogSink() << global_tc4_config;
   LogSink() << global_tc5_config;
 
-  LogSink() << MCU_FLASHSTR("\nCounter values before init: ")
-            << global_counters;
+  LogSink() << MCU_PSD("\nCounter values before init: ") << global_counters;
 
-  LogSink() << MCU_FLASHSTR("\nCounter configs in setup():");
+  LogSink() << MCU_PSD("\nCounter configs in setup():");
   LogSink() << TimerCounter0Config();
   LogSink() << TimerCounter1Config();
   LogSink() << TimerCounter2Config();
   LogSink() << TimerCounter3Config();
   LogSink() << TimerCounter4Config();
   LogSink() << TimerCounter5Config();
-  LogSink() << MCU_FLASHSTR("\nCounter values at setup() entry: ")
-            << setup_counters;
+  LogSink() << MCU_PSD("\nCounter values at setup() entry: ") << setup_counters;
 
-  LogSink() << MCU_FLASHSTR("\n\nStarting Watchdog Timer in Reset Mode @ ")
-            << micros() << MCU_FLASHSTR("us");
+  LogSink() << MCU_PSD("\n\nStarting Watchdog Timer in Reset Mode @ ")
+            << micros() << MCU_PSD("us");
   mcucore::avr::EnableWatchdogResetMode(3);  // ~0.125 seconds.
-  LogSink() << MCU_FLASHSTR("Watchdog Control Register: ") << BaseTwo
+  LogSink() << MCU_PSD("Watchdog Control Register: ") << BaseTwo
             << mcucore::avr::GetWatchdogConfig();
 }
 

@@ -24,8 +24,8 @@ bool operator==(const EepromTag& lhs, const EepromTag& rhs) {
 }
 
 void EepromTag::InsertInto(OPrintStream& strm) const {
-  strm << MCU_FLASHSTR("{.domain=") << domain.value() << MCU_FLASHSTR(", .id=")
-       << id << '}';
+  strm << MCU_PSD("{.domain=") << domain.value() << MCU_PSD(", .id=") << id
+       << '}';
 }
 
 }  // namespace mcucore

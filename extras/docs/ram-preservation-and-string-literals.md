@@ -77,15 +77,29 @@ To address this, `progmem_string_data.h` provides macros that arrange for
 multiple copies of a string literal, even it in multiple source files, to share
 the same storage in Flash.
 
-*   `MCU_FLASHSTR(str)` can be used as a direct replacement for `F(str)`.
+*   `MCU_PSD(str)` returns an instance of a type generated at compile time just
+    for `str`. `MCU_PSD` is the macro to use for logging statements, for
+    example:
+
+    ```
+    MCU_VLOG(1) << MCU_PSD("some string");
+    MCU_CHECK_EQ(a, b) << MCU_PSD("explanation of issue");
+    ```
+
+*   `MCU_BASENAME(str)` is like `MCU_PSD`, but removes from the string any slash
+    characters (forward or backward), and any characters that appear before them
+    in the string. This means that `/my/directory/file-name.cpp` becomes
+    `file-name.cpp`. This macro is used by `logging.h` to enable the source file
+    name (but not path) of a logging statement to be logged along with the
+    message.
+
+*   `MCU_FLASHSTR(str)` can be used as a direct replacement for `F(str)`; it's
+    value is a pointer to a null terminated string in PROGMEM. For Arduino, the
+    primary place these are used is in the Serial.print function. However, AVR
+    Libc provides additional functions for working with
+
 *   `MCU_PSV(str)` expands to a ProgmemStringView instance with the string
     literal `str` as the value it views.
-*   `MCU_BASENAME(str)` is like `MCU_FLASHSTR`, but removes from the string any
-    slash characters (forward or backward), and any characters that appear
-    before them in the string. This means that `/my/directory/file-name.cpp`
-    becomes `file-name.cpp`. This macro is used by `logging.h` to enable the
-    source file location of a logging statement to be logged along with the
-    message.
 
 > **Note:** I came across (and lost track of) an article which showed how to use
 > inline assembler in C++ for the AVR chips such that overlapping duplicate
@@ -103,57 +117,3 @@ the same storage in Flash.
     constexpr auto kFalseFlashStr = MCU_FLASHSTR("false");
     constexpr auto kOKStrView = MCU_PSV("OK");
     ```
-
-1.  Using the `MCU_PSV(value)` macro inline in expressions, such as:
-
-    ```
-    MCU_CHECK(false) << MCU_PSV("api group (") << group
-                     << MCU_PSV(") is not device or setup");
-    ```
-
-    Unlike the above macros, this defines a full specialization of the variadic
-    class template `ProgmemStringStorage`. The template declares a static
-    function MakeProgmemStringView that returns a mcucore::ProgmemStringView
-    instance. The storage class has a static array holding the characters of the
-    string, without a terminating NUL. One advantage of MCU_PSV over
-    TAS_DEFINE_PROGMEM_LITERAL is that the compiler and linker should collapse
-    multiple occurrences of TASLIT(x) with the same value of x. A downside of
-    using MCU_PSV is that it uses some fancy compile time type deduction to
-    determine the length of the string, and this slows compilation. If you use
-    the string in multiple files, defining it in a shared source file and
-    exposing them via TAS_DEFINE_PROGMEM_LITERAL will reduce compile time.
-
-1.  Using the `MCU_FLASHSTR(value)` macro inline in expressions, such as:
-
-    ```
-    MCU_CHECK(false) << MCU_FLASHSTR("api group (") << group
-                     << MCU_FLASHSTR(") is not device or setup");
-    ```
-
-    `MCU_FLASHSTR` shares much in common with TASLIT, but the return type is
-    `const __FlashStringHelper*`, the type defined by Arduino to denote a string
-    stored in flash memory, which (on Harvard architecture processors) can't be
-    treated as a regular string. In general, it appears that `MCU_FLASHSTR` is
-    the most convenient of these macros.
-
-After building up the facilities described above (not including MCU_FLASHSTR), I
-learned that the macro `PSTR(value)` (from AVR libc's pgmspace.h) will
-(supposedly) have the effect of storing a string in PROGMEM only. Further, the
-developers built on this by defining the macro `F(value)` in WString.h which
-performs a typecast on a `PSTR(value)` to give it the type `const
-__FlashStringHelper*`.
-
-```
-class __FlashStringHelper;
-#define F(string_literal) (reinterpret_cast<const __FlashStringHelper *>(PSTR(string_literal)))
-```
-
-This is good for printing a string, but not for comparing it with a
-`mcucore::StringView`. Further, it doesn't capture the string length at compile
-time, so it must be rediscovered each time.
-
-When trying to use `F(value)` and `PSTR(value)`, I discovered that they do what
-they say, but don't collapse multiple occurrences of a string into one. Hence
-`MCU_FLASHSTR(value)` is preferred over `F(value)` if you just want to output a
-string, and `TASLIT(value)` is preferred if you also want to know the length
-without search the string for the terminating NUL.

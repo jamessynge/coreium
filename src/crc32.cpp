@@ -27,12 +27,12 @@ inline uint32_t GetCrcTableEntry(uint32_t key) {
 }  // namespace
 
 void Crc32::appendByte(uint8_t v) {
-  MCU_VLOG(6) << MCU_FLASHSTR("Crc32::appendByte(") << (v + 0)
-              << MCU_FLASHSTR(") old value=") << BaseHex << value_;
+  MCU_VLOG(6) << MCU_PSD("Crc32::appendByte(") << (v + 0)
+              << MCU_PSD(") old value=") << BaseHex << value_;
   value_ = GetCrcTableEntry(value_ ^ v) ^ (value_ >> 4);
   value_ = GetCrcTableEntry(value_ ^ (v >> 4)) ^ (value_ >> 4);
   value_ = ~value_;
-  MCU_VLOG(6) << MCU_FLASHSTR("new value=") << BaseHex << value_;
+  MCU_VLOG(6) << MCU_PSD("new value=") << BaseHex << value_;
 }
 
 }  // namespace mcucore

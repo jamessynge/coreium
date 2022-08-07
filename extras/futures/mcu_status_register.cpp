@@ -6,28 +6,27 @@
 // determine whether the AVR MCU restarted for one of the reasons listed below.
 
 void logMCUStatusRegister(uint8_t mcusr) {
-  ::mcucore::LogSink() << MCU_FLASHSTR("MCUSR: ") << ::mcucore::BaseHex
-                       << mcusr;
+  ::mcucore::LogSink() << MCU_PSD("MCUSR: ") << ::mcucore::BaseHex << mcusr;
   if (MCU_VLOG_IS_ON(1)) {
     if (mcusr & _BV(JTRF)) {
       // JTAG Reset
-      MCU_VLOG(1) << MCU_FLASHSTR("JTAG") << MCU_FLASHSTR(" reset occured");
+      MCU_VLOG(1) << MCU_PSD("JTAG") << MCU_PSD(" reset occured");
     }
     if (mcusr & _BV(WDRF)) {
       // Watchdog Reset
-      MCU_VLOG(1) << MCU_FLASHSTR("Watchdog") << MCU_FLASHSTR(" reset occured");
+      MCU_VLOG(1) << MCU_PSD("Watchdog") << MCU_PSD(" reset occured");
     }
     if (mcusr & _BV(BORF)) {
       // Brownout Reset
-      MCU_VLOG(1) << MCU_FLASHSTR("Brownout") << MCU_FLASHSTR(" reset occured");
+      MCU_VLOG(1) << MCU_PSD("Brownout") << MCU_PSD(" reset occured");
     }
     if (mcusr & _BV(EXTRF)) {
       // Reset button or otherwise some software reset
-      MCU_VLOG(1) << MCU_FLASHSTR("External") << MCU_FLASHSTR(" reset occured");
+      MCU_VLOG(1) << MCU_PSD("External") << MCU_PSD(" reset occured");
     }
     if (mcusr & _BV(PORF)) {
       // Power On Reset
-      MCU_VLOG(1) << MCU_FLASHSTR("Power-on") << MCU_FLASHSTR(" reset occured");
+      MCU_VLOG(1) << MCU_PSD("Power-on") << MCU_PSD(" reset occured");
     }
   }
 }

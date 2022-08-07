@@ -73,8 +73,8 @@ void GetBytes(int address, size_t numBytes, uint8_t* dest, Crc32* crc) {
 int PutCrc(int toAddress, const Crc32& crc) {
   const auto value = crc.value();
   static_assert(4 == sizeof value, "sizeof CRC value is not 4");
-  MCU_VLOG(6) << MCU_FLASHSTR("PutCrc value ") << BaseHex << value
-              << MCU_FLASHSTR(" to ") << BaseDec << toAddress;
+  MCU_VLOG(6) << MCU_PSD("PutCrc value ") << BaseHex << value << MCU_PSD(" to ")
+              << BaseDec << toAddress;
   EEPROM.put(toAddress, value);
   MCU_CHECK(VerifyCrc(toAddress, crc));
   return toAddress + static_cast<int>(sizeof value);
@@ -84,9 +84,9 @@ bool VerifyCrc(int atAddress, const Crc32& crc) {
   uint32_t stored = 0;
   EEPROM.get(atAddress, stored);
   if (crc.value() != stored) {
-    MCU_VLOG(1) << MCU_FLASHSTR("VerifyCrc at ") << atAddress << BaseHex
-                << MCU_FLASHSTR(") computed value=") << crc.value()
-                << MCU_FLASHSTR(", stored value=") << BaseHex << stored;
+    MCU_VLOG(1) << MCU_PSD("VerifyCrc at ") << atAddress << BaseHex
+                << MCU_PSD(") computed value=") << crc.value()
+                << MCU_PSD(", stored value=") << BaseHex << stored;
     return false;
   }
   return true;

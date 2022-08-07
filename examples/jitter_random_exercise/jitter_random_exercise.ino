@@ -39,7 +39,7 @@ void setup() {
   while (!Serial) {
   }
   const auto serial_ready_us = micros();
-  LogSink() << MCU_FLASHSTR("\n\nSerial ready") << MCU_NAME_VAL(serial_ready_us)
+  LogSink() << MCU_PSD("\n\nSerial ready") << MCU_NAME_VAL(serial_ready_us)
             << MCU_NAME_VAL(boot_wdt_config) << MCU_NAME_VAL(kMinimumTimeMs)
             << MCU_NAME_VAL(kMinimumWatchdogInterrupts) << BaseHex
             << MCU_NAME_VAL(kTimerCounters);
@@ -48,8 +48,7 @@ void setup() {
        ++num_randoms) {  //
     const auto rnd = JitterRandom::random32(
         kTimerCounters, kMinimumWatchdogInterrupts, kMinimumTimeMs);
-    LogSink() << MCU_FLASHSTR("#") << num_randoms
-              << ' '  // << mcucore::SetBase(36)
+    LogSink() << MCU_PSD("#") << num_randoms << ' '  // << mcucore::SetBase(36)
               << rnd;
   }
 
@@ -73,7 +72,7 @@ void Report(ProgmemString ps, const int counter_flags,
 }
 
 void loop() {
-  LogSink() << MCU_FLASHSTR("Loop Entry");
+  LogSink() << MCU_PSD("Loop Entry");
 
   for (int interrupt_count = 1; interrupt_count <= 6; ++interrupt_count) {
     const auto r0 = Random32(JitterRandom::kTimerCounter0, interrupt_count);
@@ -94,12 +93,12 @@ void loop() {
 
 #if 1  // Print in base 36.
     LogSink sink;
-    sink << MCU_FLASHSTR("ic ") << interrupt_count << ' ';
+    sink << MCU_PSD("ic ") << interrupt_count << ' ';
     sink.set_base(36);
     sink << r0 << ' ' << r01 << ' ' << r013 << ' ' << r0134 << ' ' << r01345;
 #else
-    LogSink() << MCU_FLASHSTR("ic ") << interrupt_count << ' ' << r0 << ' '
-              << r01 << ' ' << r013 << ' ' << r0134 << ' ' << r01345;
+    LogSink() << MCU_PSD("ic ") << interrupt_count << ' ' << r0 << ' ' << r01
+              << ' ' << r013 << ' ' << r0134 << ' ' << r01345;
 #endif
 
 #if 0
