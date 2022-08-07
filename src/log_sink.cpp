@@ -1,7 +1,5 @@
 #include "log_sink.h"
 
-#include <stdlib.h>
-
 #include "mcucore_platform.h"
 #include "progmem_string_data.h"
 
@@ -22,6 +20,8 @@
 #pragma clang diagnostic ignored "-Wpre-c++14-compat"
 #endif
 
+#include <string_view>  // pragma: keep standard include
+
 #include "base/logging_extensions.h"
 #include "glog/logging.h"
 
@@ -29,8 +29,7 @@
 #pragma clang diagnostic pop
 #endif
 
-#include "extras/test_tools/print_to_std_string.h"  // pragma: keep extras include
-#endif                                              // !ARDUINO
+#endif  // !ARDUINO
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifdef ARDUINO
@@ -64,6 +63,19 @@ inline Print& GetPrintForLogSink() { return DEFAULT_SINK_OUT; }
 inline Print& GetPrintForCheckSink() { return DEFAULT_SINK_OUT; }
 
 #endif  // MCU_HOST_TARGET
+
+void PrintLocation(Print& out, const __FlashStringHelper* file,
+                   const uint16_t line_number) {
+  if (file != nullptr && out.print(file) > 0) {
+    if (line_number != 0) {
+      out.print(':');
+      out.print(line_number);
+    }
+    out.print(']');
+    out.print(' ');
+  }
+}
+
 }  // namespace
 
 #if MCU_HOST_TARGET
@@ -86,33 +98,12 @@ void SetCheckSinkExitFn(CheckSinkExitFn exit_fn) {
 
 #endif  // MCU_HOST_TARGET
 
-MessageSinkBase::MessageSinkBase(Print& out, const __FlashStringHelper* file,
-                                 uint16_t line_number)
-    : OPrintStream(out), file_(file), line_number_(line_number) {}
-
-void MessageSinkBase::PrintLocation(Print& out) const {
-  if (file_ != nullptr && out.print(file_) > 0) {
-    if (line_number_ != 0) {
-      out.print(':');
-      out.print(line_number_);
-    }
-    out.print(']');
-    out.print(' ');
-  }
-}
-
-LogSink::LogSink(Print& out, const __FlashStringHelper* file,
-                 uint16_t line_number)
-    : MessageSinkBase(out, file, line_number) {
-  PrintLocation(out_);
-}
-
 LogSink::LogSink(const __FlashStringHelper* file, uint16_t line_number)
-    : LogSink(GetPrintForLogSink(), file, line_number) {}
+    : OPrintStream(GetPrintForLogSink()) {
+  PrintLocation(out_, file, line_number);
+}
 
-LogSink::LogSink(Print& out) : LogSink(out, nullptr, 0) {}
-
-LogSink::LogSink() : LogSink(GetPrintForLogSink()) {}
+LogSink::LogSink() : OPrintStream(GetPrintForLogSink()) {}
 
 LogSink::~LogSink() {
   // End the line of output produced by the active logging statement.
@@ -122,51 +113,31 @@ LogSink::~LogSink() {
 
 CheckSink::CheckSink(const __FlashStringHelper* file, uint16_t line_number,
                      const __FlashStringHelper* expression_message)
-    : MessageSinkBase(GetPrintForCheckSink(), file, line_number),
-      expression_message_(expression_message) {
-  Announce(out_);
+    : OPrintStream(GetPrintForCheckSink()) {
+  DoPrint(MCU_PSD("MCU_CHECK FAILED: "));
+  PrintLocation(out_, file, line_number);
+  if (expression_message != nullptr) {
+    DoPrint(expression_message);
+    DoPrint(' ');
+  }
 }
 
 CheckSink::~CheckSink() {
-  // End the line of output produced by the current TAS_*CHECK* statement.
+  // End the line of output produced by the active check statement.
   out_.println();
   out_.flush();
 
-#ifdef ARDUINO
 #ifdef ARDUINO_ARCH_AVR
   // Use the watchdog timer to reset the Arduino in a little while so that human
-  // intervention isn't required to recover.
+  // intervention isn't required to "recover"; i.e. reboot/restart and try
+  // again.
   avr::EnableWatchdogResetMode(4);
-#endif  // !ARDUINO_ARCH_AVR
-  uint8_t seconds = 1;
-  while (true) {
-    if (seconds < 255) {
-      ++seconds;
-    }
-    delay(1000L * seconds);
-    Announce(out_);
-    out_.println();
-    out_.flush();
-  }
-#else  // !ARDUINO
-#if MCU_HOST_TARGET
+#elif MCU_HOST_TARGET
   FlushLogFiles(absl::LogSeverity::kInfo);
-  mcucore::test::PrintToStdString ptss;
-  Announce(ptss);
-  CheckSinkExit(ptss.str());
-#else  // !MCU_HOST_TARGET
+  CheckSinkExit("MCU_CHECK FAILED");
+#else
 #error "Not yet implemented"
-#endif  // MCU_HOST_TARGET
-#endif  // ARDUINO
-}
-
-void CheckSink::Announce(Print& out) const {
-  out.print(MCU_FLASHSTR("MCU_CHECK FAILED: "));
-  PrintLocation(out);
-  if (expression_message_ != nullptr) {
-    out.print(expression_message_);
-    out.print(' ');
-  }
+#endif
 }
 
 }  // namespace mcucore

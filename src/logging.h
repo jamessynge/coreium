@@ -115,7 +115,7 @@
 // Inserts " <var>=<value>" into the log stream, where <var> is the name of the
 // variable `var`, and <value> is the value of the variable.
 
-#include "log_sink.h"  // IWYU pragma: keep
+#include "log_sink.h"  // IWYU pragma: export
 #include "mcucore_config.h"
 #include "mcucore_platform.h"     // IWYU pragma: keep
 #include "o_print_stream.h"       // IWYU pragma: export
@@ -149,7 +149,7 @@
 
 #ifdef MCU_DISABLE_VLOG_LOCATION
 #undef MCU_ENABLE_VLOG_LOCATION
-#define MCU_VLOG_LOCATION(x) nullptr
+#define MCU_VLOG_LOCATION(x) mcucore::ProgmemStringView()
 #else
 #define MCU_VLOG_LOCATION(x) MCU_BASENAME(x)
 #endif
@@ -161,7 +161,7 @@
 #define MCU_CHECK_LOCATION(x) MCU_BASENAME(x)
 #endif
 
-#ifdef MCU_DISABLE_DCHECK_LOCATION
+#if defined(MCU_DISABLE_DCHECK_LOCATION) || defined(MCU_DISABLE_CHECK_LOCATION)
 #undef MCU_ENABLE_DCHECK_LOCATION
 #define MCU_DCHECK_LOCATION(x) nullptr
 #else
@@ -294,12 +294,6 @@
   default:                                        \
     (true || (expression)) ? (void)0              \
                            : ::mcucore::LogSinkVoidify() && MCU_VOID_SINK
-
-// #ifdef MCU_CONVERT_DISABLED_DCHECK_TO_VLOG_IF
-// #ifdef MCU_ENABLE_DCHECK
-// #undef MCU_ENABLE_DCHECK
-// #endif  // MCU_ENABLE_DCHECK
-// #endif  // MCU_DISABLE_DCHECK
 
 #endif
 

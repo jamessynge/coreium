@@ -9,6 +9,10 @@
 // compile time (e.g. if the level passed to MCU_VLOG is too high, or if
 // MCU_DCHECK is disabled).
 //
+// DEFAULT_SINK_OUT is Serial when compiled for the Arduino; for the host, it is
+// stderr, though that may be overridden by SetPrintForLogSink and
+// SetPrintForCheckSink, as appropriate.
+//
 // Author: james.synge@gmail.com
 
 #include "mcucore_platform.h"
@@ -22,40 +26,24 @@
 
 namespace mcucore {
 
-class MessageSinkBase : public OPrintStream {
+class LogSink final : public OPrintStream {
  public:
-  MessageSinkBase(Print& out, const __FlashStringHelper* file,
-                  uint16_t line_number);
-
- protected:
-  // Prints the location (e.g. "filename.ext:line_number] ") to out, if file_ is
-  // points to a non-empty string. Omits ":line_number" if line_number_ is zero.
-  void PrintLocation(Print& out) const;
-
- private:
-  const __FlashStringHelper* const file_;
-  const uint16_t line_number_;
-};
-
-class LogSink final : public MessageSinkBase {
- public:
-  // Streams to out, with a prefix of the file and line_number, as described by
-  // PrintLocation above.
-  LogSink(Print& out, const __FlashStringHelper* file, uint16_t line_number);
-  // As above, but with the Print instance set to DEFAULT_SINK_OUT, which is
-  // Serial on Arduino, and FakeSerial on host (i.e. stdout).
+  // Streams to DEFAULT_SINK_OUT, with a prefix determined by file and
+  // line_number. The prefix has the format "file.ext:line_number] " if file_
+  // points to a non-empty string; omits ":line_number" if line_number_ is
+  //   zero. The prefix is empty if file is null or empty.
   LogSink(const __FlashStringHelper* file, uint16_t line_number);
-  // Omits the log location, i.e. file defaults to nullptr.
-  explicit LogSink(Print& out);
-  // Streams to DEFAULT_SINK_OUT, omits the log location.
+
+  // Streams to DEFAULT_SINK_OUT, omits the log location prefix.
   LogSink();
 
   // Writes a newline and flushes the output.
   ~LogSink();
 };
 
-class CheckSink : public MessageSinkBase {
+class CheckSink : public OPrintStream {
  public:
+  // Streams to  "MCU_CHECK FAILED: file.ext:line_number] expression_message "
   CheckSink(const __FlashStringHelper* file, uint16_t line_number,
             const __FlashStringHelper* expression_message);
 
@@ -66,13 +54,11 @@ class CheckSink : public MessageSinkBase {
   // eliminating that function and/or by adding a separate DebugCheckSink class,
   // whose dtor is not marked with [[noreturn]], and a SetDebugCheckSinkExitFn.
   ~CheckSink();
-
- private:
-  void Announce(Print& out) const;
-
-  const __FlashStringHelper* const expression_message_;
 };
 
+// A stream sink to be used in place of LogSink or CheckSink when they've been
+// disabled at compiled time (e.g. by the level passed to MCU_VLOG being higher
+// than MCU_ENABLED_VLOG_LEVEL).
 class VoidSink {
  public:
   VoidSink() {}
@@ -84,15 +70,18 @@ class VoidSink {
   }
 };
 
-// Based on https://github.com/google/asylo/blob/master/asylo/util/logging.h
+// LogSinkVoidify is used to produce a void value in MCU_VLOG, etc. It is based
+// on https://github.com/google/asylo/blob/master/asylo/util/logging.h
+//
 // This class is used just to take a type used as a log sink (i.e. the LHS of
 // insert operators in log statements) and make it a void type to satisify the
 // ternary operator in MCU_VLOG, MCU_CHECK and MCU_DCHECK. `operand&&` is used
 // because it has precedence lower than `<<` but higher than the ternary
 // operator `:?`
-
 class LogSinkVoidify {
  public:
+  // We use operator&& here because it has precedence lower than `<<` but higher
+  // than the ternary operator `:?`.
   void operator&&(const OPrintStream&) {}
   void operator&&(const VoidSink&) {}
 };

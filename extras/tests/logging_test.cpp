@@ -1,4 +1,5 @@
 // Enable all of the logging features before including *any* files.
+#include <string_view>
 #undef MCU_DISABLE_CHECK
 #undef MCU_DISABLE_CHECK_LOCATION
 #undef MCU_DISABLE_DCHECK
@@ -14,8 +15,6 @@
 #define MCU_ENABLE_VLOG
 #define MCU_ENABLE_VLOG_LOCATION
 
-#include "logging.h"
-
 #include <functional>
 #include <string>
 
@@ -23,6 +22,7 @@
 #include "extras/test_tools/print_to_std_string.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "logging.h"
 #include "progmem_string_view.h"
 
 namespace mcucore {
@@ -201,15 +201,11 @@ class McuCheckTest : public testing::Test {
                      std::string_view expression_text,
                      std::string_view message_text) {
     out_.reset();
-    std::string captured_str;
-    EXPECT_CALL(mock_exit_fn_, Call(_))
-        .WillOnce(testing::SaveArg<0>(&captured_str));
+    EXPECT_CALL(mock_exit_fn_, Call("MCU_CHECK FAILED"));
     const int line_number = failing_func();
-    const auto common =
-        absl::StrCat("MCU_CHECK FAILED: logging_test.cc:", line_number, "] ",
-                     expression_text, " ");
-    EXPECT_EQ(captured_str, common);
-    EXPECT_EQ(out_.str(), absl::StrCat(common, message_text, "\n"));
+    EXPECT_EQ(out_.str(),
+              absl::StrCat("MCU_CHECK FAILED: logging_test.cc:", line_number,
+                           "] ", expression_text, " ", message_text, "\n"));
   }
 
   PrintToStdString out_;

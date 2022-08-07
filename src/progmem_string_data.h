@@ -597,7 +597,10 @@ auto ProvideStorage(LengthCheck<LengthOk>, PathFragment<FoundSlash, C...>)
   (reinterpret_cast<const __FlashStringHelper*>( \
       _PSD_TYPE_128(_PSD_PATHFRAG_TYPE, x)::kData))
 
-// Max length 255 (not including trailing NUL).
+// Max length 255 (not including trailing NUL). This is defined to support
+// MCU_PSV_255, which is the MCU_PSV* version that handles the longest strings
+// that ProgmemStringView can encode (i.e. it uses a single byte for the
+// length).
 
 #define MCU_PSD_255(x) (_PSD_TYPE_255(_PSD_STRFRAG_TYPE, x)())
 
@@ -613,6 +616,8 @@ auto ProvideStorage(LengthCheck<LengthOk>, PathFragment<FoundSlash, C...>)
   (reinterpret_cast<const __FlashStringHelper*>( \
       _PSD_TYPE_256(_PSD_PATHFRAG_TYPE, x)::kData))
 
+#define MCU_BASENAME_256_TYPE(x) _PSD_TYPE_256(_PSD_PATHFRAG_TYPE, x)
+
 // Max length 512 (not including trailing NUL). There is no support here for
 // ProgmemStringView because it can't support such a long string.
 
@@ -626,6 +631,8 @@ auto ProvideStorage(LengthCheck<LengthOk>, PathFragment<FoundSlash, C...>)
   (reinterpret_cast<const __FlashStringHelper*>( \
       _PSD_TYPE_512(_PSD_PATHFRAG_TYPE, x)::kData))
 
+#define MCU_BASENAME_512_TYPE(x) _PSD_TYPE_512(_PSD_PATHFRAG_TYPE, x)
+
 // Max length 1024 (not including trailing NUL). There is no support here for
 // ProgmemStringView because it can't support such a long string.
 
@@ -638,6 +645,8 @@ auto ProvideStorage(LengthCheck<LengthOk>, PathFragment<FoundSlash, C...>)
 #define MCU_BASENAME_1024(x)                     \
   (reinterpret_cast<const __FlashStringHelper*>( \
       _PSD_TYPE_1024(_PSD_PATHFRAG_TYPE, x)::kData))
+
+#define MCU_BASENAME_1024_TYPE(x) _PSD_TYPE_1024(_PSD_PATHFRAG_TYPE, x)
 
 ////////////////////////////////////////////////////////////////////////////////
 // Because we expect almost all explicitly defined string literals to be

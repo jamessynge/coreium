@@ -23,47 +23,33 @@ class LogSinkTest : public testing::Test {
   PrintToStdString out_;
 };
 
-TEST_F(LogSinkTest, ExplicitPrint) {
-  {
-    PrintToStdString other;
-    { LogSink sink(other, FLASHSTR("here"), 123); }
-    EXPECT_EQ(other.str(), "here:123] \n");
-  }
-  {
-    // Omits the line number if it is zero.
-    PrintToStdString other;
-    { LogSink sink(other, FLASHSTR("there"), 0); }
-    EXPECT_EQ(other.str(), "there] \n");
-  }
-  // An empty or null file means skip printing the location, so prints only a
-  // newline to end the message.
-  {
-    PrintToStdString other;
-    { LogSink sink(other, nullptr, 123); }
-    EXPECT_EQ(other.str(), "\n");
-  }
-  {
-    PrintToStdString other;
-    { LogSink sink(other, FLASHSTR(""), 123); }
-    EXPECT_EQ(other.str(), "\n");
-  }
-  {
-    PrintToStdString other;
-    // Omit the file ane line number ars entirely.
-    { LogSink sink(other); }
-    // Prints only a newline to end the message.
-    EXPECT_EQ(other.str(), "\n");
-  }
+TEST_F(LogSinkTest, LocationAndLine) {
+  { LogSink sink(FLASHSTR("here"), 123); }
+  EXPECT_EQ(out_.str(), "here:123] \n");
 }
 
-TEST_F(LogSinkTest, NoArgCtor) {
-  { LogSink sink; }
+TEST_F(LogSinkTest, LocationAndZeroLine) {
+  { LogSink sink(FLASHSTR("there.cc"), 0); }
+  EXPECT_EQ(out_.str(), "there.cc] \n");
+}
+
+TEST_F(LogSinkTest, NullLocation) {
+  // A null file means skip printing the location, so prints only a newline to
+  // end the message.
+  { LogSink sink(nullptr, 123); }
   EXPECT_EQ(out_.str(), "\n");
 }
 
-TEST_F(LogSinkTest, ImplicitPrint) {
-  { LogSink sink(FLASHSTR("somewhere"), 1); }
-  EXPECT_EQ(out_.str(), "somewhere:1] \n");
+TEST_F(LogSinkTest, EmptyLocation) {
+  // An empty file means skip printing the location, so prints only a newline to
+  // end the message.
+  { LogSink sink(FLASHSTR(""), 123); }
+  EXPECT_EQ(out_.str(), "\n");
+}
+
+TEST_F(LogSinkTest, ZeroArgCtor) {
+  { LogSink sink; }
+  EXPECT_EQ(out_.str(), "\n");
 }
 
 TEST_F(LogSinkTest, InsertIntoNonTemporary) {
@@ -84,6 +70,7 @@ class CheckSinkTest : public testing::Test {
   void SetUp() override {
     SetCheckSinkExitFn(mock_exit_fn_.AsStdFunction());
     SetPrintForCheckSink(&out_);
+    EXPECT_CALL(mock_exit_fn_, Call("MCU_CHECK FAILED")).Times(1);
   }
   void TearDown() override {
     SetCheckSinkExitFn(nullptr);
@@ -94,54 +81,37 @@ class CheckSinkTest : public testing::Test {
   testing::MockFunction<void(std::string_view)> mock_exit_fn_;
 };
 
-TEST_F(CheckSinkTest, CreateAndDelete) {
-  const std::string_view common = "MCU_CHECK FAILED: foo.cc:123] prefix1 ";
-  EXPECT_CALL(mock_exit_fn_, Call(common)).Times(1);
+TEST_F(CheckSinkTest, LocationAndLineAndPrefix) {
   { CheckSink sink(FLASHSTR("foo.cc"), 123, FLASHSTR("prefix1")); }
-  EXPECT_EQ(out_.str(), absl::StrCat(common, "\n"));
+  EXPECT_EQ(out_.str(), "MCU_CHECK FAILED: foo.cc:123] prefix1 \n");
 }
 
-TEST_F(CheckSinkTest, NoExpressionMessage) {
-  const std::string_view common = "MCU_CHECK FAILED: foo.cc:123] ";
-  EXPECT_CALL(mock_exit_fn_, Call(common)).Times(1);
+TEST_F(CheckSinkTest, LocationAndLine) {
   { CheckSink sink(FLASHSTR("foo.cc"), 123, nullptr); }
-  EXPECT_EQ(out_.str(), absl::StrCat(common, "\n"));
+  EXPECT_EQ(out_.str(), "MCU_CHECK FAILED: foo.cc:123] \n");
 }
 
-TEST_F(CheckSinkTest, NoFileName) {
-  const std::string_view common = "MCU_CHECK FAILED: Foo!=Bar ";
-  EXPECT_CALL(mock_exit_fn_, Call(common)).Times(1);
+TEST_F(CheckSinkTest, LineAndPrefix) {
   { CheckSink sink(FLASHSTR(""), 123, FLASHSTR("Foo!=Bar")); }
-  EXPECT_EQ(out_.str(), absl::StrCat(common, "\n"));
+  EXPECT_EQ(out_.str(), "MCU_CHECK FAILED: Foo!=Bar \n");
 }
 
-TEST_F(CheckSinkTest, NoLineNumber) {
-  const std::string_view common = "MCU_CHECK FAILED: bar.h] Bar!=Baz ";
-  EXPECT_CALL(mock_exit_fn_, Call(common)).Times(1);
+TEST_F(CheckSinkTest, LocationAndPrefix) {
   { CheckSink sink(FLASHSTR("bar.h"), 0, FLASHSTR("Bar!=Baz")); }
-  EXPECT_EQ(out_.str(), absl::StrCat(common, "\n"));
+  EXPECT_EQ(out_.str(), "MCU_CHECK FAILED: bar.h] Bar!=Baz \n");
 }
 
 TEST_F(CheckSinkTest, InsertIntoNonTemporarySink) {
-  const std::string_view common = "MCU_CHECK FAILED: SomeExpr ";
-  EXPECT_CALL(mock_exit_fn_, Call(common)).Times(1);
   {
     CheckSink sink(nullptr, 0, FLASHSTR("SomeExpr"));
     sink << "abc def";
   }
-  EXPECT_EQ(out_.str(), absl::StrCat(common, "abc def\n"));
+  EXPECT_EQ(out_.str(), "MCU_CHECK FAILED: SomeExpr abc def\n");
 }
 
 TEST_F(CheckSinkTest, InsertIntoTemporarySink) {
-  const std::string_view common =
-      "MCU_CHECK FAILED: baz.h:321] expression message ";
-  EXPECT_CALL(mock_exit_fn_, Call(common)).Times(1);
-  {
-    CheckSink sink(MCU_BASENAME("foo/bar/baz.h"), 321,
-                   MCU_FLASHSTR("expression message"));
-    sink << "abc" << 1.2 << '!';
-  }
-  EXPECT_EQ(out_.str(), absl::StrCat(common, "abc1.20!\n"));
+  { CheckSink(nullptr, 0, FLASHSTR("SomeExpr")) << "abc def"; }
+  EXPECT_EQ(out_.str(), "MCU_CHECK FAILED: SomeExpr abc def\n");
 }
 
 // Since this is slow (needs to fork the process), I don't want to run it all
