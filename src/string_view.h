@@ -90,8 +90,8 @@ class StringView {
 
   // Remove the first prefix_length characters from the StringView.
   void remove_prefix(size_type prefix_length) noexcept {
-    MCU_VLOG(5) << MCU_PSD("remove_prefix(") << prefix_length
-                << MCU_PSD("), size_=") << size_;
+    MCU_VLOG(5) << MCU_PSD("remove_prefix(") << prefix_length << MCU_PSD("), ")
+                << MCU_NAME_VAL(size_);
     MCU_DCHECK_LE(prefix_length, size_);
     size_ -= prefix_length;
     ptr_ += prefix_length;

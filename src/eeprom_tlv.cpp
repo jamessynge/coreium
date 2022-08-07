@@ -209,16 +209,15 @@ StatusOr<EepromAddrT> EepromTlv::ReclaimUnusedSpace() {
 
   const auto status_or_crc = ComputeCrc(new_beyond_addr);
   MCU_DCHECK_OK(status_or_crc)
-      << MCU_PSD("EEPROM corrupted during compaction")      // COV_NF_LINE
-      << MCU_PSD("; beyond_addr=") << beyond_addr           // COV_NF_LINE
-      << MCU_PSD(", new_beyond_addr=") << new_beyond_addr;  // COV_NF_LINE
+      << MCU_PSD("EEPROM corrupted during compaction; ")  // COV_NF_LINE
+      << MCU_NAME_VAL(beyond_addr)                        // COV_NF_LINE
+      << MCU_NAME_VAL(new_beyond_addr);                   // COV_NF_LINE
   MCU_RETURN_IF_ERROR(status_or_crc);
 
   WriteBeyondAddr(new_beyond_addr);
   WriteCrc(status_or_crc.value());
   auto reclaimed_space = beyond_addr - new_beyond_addr;
-  MCU_VLOG(2) << MCU_PSD("Reclaimed ") << reclaimed_space
-              << MCU_PSD(" EEMPROM bytes");
+  MCU_VLOG(3) << MCU_NAME_VAL(reclaimed_space);
   return reclaimed_space;
 }
 
@@ -298,8 +297,8 @@ StatusOr<EepromAddrT> EepromTlv::FindNext(EepromAddrT entry_addr) const {
   const auto next_entry_addr = entry_data_addr + entry_data_length;
   if (next_entry_addr > eeprom_length()) {
     MCU_VLOG(1) << MCU_PSD("length beyond end: ") << entry_data_addr << '+'
-                << entry_data_length << '>' << eeprom_length()
-                << MCU_PSD("     entry_addr: ") << entry_addr;
+                << entry_data_length << '>' << eeprom_length() << '\t'
+                << MCU_NAME_VAL(entry_addr);
     return Status(StatusCode::kDataLoss, MCU_PSV("data_length invalid"));
   }
   return next_entry_addr;
