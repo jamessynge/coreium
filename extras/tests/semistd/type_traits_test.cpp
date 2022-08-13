@@ -1,6 +1,6 @@
 #define MCU_HAS_CXX14_FEATURES
 
-#include "type_traits.h"
+#include "semistd/type_traits.h"
 
 // Contains tests of the templates in type_traits.h.
 //

@@ -26,7 +26,7 @@
 #include "mcucore_platform.h"
 #include "progmem_pointer.h"
 #include "progmem_string_data.h"
-#include "type_traits.h"
+#include "semistd/type_traits.h"
 
 namespace mcucore {
 

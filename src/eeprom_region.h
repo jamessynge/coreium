@@ -9,13 +9,13 @@
 //
 // Author: james.synge@gmail.com
 
-#include "limits.h"
 #include "logging.h"
 #include "mcucore_platform.h"
 #include "progmem_string_data.h"
+#include "semistd/limits.h"
+#include "semistd/type_traits.h"
 #include "status_or.h"
 #include "string_view.h"
-#include "type_traits.h"
 
 namespace mcucore {
 

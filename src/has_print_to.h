@@ -13,7 +13,7 @@
 // Author: james.synge@gmail.com
 
 #include "mcucore_platform.h"
-#include "type_traits.h"
+#include "semistd/type_traits.h"
 
 namespace mcucore {
 namespace has_print_to_internal {

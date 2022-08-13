@@ -5,7 +5,7 @@
 #include <ostream>
 
 #include "gtest/gtest.h"
-#include "type_traits.h"
+#include "semistd/type_traits.h"
 
 namespace mcucore {
 namespace test {

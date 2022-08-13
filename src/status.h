@@ -38,8 +38,8 @@
 #include "logging.h"
 #include "mcucore_platform.h"
 #include "progmem_string_view.h"
+#include "semistd/type_traits.h"
 #include "status_code.h"  // pragma IWYU: export
-#include "type_traits.h"
 
 namespace mcucore {
 

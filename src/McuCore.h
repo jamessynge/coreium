@@ -26,7 +26,6 @@
 #include "jitter_random.h"           // IWYU pragma: export
 #include "json_encoder.h"            // IWYU pragma: export
 #include "json_encoder_helpers.h"    // IWYU pragma: export
-#include "limits.h"                  // IWYU pragma: export
 #include "log_sink.h"                // IWYU pragma: export
 #include "logging.h"                 // IWYU pragma: export
 #include "mcucore_config.h"          // IWYU pragma: export
@@ -40,6 +39,8 @@
 #include "progmem_string.h"          // IWYU pragma: export
 #include "progmem_string_data.h"     // IWYU pragma: export
 #include "progmem_string_view.h"     // IWYU pragma: export
+#include "semistd/limits.h"          // IWYU pragma: export
+#include "semistd/type_traits.h"     // IWYU pragma: export
 #include "semistd/utility.h"         // IWYU pragma: export
 #include "status.h"                  // IWYU pragma: export
 #include "status_code.h"             // IWYU pragma: export
@@ -48,7 +49,6 @@
 #include "string_compare.h"          // IWYU pragma: export
 #include "string_view.h"             // IWYU pragma: export
 #include "tiny_string.h"             // IWYU pragma: export
-#include "type_traits.h"             // IWYU pragma: export
 #include "uuid.h"                    // IWYU pragma: export
 
 #endif  // MCUCORE_SRC_MCUCORE_H_

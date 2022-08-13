@@ -12,3 +12,21 @@ cc_test(
         "//mcucore/src/semistd:utility",
     ],
 )
+
+cc_test(
+    name = "limits_test",
+    srcs = ["limits_test.cc"],
+    deps = [
+        "//googletest:gunit_main",
+        "//mcucore/src/semistd:limits",
+    ],
+)
+
+cc_test(
+    name = "type_traits_test",
+    srcs = ["type_traits_test.cc"],
+    deps = [
+        "//googletest:gunit_main",
+        "//mcucore/src/semistd:type_traits",
+    ],
+)

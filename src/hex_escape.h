@@ -11,7 +11,7 @@
 #include "has_print_to.h"
 #include "mcucore_platform.h"
 #include "o_print_stream.h"
-#include "type_traits.h"
+#include "semistd/type_traits.h"
 
 namespace mcucore {
 

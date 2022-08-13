@@ -1,12 +1,12 @@
-#ifndef MCUCORE_SRC_LIMITS_H_
-#define MCUCORE_SRC_LIMITS_H_
+#ifndef MCUCORE_SRC_SEMISTD_LIMITS_H_
+#define MCUCORE_SRC_SEMISTD_LIMITS_H_
 
 // A very minimal version of std::numeric_limits.
 //
 // Author: james.synge@gmail.com
 
 #include "mcucore_platform.h"
-#include "type_traits.h"
+#include "semistd/type_traits.h"
 
 namespace mcucore {
 
@@ -112,4 +112,4 @@ struct numeric_limits
 
 }  // namespace mcucore
 
-#endif  // MCUCORE_SRC_LIMITS_H_
+#endif  // MCUCORE_SRC_SEMISTD_LIMITS_H_

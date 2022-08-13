@@ -15,9 +15,9 @@
 #include "mcucore_platform.h"
 #include "progmem_string.h"
 #include "progmem_string_view.h"
+#include "semistd/type_traits.h"
 #include "string_view.h"
 #include "tiny_string.h"
-#include "type_traits.h"
 
 namespace mcucore {
 

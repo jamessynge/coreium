@@ -2,8 +2,8 @@
 #include "hex_dump.h"
 
 #include "hex_escape.h"
-#include "limits.h"
 #include "logging.h"
+#include "semistd/limits.h"
 
 namespace mcucore {
 namespace {

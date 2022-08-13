@@ -31,7 +31,6 @@ cc_library(
         ":jitter_random",
         ":json_encoder",
         ":json_encoder_helpers",
-        ":limits",
         ":log_sink",
         ":logging",
         ":mcucore_config",
@@ -51,9 +50,10 @@ cc_library(
         ":string_compare",
         ":string_view",
         ":tiny_string",
-        ":type_traits",
         ":uuid",
         "//mcucore/src/platform/avr:watchdog",
+        "//mcucore/src/semistd:limits",
+        "//mcucore/src/semistd:type_traits",
         "//mcucore/src/semistd:utility",
     ],
 )
@@ -68,7 +68,7 @@ cc_library(
         ":progmem_string_view",
         ":string_view",
         ":tiny_string",
-        ":type_traits",
+        "//mcucore/src/semistd:type_traits",
     ],
 )
 
@@ -125,13 +125,13 @@ cc_library(
     hdrs = ["eeprom_region.h"],
     deps = [
         ":flash_string_table",
-        ":limits",
         ":logging",
         ":mcucore_platform",
         ":progmem_string_data",
         ":status_or",
         ":string_view",
-        ":type_traits",
+        "//mcucore/src/semistd:limits",
+        "//mcucore/src/semistd:type_traits",
     ],
 )
 
@@ -154,7 +154,6 @@ cc_library(
         ":eeprom_region",
         ":eeprom_tag",
         ":hex_escape",
-        ":limits",
         ":logging",
         ":mcucore_platform",
         ":progmem_string_data",
@@ -164,6 +163,7 @@ cc_library(
         ":status_or",
         ":string_compare",
         ":string_view",
+        "//mcucore/src/semistd:limits",
     ],
 )
 
@@ -189,7 +189,7 @@ cc_library(
     hdrs = ["has_insert_into.h"],
     deps = [
         ":mcucore_platform",
-        ":type_traits",
+        "//mcucore/src/semistd:type_traits",
     ],
 )
 
@@ -198,7 +198,7 @@ cc_library(
     hdrs = ["has_print_to.h"],
     deps = [
         ":mcucore_platform",
-        ":type_traits",
+        "//mcucore/src/semistd:type_traits",
     ],
 )
 
@@ -207,7 +207,7 @@ cc_library(
     hdrs = ["has_progmem_char_array.h"],
     deps = [
         ":mcucore_platform",
-        ":type_traits",
+        "//mcucore/src/semistd:type_traits",
     ],
 )
 
@@ -217,10 +217,10 @@ cc_library(
     hdrs = ["hex_dump.h"],
     deps = [
         ":hex_escape",
-        ":limits",
         ":logging",
         ":mcucore_platform",
         ":progmem_string_view",
+        "//mcucore/src/semistd:limits",
     ],
 )
 
@@ -234,7 +234,7 @@ cc_library(
         ":logging",
         ":mcucore_platform",
         ":o_print_stream",
-        ":type_traits",
+        "//mcucore/src/semistd:type_traits",
     ],
 )
 
@@ -243,7 +243,7 @@ cc_library(
     hdrs = ["int_helpers.h"],
     deps = [
         ":mcucore_platform",
-        ":type_traits",
+        "//mcucore/src/semistd:type_traits",
     ],
 )
 
@@ -254,12 +254,12 @@ cc_library(
     deps = [
         ":crc32",
         ":fnv1a",
-        ":limits",
         ":logging",
         ":mcucore_platform",
         ":o_print_stream",
         ":progmem_string_data",
         "//mcucore/src/platform/avr:watchdog",
+        "//mcucore/src/semistd:limits",
     ],
 )
 
@@ -287,15 +287,6 @@ cc_library(
         ":json_encoder",
         ":logging",
         ":mcucore_platform",
-    ],
-)
-
-cc_library(
-    name = "limits",
-    hdrs = ["limits.h"],
-    deps = [
-        ":mcucore_platform",
-        ":type_traits",
     ],
 )
 
@@ -354,11 +345,11 @@ cc_library(
         ":has_print_to",
         ":has_progmem_char_array",
         ":int_helpers",
-        ":limits",
         ":mcucore_platform",
         ":print_misc",
         ":progmem_string_data",
-        ":type_traits",
+        "//mcucore/src/semistd:limits",
+        "//mcucore/src/semistd:type_traits",
     ],
 )
 
@@ -410,7 +401,7 @@ cc_library(
     deps = [
         ":has_progmem_char_array",
         ":mcucore_platform",
-        ":type_traits",
+        "//mcucore/src/semistd:type_traits",
     ],
 )
 
@@ -432,7 +423,7 @@ cc_library(
         ":print_misc",
         ":progmem_pointer",
         ":progmem_string_data",
-        ":type_traits",
+        "//mcucore/src/semistd:type_traits",
     ],
 )
 
@@ -449,7 +440,7 @@ cc_library(
         ":progmem_string_data",
         ":progmem_string_view",
         ":status_code",
-        ":type_traits",
+        "//mcucore/src/semistd:type_traits",
     ],
 )
 
@@ -462,7 +453,7 @@ cc_library(
         ":mcucore_platform",
         ":print_misc",
         ":progmem_string_data",
-        ":type_traits",
+        "//mcucore/src/semistd:type_traits",
     ],
 )
 
@@ -474,7 +465,7 @@ cc_library(
         ":mcucore_platform",
         ":status",
         ":status_code",
-        ":type_traits",
+        "//mcucore/src/semistd:type_traits",
     ],
 )
 
@@ -518,12 +509,6 @@ cc_library(
         ":logging",
         ":mcucore_platform",
     ],
-)
-
-cc_library(
-    name = "type_traits",
-    hdrs = ["type_traits.h"],
-    deps = [":mcucore_platform"],
 )
 
 cc_library(

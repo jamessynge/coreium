@@ -15,9 +15,9 @@
 
 #include "logging.h"
 #include "mcucore_platform.h"  // IWYU pragma: keep
+#include "semistd/type_traits.h"
 #include "status.h"
 #include "status_code.h"
-#include "type_traits.h"
 
 namespace mcucore {
 

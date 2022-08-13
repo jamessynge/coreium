@@ -1,5 +1,5 @@
-#ifndef MCUCORE_SRC_TYPE_TRAITS_H_
-#define MCUCORE_SRC_TYPE_TRAITS_H_
+#ifndef MCUCORE_SRC_SEMISTD_TYPE_TRAITS_H_
+#define MCUCORE_SRC_SEMISTD_TYPE_TRAITS_H_
 
 // The parts of STL's <type_traits>, etc., needed for McuCore, McuNet and Tiny
 // Alpaca Server. This exists because McuCore et all are targeted at the Arduino
@@ -789,4 +789,4 @@ using underlying_type_t = typename underlying_type<T>::type;
 
 }  // namespace mcucore
 
-#endif  // MCUCORE_SRC_TYPE_TRAITS_H_
+#endif  // MCUCORE_SRC_SEMISTD_TYPE_TRAITS_H_

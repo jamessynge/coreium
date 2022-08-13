@@ -30,11 +30,11 @@
 
 #include "crc32.h"
 #include "fnv1a.h"
-#include "limits.h"
 #include "logging.h"
 #include "o_print_stream.h"
 #include "platform/avr/watchdog.h"
 #include "progmem_string_data.h"
+#include "semistd/limits.h"
 
 // FNV-1a is purported to provided a better distribution of hash values,
 // compared to CRC-32 which apparently has patterns (clumps) in the space of

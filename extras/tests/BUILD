@@ -174,7 +174,7 @@ cc_test(
     deps = [
         "//googletest:gunit_main",
         "//mcucore/src:int_helpers",
-        "//mcucore/src:type_traits",
+        "//mcucore/src/semistd:type_traits",
     ],
 )
 
@@ -192,15 +192,6 @@ cc_test(
         "//mcucore/src:json_encoder",
         "//mcucore/src:progmem_string_view",
         "//mcucore/src:string_view",
-    ],
-)
-
-cc_test(
-    name = "limits_test",
-    srcs = ["limits_test.cc"],
-    deps = [
-        "//googletest:gunit_main",
-        "//mcucore/src:limits",
     ],
 )
 
@@ -407,15 +398,6 @@ cc_test(
         "//mcucore/extras/test_tools:print_value_to_std_string",
         "//mcucore/extras/test_tools:test_strings",
         "//mcucore/src:tiny_string",
-    ],
-)
-
-cc_test(
-    name = "type_traits_test",
-    srcs = ["type_traits_test.cc"],
-    deps = [
-        "//googletest:gunit_main",
-        "//mcucore/src:type_traits",
     ],
 )
 

@@ -20,7 +20,7 @@
 
 #include "has_progmem_char_array.h"
 #include "mcucore_platform.h"
-#include "type_traits.h"
+#include "semistd/type_traits.h"
 
 namespace mcucore {
 

@@ -35,11 +35,11 @@
 #include "has_print_to.h"
 #include "has_progmem_char_array.h"
 #include "int_helpers.h"
-#include "limits.h"
 #include "mcucore_platform.h"
 #include "print_misc.h"
 #include "progmem_string_data.h"
-#include "type_traits.h"
+#include "semistd/limits.h"
+#include "semistd/type_traits.h"
 
 #if MCU_HOST_TARGET
 #include <string>       // pragma: keep standard include
