@@ -38,7 +38,6 @@
 #include "eeprom_tag.h"
 #include "logging.h"
 #include "mcucore_platform.h"
-#include "progmem_string_data.h"
 #include "status_or.h"
 
 namespace mcucore {

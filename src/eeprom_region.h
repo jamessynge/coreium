@@ -11,7 +11,6 @@
 
 #include "logging.h"
 #include "mcucore_platform.h"
-#include "progmem_string_data.h"
 #include "semistd/limits.h"
 #include "semistd/type_traits.h"
 #include "status_or.h"

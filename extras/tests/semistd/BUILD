@@ -4,16 +4,6 @@
 # compiled for the target microcontroller, which fails.
 
 cc_test(
-    name = "utility_test",
-    srcs = ["utility_test.cc"],
-    deps = [
-        "//googletest:gunit_main",
-        "//mcucore/extras/test_tools:pretty_type_name",
-        "//mcucore/src/semistd:utility",
-    ],
-)
-
-cc_test(
     name = "limits_test",
     srcs = ["limits_test.cc"],
     deps = [
@@ -28,5 +18,15 @@ cc_test(
     deps = [
         "//googletest:gunit_main",
         "//mcucore/src/semistd:type_traits",
+    ],
+)
+
+cc_test(
+    name = "utility_test",
+    srcs = ["utility_test.cc"],
+    deps = [
+        "//googletest:gunit_main",
+        "//mcucore/extras/test_tools:pretty_type_name",
+        "//mcucore/src/semistd:utility",
     ],
 )

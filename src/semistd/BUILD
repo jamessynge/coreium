@@ -12,15 +12,6 @@ package(
 )
 
 cc_library(
-    name = "utility",
-    hdrs = ["utility.h"],
-    deps = [
-        ":type_traits",
-        "//mcucore/src:mcucore_platform",
-    ],
-)
-
-cc_library(
     name = "limits",
     hdrs = ["limits.h"],
     deps = [
@@ -33,4 +24,13 @@ cc_library(
     name = "type_traits",
     hdrs = ["type_traits.h"],
     deps = ["//mcucore/src:mcucore_platform"],
+)
+
+cc_library(
+    name = "utility",
+    hdrs = ["utility.h"],
+    deps = [
+        ":type_traits",
+        "//mcucore/src:mcucore_platform",
+    ],
 )

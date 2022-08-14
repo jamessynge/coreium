@@ -261,5 +261,6 @@ cc_library(
     hdrs = ["uuid_utils.h"],
     deps = [
         "//googletest:gunit_headers",
+        "//mcucore/src:uuid",
     ],
 )

@@ -57,6 +57,11 @@ class StatusOr {
     return value_;
   }
 
+  value_type& value() {
+    MCU_CHECK(ok());
+    return value_;
+  }
+
   const Status& status() const { return status_; }
 
   operator const Status&() const {  // NOLINT

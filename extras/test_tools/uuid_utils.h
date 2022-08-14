@@ -4,6 +4,7 @@
 // Test helpers for working with UUID values.
 
 #include "gmock/gmock.h"
+#include "uuid.h"
 
 namespace mcucore {
 namespace test {
@@ -20,6 +21,13 @@ MATCHER(JsonValueIsUuid, "") {
     return false;
   }
   return true;
+}
+
+template <int N>
+Uuid MakeUuid(const uint8_t (&data)[N]) {
+  Uuid uuid;
+  uuid.SetForTest(data);
+  return uuid;
 }
 
 }  // namespace test
