@@ -3,7 +3,6 @@
 #include <McuCore.h>
 
 using ::mcucore::BaseDec;
-using ::mcucore::BaseHex;
 using ::mcucore::BaseTwo;
 using ::mcucore::LogSink;
 using ::mcucore::OPrintStream;

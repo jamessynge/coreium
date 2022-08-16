@@ -1,5 +1,4 @@
 // Enable all of the logging features before including *any* files.
-#include <string_view>
 #undef MCU_DISABLE_CHECK
 #undef MCU_DISABLE_CHECK_LOCATION
 #undef MCU_DISABLE_DCHECK
@@ -15,14 +14,16 @@
 #define MCU_ENABLE_VLOG
 #define MCU_ENABLE_VLOG_LOCATION
 
+#include "logging.h"
+
 #include <functional>
 #include <string>
+#include <string_view>
 
 #include "absl/strings/str_cat.h"
 #include "extras/test_tools/print_to_std_string.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "logging.h"
 #include "progmem_string_view.h"
 
 namespace mcucore {

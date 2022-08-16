@@ -27,10 +27,7 @@
 
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
-#include "extras/test_tools/print_to_std_string.h"
 #include "extras/test_tools/random_utils.h"
-#include "extras/test_tools/sample_printable.h"
-#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
 namespace mcucore {

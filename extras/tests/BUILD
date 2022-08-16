@@ -50,9 +50,7 @@ cc_test(
     deps = [
         "//absl/strings",
         "//googletest:gunit_main",
-        "//mcucore/extras/test_tools:print_to_std_string",
         "//mcucore/extras/test_tools:random_utils",
-        "//mcucore/extras/test_tools:sample_printable",
         "//mcucore/src:crc32",
     ],
 )
