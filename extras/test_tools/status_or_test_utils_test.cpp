@@ -4,8 +4,8 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "status.h"
-#include "status_or.h"
+#include "status/status.h"
+#include "status/status_or.h"
 #include "testing/base/public/gunit-spi.h"
 
 namespace mcucore {

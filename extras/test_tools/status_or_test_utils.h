@@ -14,7 +14,7 @@
 #include "extras/test_tools/status_test_utils.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "status_or.h"
+#include "status/status_or.h"
 
 namespace mcucore {
 

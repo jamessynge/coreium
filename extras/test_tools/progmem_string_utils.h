@@ -11,7 +11,7 @@
 #include <string_view>
 
 #include "extras/test_tools/print_value_to_std_string.h"
-#include "progmem_string.h"
+#include "strings/progmem_string.h"
 
 namespace mcucore {
 namespace test {

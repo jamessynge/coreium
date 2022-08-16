@@ -22,8 +22,8 @@
 #include <string>
 
 #include "extras/test_tools/print_to_std_string.h"
-#include "hex_escape.h"
-#include "o_print_stream.h"
+#include "print/hex_escape.h"
+#include "print/o_print_stream.h"
 
 namespace mcucore {
 

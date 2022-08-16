@@ -10,7 +10,7 @@
 #include <string>
 #include <string_view>
 
-#include "string_view.h"
+#include "strings/string_view.h"
 
 namespace mcucore {
 namespace test {

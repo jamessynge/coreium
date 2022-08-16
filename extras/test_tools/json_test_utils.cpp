@@ -2,9 +2,9 @@
 
 #include <stddef.h>
 
-#include "any_printable.h"
 #include "extras/host/arduino/print.h"
-#include "json_encoder.h"
+#include "json/json_encoder.h"
+#include "print/any_printable.h"
 
 namespace mcucore {
 namespace test {

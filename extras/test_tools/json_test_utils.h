@@ -11,9 +11,9 @@
 #include <functional>
 #include <utility>
 
-#include "any_printable.h"
-#include "json_encoder.h"
+#include "json/json_encoder.h"
 #include "mcucore_platform.h"
+#include "print/any_printable.h"
 
 namespace mcucore {
 namespace test {

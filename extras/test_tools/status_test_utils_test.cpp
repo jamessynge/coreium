@@ -2,8 +2,8 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "progmem_string_view.h"
-#include "status.h"
+#include "status/status.h"
+#include "strings/progmem_string_view.h"
 #include "testing/base/public/gunit-spi.h"
 
 namespace mcucore {

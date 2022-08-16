@@ -28,7 +28,7 @@
 #include "extras/test_tools/print_value_to_std_string.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "status.h"
+#include "status/status.h"
 
 namespace mcucore {
 

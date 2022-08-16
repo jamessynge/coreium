@@ -20,7 +20,7 @@
 #include <vector>
 
 #include "absl/status/statusor.h"
-#include "logging.h"
+#include "log/log.h"
 
 namespace mcucore {
 namespace test {

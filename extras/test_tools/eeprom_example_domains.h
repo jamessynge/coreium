@@ -3,7 +3,7 @@
 
 // Example domains for testing.
 
-#include "eeprom_tag.h"
+#include "eeprom/eeprom_tag.h"
 
 MCU_DECLARE_DOMAIN(1);
 MCU_DECLARE_NAMED_DOMAIN(DomainTwo, 2);

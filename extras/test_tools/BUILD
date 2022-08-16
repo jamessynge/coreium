@@ -18,7 +18,7 @@ cc_library(
     name = "eeprom_example_domains",
     srcs = ["eeprom_example_domains.cc"],
     hdrs = ["eeprom_example_domains.h"],
-    deps = ["//mcucore/src:eeprom_tag"],
+    deps = ["//mcucore/src/eeprom:eeprom_tag"],
 )
 
 cc_library(
@@ -82,8 +82,8 @@ cc_library(
         "//absl/strings",
         "//glog:logging",
         "//googletest:gunit_headers",
-        "//mcucore/src:logging",
         "//mcucore/src:mcucore_platform",
+        "//mcucore/src/log",
         "//util/task:status",
     ],
 )
@@ -107,9 +107,9 @@ cc_library(
     hdrs = ["json_test_utils.h"],
     deps = [
         "//mcucore/extras/host/arduino:print",
-        "//mcucore/src:any_printable",
-        "//mcucore/src:json_encoder",
         "//mcucore/src:mcucore_platform",
+        "//mcucore/src/json:json_encoder",
+        "//mcucore/src/print:any_printable",
     ],
 )
 
@@ -162,8 +162,8 @@ cc_library(
     hdrs = ["print_value_to_std_string.h"],
     deps = [
         ":print_to_std_string",
-        "//mcucore/src:hex_escape",
-        "//mcucore/src:o_print_stream",
+        "//mcucore/src/print:hex_escape",
+        "//mcucore/src/print:o_print_stream",
     ],
 )
 
@@ -172,7 +172,7 @@ cc_library(
     hdrs = ["progmem_string_utils.h"],
     deps = [
         ":print_value_to_std_string",
-        "//mcucore/src:progmem_string",
+        "//mcucore/src/strings:progmem_string",
     ],
 )
 
@@ -181,7 +181,7 @@ cc_library(
     hdrs = ["progmem_string_view_utils.h"],
     deps = [
         ":print_value_to_std_string",
-        "//mcucore/src:progmem_string_view",
+        "//mcucore/src/strings:progmem_string_view",
     ],
 )
 
@@ -208,7 +208,7 @@ cc_library(
         ":print_value_to_std_string",
         ":status_test_utils",
         "//googletest:gunit_headers",
-        "//mcucore/src:status_or",
+        "//mcucore/src/status:status_or",
     ],
 )
 
@@ -218,8 +218,8 @@ cc_test(
     deps = [
         ":status_or_test_utils",
         "//googletest:gunit_main",
-        "//mcucore/src:status",
-        "//mcucore/src:status_or",
+        "//mcucore/src/status",
+        "//mcucore/src/status:status_or",
     ],
 )
 
@@ -229,7 +229,7 @@ cc_library(
     deps = [
         ":print_value_to_std_string",
         "//googletest:gunit_headers",
-        "//mcucore/src:status",
+        "//mcucore/src/status",
     ],
 )
 
@@ -239,15 +239,15 @@ cc_test(
     deps = [
         ":status_test_utils",
         "//googletest:gunit_main",
-        "//mcucore/src:progmem_string_view",
-        "//mcucore/src:status",
+        "//mcucore/src/status",
+        "//mcucore/src/strings:progmem_string_view",
     ],
 )
 
 cc_library(
     name = "string_view_utils",
     hdrs = ["string_view_utils.h"],
-    deps = ["//mcucore/src:string_view"],
+    deps = ["//mcucore/src/strings:string_view"],
 )
 
 cc_library(
@@ -261,6 +261,6 @@ cc_library(
     hdrs = ["uuid_utils.h"],
     deps = [
         "//googletest:gunit_headers",
-        "//mcucore/src:uuid",
+        "//mcucore/src/misc:uuid",
     ],
 )

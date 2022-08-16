@@ -26,7 +26,7 @@
 #include "platform/avr/watchdog.h"
 
 #include "mcucore_platform.h"
-#include "progmem_string_data.h"
+#include "strings/progmem_string_data.h"
 
 // Not sure yet if I need to include <avr/wdt.h> to get the symbols needed here,
 // or if including the Arduino headers might be sufficient.

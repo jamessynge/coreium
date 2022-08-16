@@ -16,6 +16,22 @@ cc_library(
     deps = [
         "//mcucore/extras/host/arduino:avr_wdt",
         "//mcucore/src:mcucore_platform",
-        "//mcucore/src:progmem_string_data",
+        "//mcucore/src/strings:progmem_string_data",
+    ],
+)
+
+cc_library(
+    name = "jitter_random",
+    srcs = ["jitter_random.cc"],
+    hdrs = ["jitter_random.h"],
+    deps = [
+        ":watchdog",
+        "//mcucore/src:mcucore_platform",
+        "//mcucore/src/hash:crc32",
+        "//mcucore/src/hash:fnv1a",
+        "//mcucore/src/log",
+        "//mcucore/src/print:o_print_stream",
+        "//mcucore/src/semistd:limits",
+        "//mcucore/src/strings:progmem_string_data",
     ],
 )

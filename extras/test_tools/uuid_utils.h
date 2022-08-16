@@ -4,7 +4,7 @@
 // Test helpers for working with UUID values.
 
 #include "gmock/gmock.h"
-#include "uuid.h"
+#include "misc/uuid.h"
 
 namespace mcucore {
 namespace test {
