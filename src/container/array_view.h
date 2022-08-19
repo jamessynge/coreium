@@ -22,6 +22,8 @@ class ArrayView {
   using value_type = T;
   using reference = value_type&;
   using const_reference = const value_type&;
+  using pointer = value_type*;
+  using const_pointer = const value_type*;
   using iterator = value_type*;
   using const_iterator = const value_type*;
 
@@ -47,7 +49,8 @@ class ArrayView {
   constexpr size_type size() const { return size_; }
 
   // Returns a pointer to the first element of the underlying array.
-  constexpr T* data() const { return ptr_; }
+  constexpr pointer data() { return ptr_; }
+  constexpr const_pointer data() const { return ptr_; }
 
   // Element access:
   reference operator[](size_type ndx) {
