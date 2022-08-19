@@ -10,17 +10,6 @@ package(
 )
 
 cc_library(
-    name = "watchdog",
-    srcs = ["watchdog.cc"],
-    hdrs = ["watchdog.h"],
-    deps = [
-        "//mcucore/extras/host/arduino:avr_wdt",
-        "//mcucore/src:mcucore_platform",
-        "//mcucore/src/strings:progmem_string_data",
-    ],
-)
-
-cc_library(
     name = "jitter_random",
     srcs = ["jitter_random.cc"],
     hdrs = ["jitter_random.h"],
@@ -32,6 +21,17 @@ cc_library(
         "//mcucore/src/log",
         "//mcucore/src/print:o_print_stream",
         "//mcucore/src/semistd:limits",
+        "//mcucore/src/strings:progmem_string_data",
+    ],
+)
+
+cc_library(
+    name = "watchdog",
+    srcs = ["watchdog.cc"],
+    hdrs = ["watchdog.h"],
+    deps = [
+        "//mcucore/extras/host/arduino:avr_wdt",
+        "//mcucore/src:mcucore_platform",
         "//mcucore/src/strings:progmem_string_data",
     ],
 )

@@ -1,22 +1,6 @@
 # TODO(jamessynge): describe this package.
 
 cc_test(
-    name = "o_print_stream_test",
-    srcs = ["o_print_stream_test.cc"],
-    deps = [
-        "//googletest:gunit_main",
-        "//mcucore/extras/test_tools:print_to_std_string",
-        "//mcucore/extras/test_tools:sample_printable",
-        "//mcucore/extras/test_tools:test_strings",
-        "//mcucore/src:mcucore_platform",
-        "//mcucore/src/print:o_print_stream",
-        "//mcucore/src/strings:progmem_string",
-        "//mcucore/src/strings:progmem_string_data",
-        "//mcucore/src/strings:progmem_string_view",
-    ],
-)
-
-cc_test(
     name = "any_printable_test",
     srcs = ["any_printable_test.cc"],
     deps = [
@@ -62,6 +46,22 @@ cc_test(
         "//mcucore/src/strings:progmem_string_view",
         "//mcucore/src/strings:string_view",
         "//util/gtl:map_util",
+    ],
+)
+
+cc_test(
+    name = "o_print_stream_test",
+    srcs = ["o_print_stream_test.cc"],
+    deps = [
+        "//googletest:gunit_main",
+        "//mcucore/extras/test_tools:print_to_std_string",
+        "//mcucore/extras/test_tools:sample_printable",
+        "//mcucore/extras/test_tools:test_strings",
+        "//mcucore/src:mcucore_platform",
+        "//mcucore/src/print:o_print_stream",
+        "//mcucore/src/strings:progmem_string",
+        "//mcucore/src/strings:progmem_string_data",
+        "//mcucore/src/strings:progmem_string_view",
     ],
 )
 

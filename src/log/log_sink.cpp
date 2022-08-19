@@ -9,11 +9,11 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 // As of Early 2022, Arduino is still based on C++ 2011. When compiling for the
-// host as a target (i.e. for testing), we use -Wpre-c++14-compat to warn if the
+// HOST as a target (i.e. for testing), we use -Wpre-c++14-compat to warn if the
 // code uses features added in C++ 2014, or later. However, in that case we also
 // want to take advantage of some libraries not available for the Arduino, such
 // as googlelog and STL. So, when not compiling for Arduino, we need to disable
-// the above warning so that we can include such libraries.
+// the pre-c++14-compat warning so that we can include such libraries.
 #ifndef ARDUINO
 #ifdef __clang__
 #pragma clang diagnostic push

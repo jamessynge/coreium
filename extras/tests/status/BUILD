@@ -1,6 +1,21 @@
 # TODO(jamessynge): describe this package.
 
 cc_test(
+    name = "status_or_test",
+    srcs = ["status_or_test.cc"],
+    deps = [
+        "//googletest:gunit_main",
+        "//mcucore/extras/test_tools:status_or_test_utils",
+        "//mcucore/extras/test_tools:status_test_utils",
+        "//mcucore/src/status",
+        "//mcucore/src/status:status_code",
+        "//mcucore/src/status:status_or",
+        "//mcucore/src/strings:progmem_string_view",
+        "//mcucore/src/strings:string_view",
+    ],
+)
+
+cc_test(
     name = "status_test",
     srcs = ["status_test.cc"],
     deps = [
@@ -13,20 +28,5 @@ cc_test(
         "//mcucore/src/status:status_code",
         "//mcucore/src/strings:progmem_string_data",
         "//mcucore/src/strings:progmem_string_view",
-    ],
-)
-
-cc_test(
-    name = "status_or_test",
-    srcs = ["status_or_test.cc"],
-    deps = [
-        "//googletest:gunit_main",
-        "//mcucore/extras/test_tools:status_or_test_utils",
-        "//mcucore/extras/test_tools:status_test_utils",
-        "//mcucore/src/status",
-        "//mcucore/src/status:status_code",
-        "//mcucore/src/status:status_or",
-        "//mcucore/src/strings:progmem_string_view",
-        "//mcucore/src/strings:string_view",
     ],
 )

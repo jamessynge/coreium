@@ -1,34 +1,6 @@
 # TODO(jamessynge): describe this package.
 
 cc_library(
-    name = "print_misc",
-    srcs = ["print_misc.cc"],
-    hdrs = ["print_misc.h"],
-    deps = [
-        ":counting_print",
-        "//mcucore/src:mcucore_platform",
-        "//mcucore/src/strings:has_progmem_char_array",
-        "//mcucore/src/strings:progmem_string_data",
-    ],
-)
-
-cc_library(
-    name = "o_print_stream",
-    hdrs = ["o_print_stream.h"],
-    deps = [
-        ":has_insert_into",
-        ":has_print_to",
-        ":print_misc",
-        "//mcucore/src:mcucore_platform",
-        "//mcucore/src/misc:to_unsigned",
-        "//mcucore/src/semistd:limits",
-        "//mcucore/src/semistd:type_traits",
-        "//mcucore/src/strings:has_progmem_char_array",
-        "//mcucore/src/strings:progmem_string_data",
-    ],
-)
-
-cc_library(
     name = "any_printable",
     srcs = ["any_printable.cc"],
     hdrs = ["any_printable.h"],
@@ -91,6 +63,34 @@ cc_library(
         "//mcucore/src:mcucore_platform",
         "//mcucore/src/log",
         "//mcucore/src/semistd:type_traits",
+    ],
+)
+
+cc_library(
+    name = "o_print_stream",
+    hdrs = ["o_print_stream.h"],
+    deps = [
+        ":has_insert_into",
+        ":has_print_to",
+        ":print_misc",
+        "//mcucore/src:mcucore_platform",
+        "//mcucore/src/misc:to_unsigned",
+        "//mcucore/src/semistd:limits",
+        "//mcucore/src/semistd:type_traits",
+        "//mcucore/src/strings:has_progmem_char_array",
+        "//mcucore/src/strings:progmem_string_data",
+    ],
+)
+
+cc_library(
+    name = "print_misc",
+    srcs = ["print_misc.cc"],
+    hdrs = ["print_misc.h"],
+    deps = [
+        ":counting_print",
+        "//mcucore/src:mcucore_platform",
+        "//mcucore/src/strings:has_progmem_char_array",
+        "//mcucore/src/strings:progmem_string_data",
     ],
 )
 
