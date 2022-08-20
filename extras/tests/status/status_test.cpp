@@ -200,26 +200,33 @@ TEST(StatusTest, FormatStatusCode) {
   // Using a switch here to ensure that each valid status code is included in
   // the map.
   std::map<StatusCode, std::string> code_to_name;
-  volatile StatusCode v = StatusCode::kOk;
 
 #define HANDLE_CODE(CODE)                      \
   case StatusCode::k##CODE:                    \
     code_to_name[StatusCode::k##CODE] = #CODE; \
     MCU_FALLTHROUGH_INTENDED;
 
+  volatile StatusCode v = StatusCode::kAborted;
   switch (v) {
-    HANDLE_CODE(Ok);
-    HANDLE_CODE(Unknown);
-    HANDLE_CODE(ResourceExhausted);
-    HANDLE_CODE(FailedPrecondition);
-    HANDLE_CODE(OutOfRange);
-    HANDLE_CODE(Unimplemented);
-    HANDLE_CODE(Internal);
+    HANDLE_CODE(Aborted);  // v must be set to the first case's code.
+    HANDLE_CODE(AlreadyExists);
+    HANDLE_CODE(Cancelled);
     HANDLE_CODE(DataLoss);
+    HANDLE_CODE(DeadlineExceeded);
+    HANDLE_CODE(FailedPrecondition);
+    HANDLE_CODE(Forbidden);
+    HANDLE_CODE(Internal);
     HANDLE_CODE(InvalidArgument);
     HANDLE_CODE(NotFound);
-    default:
-      break;
+    HANDLE_CODE(OutOfRange);
+    HANDLE_CODE(ResourceExhausted);
+    HANDLE_CODE(Unauthorized);
+    HANDLE_CODE(Unavailable);
+    HANDLE_CODE(Unimplemented);
+    HANDLE_CODE(Unknown);
+
+    case StatusCode::kOk:
+      code_to_name[StatusCode::kOk] = "Ok";
   }
 
   for (const auto [code, str] : code_to_name) {
@@ -227,6 +234,8 @@ TEST(StatusTest, FormatStatusCode) {
     OPrintStream strm(p2ss);
     strm << code;
     EXPECT_EQ(p2ss.str(), str);
+
+    // The ostream inserted string should be the same.
     std::ostringstream std_strm;
     std_strm << code;
     EXPECT_EQ(p2ss.str(), std_strm.str());
@@ -243,9 +252,9 @@ TEST(StatusTest, FormatStatusCode) {
     PrintToStdString p2ss;
     OPrintStream strm(p2ss);
     strm << code;
-    EXPECT_THAT(p2ss.str(),
-                AllOf(HasSubstr("Undefined"), HasSubstr("StatusCode"),
-                      HasSubstr(absl::StrCat("(", i, ")"))));
+    EXPECT_EQ(p2ss.str(), absl::StrCat("Undefined StatusCode (", i, ")"));
+
+    // The ostream inserted message should be the same.
     std::ostringstream std_strm;
     std_strm << code;
     EXPECT_EQ(p2ss.str(), std_strm.str());

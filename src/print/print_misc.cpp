@@ -6,6 +6,8 @@
 
 namespace mcucore {
 
+// This should match the format produced by make_enum_to_string for inserting
+// into std::ostream.
 size_t PrintUnknownEnumValueTo(const __FlashStringHelper* name, uint32_t v,
                                Print& out) {
   CountingPrint counter(out);

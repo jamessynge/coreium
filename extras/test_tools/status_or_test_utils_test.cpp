@@ -6,6 +6,7 @@
 #include "gtest/gtest.h"
 #include "status/status.h"
 #include "status/status_or.h"
+#include "strings/string_view.h"
 #include "testing/base/public/gunit-spi.h"
 
 namespace mcucore {
@@ -47,6 +48,10 @@ TEST(StatusOrTestUtilsTest, OpInsert) {
 TEST(StatusOrTestUtilsTest, IsOkAndHolds) {
   EXPECT_THAT(StatusOr<int>(7), IsOkAndHolds(7));
   EXPECT_THAT(StatusOr<int>(6), IsOkAndHolds(Not(7)));
+
+  EXPECT_THAT(StatusOr<StringView>(StringView("abc")), IsOkAndHolds("abc"));
+  EXPECT_THAT(StatusOr<StringView>(StringView("abc")),
+              IsOkAndHolds(Not("def")));
 }
 
 TEST(StatusOrTestUtilsTest, NotIsOkAndHolds) {

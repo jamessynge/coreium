@@ -12,12 +12,12 @@
 // provide a tool for reading all source files and building a map from name to
 // value.
 
+#include "mcucore_platform.h"
+#include "semistd/type_traits.h"
+
 #if MCU_HOST_TARGET
 #include <ostream>  // pragma: keep standard include
 #endif
-
-#include "mcucore_platform.h"
-#include "semistd/type_traits.h"
 
 namespace mcucore {
 
@@ -28,7 +28,7 @@ namespace mcucore {
 //
 // Values under 100 are used for most status codes that don't map to HTTP codes;
 // except for kOk, the specific value doesn't matter, except for the desire to
-// avoid collisions.
+// avoid collisions... though they are modelled on Abseil's StatusCode.
 //
 // As of March, 2022, ASCOM errors are in the range 0x400 to 0x4FF (1024 to
 // 1279), which should be avoided here, except where they mean the same thing.
@@ -37,8 +37,14 @@ enum class StatusCode : int16_t {
   // integer fields.
   kOk = 0,
 
+  kCancelled = 1,
+
   // kUnknown is the status of a default initialized StatusOr instance.
   kUnknown = 2,
+
+  kDeadlineExceeded = 4,
+
+  kAlreadyExists = 6,
 
   // Ran out of something we need (e.g. have an empty buffer when reading, or
   // a full buffer when writing).
@@ -46,6 +52,8 @@ enum class StatusCode : int16_t {
 
   // Conditions are not correct for the requested operation.
   kFailedPrecondition = 9,
+
+  kAborted = 10,
 
   // A parameter is out of the necessary range.
   kOutOfRange = 11,
@@ -57,6 +65,8 @@ enum class StatusCode : int16_t {
   // has been violated.
   kInternal = 13,
 
+  kUnavailable = 14,
+
   // Some data has been lost, e.g. EEPROM is corrupt.
   kDataLoss = 15,
 
@@ -65,6 +75,12 @@ enum class StatusCode : int16_t {
   kInvalidArgument = 400,  // Equivalent to BAD REQUEST.
 
   kNotFound = 404,
+
+  // Really means that the client needs to authenticate first.
+  kUnauthorized = 401,
+
+  //  Client doesn't have the right to perform the operation.
+  kForbidden = 403,
 };
 
 // has_to_status_code extends either true_type or false_type, depending on

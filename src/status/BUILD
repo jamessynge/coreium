@@ -1,4 +1,5 @@
-# TODO(jamessynge): describe this package.
+# Package with support for representing the status of operations
+# which might fail.
 
 cc_library(
     name = "status",
@@ -23,8 +24,8 @@ cc_library(
     hdrs = ["status_code.h"],
     deps = [
         "//mcucore/src:mcucore_platform",
-        "//mcucore/src/container:flash_string_table",
         "//mcucore/src/print:print_misc",
+        "//mcucore/src/print:print_to_buffer",
         "//mcucore/src/semistd:type_traits",
         "//mcucore/src/strings:progmem_string_data",
     ],

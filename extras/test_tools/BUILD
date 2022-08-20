@@ -220,6 +220,7 @@ cc_test(
         "//googletest:gunit_main",
         "//mcucore/src/status",
         "//mcucore/src/status:status_or",
+        "//mcucore/src/strings:string_view",
     ],
 )
 
