@@ -1,4 +1,4 @@
-# TODO(jamessynge): describe this package.
+# Container classes.
 
 cc_library(
     name = "array",
@@ -25,5 +25,20 @@ cc_library(
     deps = [
         "//mcucore/src:mcucore_platform",
         "//mcucore/src/log",
+    ],
+)
+
+cc_library(
+    name = "serial_map",
+    hdrs = ["serial_map.h"],
+    deps = [
+        "//mcucore/src:mcucore_platform",
+        "//mcucore/src/log",
+        "//mcucore/src/semistd:limits",
+        "//mcucore/src/semistd:type_traits",
+        "//mcucore/src/status",
+        "//mcucore/src/status:status_or",
+        "//mcucore/src/strings:progmem_string_data",
+        "//mcucore/src/strings:string_view",
     ],
 )

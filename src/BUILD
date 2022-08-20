@@ -16,6 +16,7 @@ cc_library(
         "//mcucore/src/container:array",
         "//mcucore/src/container:array_view",
         "//mcucore/src/container:flash_string_table",
+        "//mcucore/src/container:serial_map",
         "//mcucore/src/eeprom:eeprom_io",
         "//mcucore/src/eeprom:eeprom_region",
         "//mcucore/src/eeprom:eeprom_tag",

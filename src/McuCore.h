@@ -9,6 +9,7 @@
 #include "container/array.h"                 // IWYU pragma: export
 #include "container/array_view.h"            // IWYU pragma: export
 #include "container/flash_string_table.h"    // IWYU pragma: export
+#include "container/serial_map.h"            // IWYU pragma: export
 #include "eeprom/eeprom_io.h"                // IWYU pragma: export
 #include "eeprom/eeprom_region.h"            // IWYU pragma: export
 #include "eeprom/eeprom_tag.h"               // IWYU pragma: export
