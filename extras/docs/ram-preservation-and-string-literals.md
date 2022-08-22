@@ -117,3 +117,8 @@ the same storage in Flash.
     constexpr auto kFalseFlashStr = MCU_FLASHSTR("false");
     constexpr auto kOKStrView = MCU_PSV("OK");
     ```
+
+These pages have some very interesting info about sections:
+
+*   [Memory Sections](https://www.nongnu.org/avr-libc/user-manual/mem_sections.html)
+*   [Maximum PROGMEM data size? - Arduino Mega Forum](https://forum.arduino.cc/t/maximum-progmem-data-size-arduino-mega/373448/12)
