@@ -23,6 +23,8 @@ cc_library(
         "//mcucore/src/eeprom:eeprom_tlv",
         "//mcucore/src/hash:crc32",
         "//mcucore/src/hash:fnv1a",
+        "//mcucore/src/http1:request_decoder",
+        "//mcucore/src/http1:request_decoder_constants",
         "//mcucore/src/json:json_encoder",
         "//mcucore/src/json:json_encoder_helpers",
         "//mcucore/src/log",

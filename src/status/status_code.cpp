@@ -113,8 +113,8 @@ size_t PrintValueTo(StatusCode v, Print& out) {
   if (flash_string != nullptr) {
     return out.print(flash_string);
   }
-  return mcucore::PrintUnknownEnumValueTo(MCU_FLASHSTR("StatusCode"),
-                                          static_cast<uint32_t>(v), out);
+  return PrintUnknownEnumValueTo(MCU_FLASHSTR("StatusCode"),
+                                 static_cast<uint32_t>(v), out);
 }
 
 #if MCU_HOST_TARGET
@@ -122,7 +122,7 @@ size_t PrintValueTo(StatusCode v, Print& out) {
 
 std::ostream& operator<<(std::ostream& os, StatusCode v) {
   char buffer[256];
-  mcucore::PrintToBuffer print(buffer);
+  PrintToBuffer print(buffer);
   PrintValueTo(v, print);
   return os << std::string_view(buffer, print.bytes_written());
 }
