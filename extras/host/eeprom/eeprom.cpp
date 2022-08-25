@@ -1,6 +1,6 @@
 #include "extras/host/eeprom/eeprom.h"
 
-#include "glog/logging.h"
+#include "absl/log/check.h"
 
 namespace internal {
 

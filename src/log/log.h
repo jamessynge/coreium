@@ -147,25 +147,32 @@
 #endif  // MCU_ENABLE_DCHECK
 #endif  // MCU_DISABLE_DCHECK
 
+#if defined(__GNUC__) && defined(__FILE_NAME__)
+// This may slightly speed up building with gcc.
+#define _MCU_CURRENT_FILE_ MCU_BASENAME(__FILE_NAME__)
+#else
+#define _MCU_CURRENT_FILE_ MCU_BASENAME(__FILE__)
+#endif
+
 #ifdef MCU_DISABLE_VLOG_LOCATION
 #undef MCU_ENABLE_VLOG_LOCATION
-#define MCU_VLOG_LOCATION(x) mcucore::ProgmemStringView()
+#define _MCU_VLOG_CURRENT_FILE_ mcucore::ProgmemString()
 #else
-#define MCU_VLOG_LOCATION(x) MCU_BASENAME(x)
+#define _MCU_VLOG_CURRENT_FILE_ _MCU_CURRENT_FILE_
 #endif
 
 #ifdef MCU_DISABLE_CHECK_LOCATION
 #undef MCU_ENABLE_CHECK_LOCATION
-#define MCU_CHECK_LOCATION(x) nullptr
+#define _MCU_CHECK_CURRENT_FILE_ mcucore::ProgmemString()
 #else
-#define MCU_CHECK_LOCATION(x) MCU_BASENAME(x)
+#define _MCU_CHECK_CURRENT_FILE_ _MCU_CURRENT_FILE_
 #endif
 
 #if defined(MCU_DISABLE_DCHECK_LOCATION) || defined(MCU_DISABLE_CHECK_LOCATION)
 #undef MCU_ENABLE_DCHECK_LOCATION
-#define MCU_DCHECK_LOCATION(x) nullptr
+#define _MCU_DCHECK_CURRENT_FILE_ mcucore::ProgmemString()
 #else
-#define MCU_DCHECK_LOCATION(x) MCU_BASENAME(x)
+#define _MCU_DCHECK_CURRENT_FILE_ _MCU_CURRENT_FILE_
 #endif
 
 #define MCU_VOID_SINK ::mcucore::VoidSink()
@@ -197,7 +204,7 @@
     (!MCU_VLOG_IS_ON(level))             \
         ? (void)0                        \
         : ::mcucore::LogSinkVoidify() && \
-              ::mcucore::LogSink(MCU_VLOG_LOCATION(__FILE__), __LINE__)
+              ::mcucore::LogSink(_MCU_VLOG_CURRENT_FILE_, __LINE__)
 
 #define MCU_VLOG_IF(level, expression)                          \
   switch (0)                                                    \
@@ -205,7 +212,7 @@
     (!(MCU_VLOG_IS_ON(level) && static_cast<bool>(expression))) \
         ? (void)0                                               \
         : ::mcucore::LogSinkVoidify() &&                        \
-              ::mcucore::LogSink(MCU_VLOG_LOCATION(__FILE__), __LINE__)
+              ::mcucore::LogSink(_MCU_VLOG_CURRENT_FILE_, __LINE__)
 
 #else  // !(MCU_ENABLED_VLOG_LEVEL > 0)
 
@@ -225,7 +232,7 @@
   default:                                  \
     (true) ? (void)0                        \
            : ::mcucore::LogSinkVoidify() && \
-                 ::mcucore::LogSink(MCU_VLOG_LOCATION(__FILE__), __LINE__)
+                 ::mcucore::LogSink(_MCU_VLOG_CURRENT_FILE_, __LINE__)
 
 #endif
 
@@ -241,14 +248,13 @@
 
 #ifdef MCU_ENABLE_CHECK
 
-#define MCU_CHECK_INTERNAL_(expression, message)                           \
-  switch (0)                                                               \
-  default:                                                                 \
-    (expression)                                                           \
-        ? (void)0                                                          \
-        : ::mcucore::LogSinkVoidify() &&                                   \
-              ::mcucore::CheckSink(MCU_CHECK_LOCATION(__FILE__), __LINE__, \
-                                   MCU_FLASHSTR_128(message))
+#define MCU_CHECK_INTERNAL_(expression, message)                      \
+  switch (0)                                                          \
+  default:                                                            \
+    (expression) ? (void)0                                            \
+                 : ::mcucore::LogSinkVoidify() &&                     \
+                       ::mcucore::CheckSink(_MCU_CHECK_CURRENT_FILE_, \
+                                            __LINE__, MCU_PSD_128(message))
 
 #else  // !MCU_ENABLE_CHECK
 
@@ -274,14 +280,13 @@
 
 #if defined(MCU_ENABLE_CHECK) && defined(MCU_ENABLE_DCHECK)
 
-#define MCU_DCHECK_INTERNAL_(expression, message)                           \
-  switch (0)                                                                \
-  default:                                                                  \
-    (expression)                                                            \
-        ? (void)0                                                           \
-        : ::mcucore::LogSinkVoidify() &&                                    \
-              ::mcucore::CheckSink(MCU_DCHECK_LOCATION(__FILE__), __LINE__, \
-                                   MCU_FLASHSTR_128(message))
+#define MCU_DCHECK_INTERNAL_(expression, message)                      \
+  switch (0)                                                           \
+  default:                                                             \
+    (expression) ? (void)0                                             \
+                 : ::mcucore::LogSinkVoidify() &&                      \
+                       ::mcucore::CheckSink(_MCU_DCHECK_CURRENT_FILE_, \
+                                            __LINE__, MCU_PSD_128(message))
 
 #else
 

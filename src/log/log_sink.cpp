@@ -1,7 +1,7 @@
 #include "log/log_sink.h"
 
 #include "mcucore_platform.h"
-#include "strings/progmem_string_data.h"
+#include "strings/progmem_string.h"
 
 #ifdef ARDUINO_ARCH_AVR
 #include "platform/avr/watchdog.h"
@@ -12,8 +12,8 @@
 // HOST as a target (i.e. for testing), we use -Wpre-c++14-compat to warn if the
 // code uses features added in C++ 2014, or later. However, in that case we also
 // want to take advantage of some libraries not available for the Arduino, such
-// as googlelog and STL. So, when not compiling for Arduino, we need to disable
-// the pre-c++14-compat warning so that we can include such libraries.
+// as Abseil's logging and STL. So, when not compiling for Arduino, we need to
+// disable the pre-c++14-compat warning so that we can include such libraries.
 #ifndef ARDUINO
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -22,8 +22,8 @@
 
 #include <string_view>  // pragma: keep standard include
 
-#include "base/logging_extensions.h"
-#include "glog/logging.h"
+#include "absl/log/log.h"
+#include "absl/log/log_sink_registry.h"  // Provides FlushLogSinks
 
 #ifdef __clang__
 #pragma clang diagnostic pop
@@ -53,6 +53,10 @@ inline void CheckSinkExit(std::string_view message) {
   if (the_check_sink_exit_fn != nullptr) {
     (*the_check_sink_exit_fn)(message);
   } else {
+    // By default, we assume that we can use Abseil's logging features on host,
+    // and that it is easiest to debug a failure if all the log files have been
+    // flushed before we trigger a crash.
+    absl::FlushLogSinks();
     LOG(FATAL) << message;  // COV_NF_LINE
   }
 }
@@ -64,9 +68,8 @@ inline Print& GetPrintForCheckSink() { return DEFAULT_SINK_OUT; }
 
 #endif  // MCU_HOST_TARGET
 
-void PrintLocation(Print& out, const __FlashStringHelper* file,
-                   const uint16_t line_number) {
-  if (file != nullptr && out.print(file) > 0) {
+void PrintLocation(Print& out, ProgmemString file, const uint16_t line_number) {
+  if (file != nullptr && file.printTo(out) > 0) {
     if (line_number != 0) {
       out.print(':');
       out.print(line_number);
@@ -98,7 +101,7 @@ void SetCheckSinkExitFn(CheckSinkExitFn exit_fn) {
 
 #endif  // MCU_HOST_TARGET
 
-LogSink::LogSink(const __FlashStringHelper* file, uint16_t line_number)
+LogSink::LogSink(ProgmemString file, uint16_t line_number)
     : OPrintStream(GetPrintForLogSink()) {
   PrintLocation(out_, file, line_number);
 }
@@ -111,8 +114,8 @@ LogSink::~LogSink() {
   out_.flush();
 }
 
-CheckSink::CheckSink(const __FlashStringHelper* file, uint16_t line_number,
-                     const __FlashStringHelper* expression_message)
+CheckSink::CheckSink(ProgmemString file, uint16_t line_number,
+                     ProgmemString expression_message)
     : OPrintStream(GetPrintForCheckSink()) {
   DoPrint(MCU_PSD("MCU_CHECK FAILED: "));
   PrintLocation(out_, file, line_number);
@@ -133,7 +136,6 @@ CheckSink::~CheckSink() {
   // again.
   avr::EnableWatchdogResetMode(4);
 #elif MCU_HOST_TARGET
-  FlushLogFiles(absl::LogSeverity::kInfo);
   CheckSinkExit("MCU_CHECK FAILED");
 #else
 #error "Not yet implemented"

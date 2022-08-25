@@ -2,7 +2,7 @@ cc_test(
     name = "progmem_string_data_test",
     srcs = ["progmem_string_data_test.cc"],
     deps = [
-        "//glog:logging",
+        "//absl/log",
         "//googletest:gunit_main",
         "//mcucore/extras/test_tools:pretty_type_name",
         "//mcucore/extras/test_tools:print_to_std_string",
@@ -63,7 +63,7 @@ cc_test(
     name = "string_view_test",
     srcs = ["string_view_test.cc"],
     deps = [
-        "//glog:logging",
+        "//absl/log",
         "//googletest:gunit_main",
         "//mcucore/extras/test_tools:print_to_std_string",
         "//mcucore/extras/test_tools:string_view_utils",

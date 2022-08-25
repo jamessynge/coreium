@@ -3,10 +3,13 @@
 #include <algorithm>
 #include <cstdint>
 #include <functional>
+#include <ostream>
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
+#include "absl/log/log.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "eeprom/eeprom_region.h"
@@ -15,7 +18,6 @@
 #include "extras/test_tools/print_value_to_std_string.h"
 #include "extras/test_tools/status_or_test_utils.h"
 #include "extras/test_tools/status_test_utils.h"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "mcucore_platform.h"

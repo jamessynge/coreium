@@ -77,10 +77,10 @@ cc_library(
     srcs = ["json_decoder.cc"],
     hdrs = ["json_decoder.h"],
     deps = [
+        "//absl/log",
         "//absl/status",
         "//absl/status:statusor",
         "//absl/strings",
-        "//glog:logging",
         "//googletest:gunit_headers",
         "//mcucore/src:mcucore_platform",
         "//mcucore/src/log",
@@ -191,7 +191,7 @@ cc_library(
     hdrs = ["random_utils.h"],
     deps = [
         "//absl/flags:flag",
-        "//glog:logging",
+        "//absl/log",
     ],
 )
 

@@ -23,6 +23,7 @@
 #endif
 
 #include "print/o_print_stream.h"
+#include "strings/progmem_string.h"
 
 namespace mcucore {
 
@@ -32,7 +33,7 @@ class LogSink final : public OPrintStream {
   // line_number. The prefix has the format "file.ext:line_number] " if file_
   // points to a non-empty string; omits ":line_number" if line_number_ is
   //   zero. The prefix is empty if file is null or empty.
-  LogSink(const __FlashStringHelper* file, uint16_t line_number);
+  LogSink(ProgmemString file, uint16_t line_number);
 
   // Streams to DEFAULT_SINK_OUT, omits the log location prefix.
   LogSink();
@@ -44,8 +45,8 @@ class LogSink final : public OPrintStream {
 class CheckSink : public OPrintStream {
  public:
   // Streams to  "MCU_CHECK FAILED: file.ext:line_number] expression_message "
-  CheckSink(const __FlashStringHelper* file, uint16_t line_number,
-            const __FlashStringHelper* expression_message);
+  CheckSink(ProgmemString file, uint16_t line_number,
+            ProgmemString expression_message);
 
   // TODO(jamessynge): Mark the dtor as [[noreturn]], if it helps with writing
   // non-void functions that end with an MCU_CHECK (i.e. so we don't have to add

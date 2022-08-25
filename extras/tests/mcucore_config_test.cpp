@@ -1,6 +1,6 @@
 #include "mcucore_config.h"
 
-#include "glog/logging.h"
+#include "absl/log/log.h"
 #include "gtest/gtest.h"
 #include "mcucore_platform.h"
 

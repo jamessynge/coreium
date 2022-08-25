@@ -43,8 +43,8 @@ cc_test(
     name = "eeprom_tlv_test",
     srcs = ["eeprom_tlv_test.cc"],
     deps = [
+        "//absl/log",
         "//absl/strings",
-        "//glog:logging",
         "//googletest:gunit_main",
         "//mcucore/extras/host/eeprom",
         "//mcucore/extras/test_tools:print_value_to_std_string",

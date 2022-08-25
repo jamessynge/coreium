@@ -6,7 +6,7 @@ cc_test(
     name = "mcucore_config_test",
     srcs = ["mcucore_config_test.cc"],
     deps = [
-        "//glog:logging",
+        "//absl/log",
         "//googletest:gunit_main",
         "//mcucore/src:mcucore_config",
         "//mcucore/src:mcucore_platform",

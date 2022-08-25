@@ -7,12 +7,12 @@
 #include <string>
 #include <string_view>
 
+#include "absl/log/log.h"
 #include "absl/strings/str_cat.h"
 #include "extras/host/arduino/print.h"
 #include "extras/test_tools/json_test_utils.h"
 #include "extras/test_tools/print_to_std_string.h"
 #include "extras/test_tools/sample_printable.h"
-#include "glog/logging.h"
 #include "gtest/gtest.h"
 #include "strings/progmem_string_view.h"
 #include "strings/string_view.h"

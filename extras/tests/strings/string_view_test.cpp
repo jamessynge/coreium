@@ -9,9 +9,9 @@
 #include <utility>
 #include <vector>
 
+#include "absl/log/log.h"
 #include "extras/test_tools/print_to_std_string.h"
 #include "extras/test_tools/string_view_utils.h"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 

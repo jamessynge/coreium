@@ -4,8 +4,8 @@ cc_test(
     name = "json_encoder_test",
     srcs = ["json_encoder_test.cc"],
     deps = [
+        "//absl/log",
         "//absl/strings",
-        "//glog:logging",
         "//googletest:gunit_main",
         "//mcucore/extras/host/arduino:print",
         "//mcucore/extras/test_tools:json_test_utils",

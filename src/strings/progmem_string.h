@@ -57,7 +57,7 @@ class ProgmemString {
 
   // Return a __FlashStringHelper*, the type used by Arduino's Print class to
   // help avoid copying strings into RAM.
-  const __FlashStringHelper* ToFlashStringHelper() const {
+  inline const __FlashStringHelper* ToFlashStringHelper() const {
     return reinterpret_cast<const __FlashStringHelper*>(ptr_);
   }
 

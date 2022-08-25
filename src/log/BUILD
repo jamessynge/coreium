@@ -17,10 +17,11 @@ cc_library(
     srcs = ["log_sink.cc"],
     hdrs = ["log_sink.h"],
     deps = [
-        "//base:logging_extensions",
-        "//glog:logging",
+        "//absl/log",
+        "//absl/log:log_sink_registry",
         "//mcucore/src:mcucore_platform",
         "//mcucore/src/print:o_print_stream",
+        "//mcucore/src/strings:progmem_string",
         "//mcucore/src/strings:progmem_string_data",
     ],
 )

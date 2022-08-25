@@ -4,5 +4,5 @@ cc_library(
     name = "eeprom",
     srcs = ["eeprom.cc"],
     hdrs = ["eeprom.h"],
-    deps = ["//glog:logging"],
+    deps = ["//absl/log:check"],
 )
