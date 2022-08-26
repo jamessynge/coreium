@@ -1,4 +1,4 @@
-# TODO(jamessynge): describe this package.
+# Tests of mcucore/src/misc/...
 
 cc_test(
     name = "to_unsigned_test",

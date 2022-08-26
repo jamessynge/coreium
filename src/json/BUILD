@@ -1,4 +1,5 @@
-# TODO(jamessynge): describe this package.
+# Support for generating JSON in a streaming fashion, where there is no buffering of
+# the output JSON, making it suitable for a low memory environment.
 
 cc_library(
     name = "json_encoder",

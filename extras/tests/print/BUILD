@@ -1,4 +1,4 @@
-# TODO(jamessynge): describe this package.
+# Tests of mcucore/src/print/...
 
 cc_test(
     name = "any_printable_test",

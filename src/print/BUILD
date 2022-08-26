@@ -1,4 +1,6 @@
-# TODO(jamessynge): describe this package.
+# Provides support for printing and formatting. In particular, provides services
+# on top of Arduino's Print class, such as OPrintStream, PrintToBuffer, and
+# HexEscapedPrintable.
 
 cc_library(
     name = "any_printable",

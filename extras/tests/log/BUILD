@@ -1,4 +1,4 @@
-# TODO(jamessynge): describe this package.
+# Tests of mcucore/src/log/...
 
 cc_test(
     name = "log_sink_test",

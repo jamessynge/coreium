@@ -1,4 +1,4 @@
-# TODO(jamessynge): describe this package.
+# Tests of mcucore/src/eeprom/...
 
 cc_test(
     name = "eeprom_io_test",

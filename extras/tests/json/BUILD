@@ -1,4 +1,4 @@
-# TODO(jamessynge): describe this package.
+# Tests of mcucore/src/json/...
 
 cc_test(
     name = "json_encoder_test",

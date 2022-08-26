@@ -1,4 +1,4 @@
-# TODO(jamessynge): describe this package.
+# Provides hashing of byte sequences.
 
 cc_library(
     name = "crc32",

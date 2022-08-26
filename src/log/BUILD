@@ -1,4 +1,4 @@
-# TODO(jamessynge): describe this package.
+# Provides MCU_VLOG, MCU_CHECK, MCU_DCHECK, etc.
 
 cc_library(
     name = "log",

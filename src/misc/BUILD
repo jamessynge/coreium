@@ -1,4 +1,4 @@
-# TODO(jamessynge): describe this package.
+# Miscellaneous libraries that don't fit into other categories.
 
 cc_library(
     name = "progmem_ptr",

@@ -1,4 +1,7 @@
-# TODO(jamessynge): describe this package.
+# Provides support for reading and writing from EEPROM in a structured fashion.
+# In particular, EepromTlv provides support for storing in a Tag-Length-Value
+# format, with a mechanism for constructing tags in such a way that different
+# subsystems have unique, non-colliding tags.
 
 cc_library(
     name = "eeprom_io",

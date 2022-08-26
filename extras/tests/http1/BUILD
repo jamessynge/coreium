@@ -1,4 +1,4 @@
-# TODO(jamessynge): describe this package.
+# Tests of mcucore/src/http1/...
 
 cc_test(
     name = "request_decoder_internals_test",

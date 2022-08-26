@@ -1,4 +1,4 @@
-# TODO(jamessynge): describe this package.
+# Tests of mcucore/src/hash/...
 
 cc_test(
     name = "crc32_test",

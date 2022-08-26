@@ -1,4 +1,4 @@
-# TODO(jamessynge): describe this package.
+# Tests of mcucore/src/status/...
 
 cc_test(
     name = "status_or_test",
