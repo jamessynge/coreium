@@ -1,6 +1,10 @@
 #ifndef MCUCORE_SRC_MISC_UUID_H_
 #define MCUCORE_SRC_MISC_UUID_H_
 
+// Uuid is a class for generating, storing and formatting UUIDs.
+//
+// Author: james.synge@gmail.com
+
 #include "eeprom/eeprom_tag.h"
 #include "eeprom/eeprom_tlv.h"
 #include "mcucore_platform.h"

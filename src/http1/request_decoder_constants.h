@@ -3,6 +3,8 @@
 
 // Enums for the HTTP/1.1 decoder. In a separate file to help with the use of
 // make_enum_to_string.
+//
+// Author: james.synge@gmail.com
 
 #include <stdint.h>  // pragma: keep standard include
 

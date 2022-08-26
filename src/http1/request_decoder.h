@@ -34,6 +34,8 @@
 // multiple context pointers) and thus of the application using this class.
 // Until I have evidence otherwise, I'll use a single listener, an instance of a
 // class that requires virtual functions.
+//
+// Author: james.synge@gmail.com
 
 #include "http1/request_decoder_constants.h"
 #include "strings/progmem_string.h"

@@ -2,6 +2,8 @@
 #define MCUCORE_EXTRAS_TEST_TOOLS_EEPROM_EXAMPLE_DOMAINS_H_
 
 // Example domains for testing.
+//
+// Author: james.synge@gmail.com
 
 #include "eeprom/eeprom_tag.h"
 

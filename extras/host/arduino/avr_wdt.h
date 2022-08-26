@@ -2,6 +2,8 @@
 #define MCUCORE_EXTRAS_HOST_ARDUINO_AVR_WDT_H_
 
 // A fake version of avr/wdt.h (Watchdog Timer Handling).
+//
+// Author: james.synge@gmail.com
 
 #include <stdint.h>
 

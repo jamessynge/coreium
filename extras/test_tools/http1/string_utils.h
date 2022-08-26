@@ -2,6 +2,8 @@
 #define MCUCORE_EXTRAS_TEST_TOOLS_HTTP1_STRING_UTILS_H_
 
 // Helper functions focused on testing the HTTP request decoder.
+//
+// Author: james.synge@gmail.com
 
 #include <string>
 #include <string_view>

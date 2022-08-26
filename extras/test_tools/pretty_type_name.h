@@ -3,6 +3,8 @@
 
 // PrettyTypeName<typename T> returns T as a string T, i.e. PrettyTypeName<int>
 // returns "int".
+//
+// Author: james.synge@gmail.com
 
 #include <string>
 #include <string_view>

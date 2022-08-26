@@ -1,6 +1,11 @@
 #ifndef MCUCORE_SRC_PLATFORM_AVR_WATCHDOG_H_
 #define MCUCORE_SRC_PLATFORM_AVR_WATCHDOG_H_
 
+// Functions for working with the AVR watchdog feature in a somewhat abstract
+// fashion.
+//
+// Author: james.synge@gmail.com
+
 #include "mcucore_platform.h"
 
 namespace mcucore {

@@ -9,6 +9,8 @@
 // Note that if the total length of the accumulated string is greater than an
 // StringView can represent, the accumulated string will instead be
 // passed to OnPartialText in large pieces.
+//
+// Author: james.synge@gmail.com
 
 #include <optional>
 #include <string>

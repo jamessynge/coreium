@@ -3,6 +3,8 @@
 
 // Implementations of selected C++ <utility> library features, though defined in
 // the mcucore namespace, rather than std.
+//
+// Author: james.synge@gmail.com
 
 #include "mcucore_platform.h"
 #include "semistd/type_traits.h"

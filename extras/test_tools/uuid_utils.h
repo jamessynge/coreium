@@ -2,6 +2,8 @@
 #define MCUCORE_EXTRAS_TEST_TOOLS_UUID_UTILS_H_
 
 // Test helpers for working with UUID values.
+//
+// Author: james.synge@gmail.com
 
 #include "gmock/gmock.h"
 #include "misc/uuid.h"

@@ -2,6 +2,8 @@
 #define MCUCORE_EXTRAS_HOST_MLX90614_MLX90614_H_
 
 // Minimal fake version of Adafruit's MLX90614 library.
+//
+// Author: james.synge@gmail.com
 
 #include "extras/host/arduino/arduino.h"
 
