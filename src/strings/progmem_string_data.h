@@ -35,14 +35,14 @@
 // -----------------------------------------------------------------------------
 //
 // The approach of using template metaprogramming and type deduction is inspired
-// by George Makrydakis https://github.com/irrequietus/typestring. typestring.hh
-// expands a string literal passed to a macro function into a list of char
-// values which is used as a template parameter pack; template metaprogramming
-// is used to iterate through the characters looking for the string terminating
-// null character, though recursive type deduction is used to perform that
-// iteration. This works fine for short strings, but with longer strings (e.g.
-// above 128) the recursive type deduction becomes rather slow, and can exceed
-// the the stack size supported by the compiler.
+// by https://github.com/irrequietus/typestring, created by George Makrydakis.
+// typestring.hh expands a string literal passed to a macro function into a list
+// of char values which is used as a template parameter pack; template
+// metaprogramming is used to iterate through the characters looking for the
+// string terminating null character, though recursive type deduction is used to
+// perform that iteration. This works fine for short strings, but with longer
+// strings (e.g. above 128) the recursive type deduction becomes rather slow,
+// and can exceed the the stack size supported by the compiler.
 //
 // To avoid the compilation issues mentioned above, this implementation is
 // different in these key ways:
@@ -58,8 +58,9 @@
 //    is processed in a special fashion to trim off the terminating null and the
 //    following padding, which is also made up of null characters. Fragments
 //    containing string characters but not the terminating null, and fragments
-//    containing only null characters (starting with the terminating null), are
-//    processed as a whole unit, without needing to process each character.
+//    containing only characters after the final character of the literal (such
+//    a fragment may start with the terminating null), are processed as a whole
+//    unit, without needing to process each character.
 //
 // 4) Recursion is performed in a binary tree fashion on adjacent fragments or
 //    sequences of adjacent fragments, rather than as just a character at a time
@@ -70,9 +71,9 @@
 //    perform type deduction.
 //
 // Note that character-at-a-time recursion is retained in the implementation of
-// finding slashes within the 16 character string fragments, but after that the
-// binary tree recursion method is used, which addresses the difficulties with
-// long __FILE__ strings.
+// MCU_BASENAME for finding slashes within the 16 character string fragments;
+// but after that the binary tree recursion method is used, which addresses the
+// difficulties with long __FILE__ strings.
 //
 // Author: james.synge@gmail.com
 
@@ -111,6 +112,12 @@ struct ProgmemStringData final {
   // Return the number of chars in the string, not including the terminating
   // NUL.
   static constexpr int size() { return sizeof...(C); }
+
+  // Return as the type used by the Arduino Print class for printing strings
+  // stored in Flash memory.
+  static const __FlashStringHelper* ToFlashStringHelper() {
+    return reinterpret_cast<const __FlashStringHelper*>(kData);
+  }
 };
 
 // 'Define' the storage for the kData array, though in fact that won't happen
@@ -555,98 +562,77 @@ auto ProvideStorage(LengthCheck<LengthOk>, PathFragment<FoundSlash, C...>)
 #define _PSD_TYPE_1024(fragtype, x) _MAKE_PSD_TYPE_nnn(1024, fragtype, x)
 
 ////////////////////////////////////////////////////////////////////////////////
-// We define below macros MCU_PSD_nnn (PSD==ProgmemStringData),
-// MCU_FLASHSTR_nnn, and MCU_BASENAME_nnn for various values of nnn, which
-// represents the maximum length of string literal (not including the
-// terminating null character) supported by the macro. These produce *values*
-// that can be printed or otherwise operated upon at runtime.
+// We define below macros MCU_PSD_TYPE_nnn (PSD==ProgmemStringData),
+// MCU_PSD_nnn, MCU_FLASHSTR_nnn, and MCU_BASENAME_nnn for various values of
+// nnn, which represents the maximum length of string literal (not including the
+// terminating null character) supported by the macro. MCU_PSD_TYPE_nnn(x)
+// expands to a type ProgmemStringData<X,...>, where X,... is the characters in
+// the literal string x. The others expand to values of such a type, which can
+// be printed or otherwise operated upon at runtime.
 
 // Max length 32:
 
-#define MCU_PSD_32(x) (_PSD_TYPE_32(_PSD_STRFRAG_TYPE, x)())
+#define MCU_PSD_TYPE_32(x) _PSD_TYPE_32(_PSD_STRFRAG_TYPE, x)
+#define MCU_PSD_32(x) (MCU_PSD_TYPE_32(x)())
+#define MCU_FLASHSTR_32(x) (MCU_PSD_TYPE_32(x)::ToFlashStringHelper())
 
-#define MCU_FLASHSTR_32(x)                       \
-  (reinterpret_cast<const __FlashStringHelper*>( \
-      _PSD_TYPE_32(_PSD_STRFRAG_TYPE, x)::kData))
-
-#define MCU_BASENAME_32(x)                       \
-  (reinterpret_cast<const __FlashStringHelper*>( \
-      _PSD_TYPE_32(_PSD_PATHFRAG_TYPE, x)::kData))
+#define MCU_BASENAME_TYPE_32(x) _PSD_TYPE_32(_PSD_PATHFRAG_TYPE, x)
+#define MCU_BASENAME_32(x) (MCU_BASENAME_TYPE_32(x)::ToFlashStringHelper())
 
 // Max length 64 (not including trailing NUL).
 
-#define MCU_PSD_64(x) (_PSD_TYPE_64(_PSD_STRFRAG_TYPE, x)())
+#define MCU_PSD_TYPE_64(x) _PSD_TYPE_64(_PSD_STRFRAG_TYPE, x)
+#define MCU_PSD_64(x) (MCU_PSD_TYPE_64(x)())
+#define MCU_FLASHSTR_64(x) (MCU_PSD_TYPE_64(x)::ToFlashStringHelper())
 
-#define MCU_FLASHSTR_64(x)                       \
-  (reinterpret_cast<const __FlashStringHelper*>( \
-      _PSD_TYPE_64(_PSD_STRFRAG_TYPE, x)::kData))
-
-#define MCU_BASENAME_64(x)                       \
-  (reinterpret_cast<const __FlashStringHelper*>( \
-      _PSD_TYPE_64(_PSD_PATHFRAG_TYPE, x)::kData))
+#define MCU_BASENAME_TYPE_64(x) _PSD_TYPE_64(_PSD_PATHFRAG_TYPE, x)
+#define MCU_BASENAME_64(x) (MCU_BASENAME_TYPE_64(x)::ToFlashStringHelper())
 
 // Max length 128 (not including trailing NUL).
 
-#define MCU_PSD_128(x) (_PSD_TYPE_128(_PSD_STRFRAG_TYPE, x)())
+#define MCU_PSD_TYPE_128(x) _PSD_TYPE_128(_PSD_STRFRAG_TYPE, x)
+#define MCU_PSD_128(x) (MCU_PSD_TYPE_128(x)())
+#define MCU_FLASHSTR_128(x) (MCU_PSD_TYPE_128(x)::ToFlashStringHelper())
 
-#define MCU_FLASHSTR_128(x)                      \
-  (reinterpret_cast<const __FlashStringHelper*>( \
-      _PSD_TYPE_128(_PSD_STRFRAG_TYPE, x)::kData))
-
-#define MCU_BASENAME_128(x)                      \
-  (reinterpret_cast<const __FlashStringHelper*>( \
-      _PSD_TYPE_128(_PSD_PATHFRAG_TYPE, x)::kData))
+#define MCU_BASENAME_TYPE_128(x) _PSD_TYPE_128(_PSD_PATHFRAG_TYPE, x)
+#define MCU_BASENAME_128(x) (MCU_BASENAME_TYPE_128(x)::ToFlashStringHelper())
 
 // Max length 255 (not including trailing NUL). This is defined to support
 // MCU_PSV_255, which is the MCU_PSV* version that handles the longest strings
 // that ProgmemStringView can encode (i.e. it uses a single byte for the
 // length).
 
-#define MCU_PSD_255(x) (_PSD_TYPE_255(_PSD_STRFRAG_TYPE, x)())
+#define MCU_PSD_TYPE_255(x) _PSD_TYPE_255(_PSD_STRFRAG_TYPE, x)
+#define MCU_PSD_255(x) (MCU_PSD_TYPE_255(x)())
 
 // Max length 256 (not including trailing NUL).
 
-#define MCU_PSD_256(x) (_PSD_TYPE_256(_PSD_STRFRAG_TYPE, x)())
+#define MCU_PSD_TYPE_256(x) _PSD_TYPE_256(_PSD_STRFRAG_TYPE, x)
+#define MCU_PSD_256(x) (MCU_PSD_TYPE_256(x)())
+#define MCU_FLASHSTR_256(x) (MCU_PSD_TYPE_256(x)::ToFlashStringHelper())
 
-#define MCU_FLASHSTR_256(x)                      \
-  (reinterpret_cast<const __FlashStringHelper*>( \
-      _PSD_TYPE_256(_PSD_STRFRAG_TYPE, x)::kData))
-
-#define MCU_BASENAME_256(x)                      \
-  (reinterpret_cast<const __FlashStringHelper*>( \
-      _PSD_TYPE_256(_PSD_PATHFRAG_TYPE, x)::kData))
-
-#define MCU_BASENAME_256_TYPE(x) _PSD_TYPE_256(_PSD_PATHFRAG_TYPE, x)
+#define MCU_BASENAME_TYPE_256(x) _PSD_TYPE_256(_PSD_PATHFRAG_TYPE, x)
+#define MCU_BASENAME_256(x) (MCU_BASENAME_TYPE_256(x)::ToFlashStringHelper())
 
 // Max length 512 (not including trailing NUL). There is no support here for
 // ProgmemStringView because it can't support such a long string.
 
-#define MCU_PSD_512(x) (_PSD_TYPE_512(_PSD_STRFRAG_TYPE, x)())
+#define MCU_PSD_TYPE_512(x) _PSD_TYPE_512(_PSD_STRFRAG_TYPE, x)
+#define MCU_PSD_512(x) (MCU_PSD_TYPE_512(x)())
+#define MCU_FLASHSTR_512(x) (MCU_PSD_TYPE_512(x)::ToFlashStringHelper())
 
-#define MCU_FLASHSTR_512(x)                      \
-  (reinterpret_cast<const __FlashStringHelper*>( \
-      _PSD_TYPE_512(_PSD_STRFRAG_TYPE, x)::kData))
-
-#define MCU_BASENAME_512(x)                      \
-  (reinterpret_cast<const __FlashStringHelper*>( \
-      _PSD_TYPE_512(_PSD_PATHFRAG_TYPE, x)::kData))
-
-#define MCU_BASENAME_512_TYPE(x) _PSD_TYPE_512(_PSD_PATHFRAG_TYPE, x)
+#define MCU_BASENAME_TYPE_512(x) _PSD_TYPE_512(_PSD_PATHFRAG_TYPE, x)
+#define MCU_BASENAME_512(x) (MCU_BASENAME_TYPE_512(x)::ToFlashStringHelper())
 
 // Max length 1024 (not including trailing NUL). There is no support here for
 // ProgmemStringView because it can't support such a long string.
 
-#define MCU_PSD_1024(x) (_PSD_TYPE_1024(_PSD_STRFRAG_TYPE, x)())
+#define MCU_PSD_TYPE_1024(x) _PSD_TYPE_1024(_PSD_STRFRAG_TYPE, x)
+#define MCU_PSD_1024(x) (MCU_PSD_TYPE_1024(x)())
+#define MCU_FLASHSTR_1024(x) (MCU_PSD_TYPE_1024(x)::ToFlashStringHelper())
 
-#define MCU_FLASHSTR_1024(x)                     \
-  (reinterpret_cast<const __FlashStringHelper*>( \
-      _PSD_TYPE_1024(_PSD_STRFRAG_TYPE, x)::kData))
-
-#define MCU_BASENAME_1024(x)                     \
-  (reinterpret_cast<const __FlashStringHelper*>( \
-      _PSD_TYPE_1024(_PSD_PATHFRAG_TYPE, x)::kData))
-
-#define MCU_BASENAME_1024_TYPE(x) _PSD_TYPE_1024(_PSD_PATHFRAG_TYPE, x)
+#define MCU_BASENAME_TYPE_1024(x) _PSD_TYPE_1024(_PSD_PATHFRAG_TYPE, x)
+#define MCU_BASENAME_1024(x) (MCU_BASENAME_TYPE_1024(x)::ToFlashStringHelper())
 
 ////////////////////////////////////////////////////////////////////////////////
 // Because we expect almost all explicitly defined string literals to be
@@ -655,6 +641,7 @@ auto ProvideStorage(LengthCheck<LengthOk>, PathFragment<FoundSlash, C...>)
 // required, use the appropriate macro defined above whose name specifies the
 // next larger size limit.
 
+#define MCU_PSD_TYPE(x) MCU_PSD_TYPE_64(x)
 #define MCU_PSD(x) MCU_PSD_64(x)
 #define MCU_FLASHSTR(x) MCU_FLASHSTR_64(x)
 
