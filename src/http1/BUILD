@@ -28,3 +28,8 @@ cc_library(
         "//mcucore/src/strings:string_view",
     ],
 )
+
+cc_library(
+    name = "request_router",
+    hdrs = ["request_router.h"],
+)

@@ -23,3 +23,17 @@ cc_test(
         "//mcucore/src/strings:string_view",
     ],
 )
+
+cc_test(
+    name = "request_router_test",
+    srcs = ["request_router_test.cc"],
+    deps = [
+        "//googletest:gunit_main",
+        "//mcucore/extras/test_tools:print_to_std_string",
+        "//mcucore/extras/test_tools:print_value_to_std_string",
+        "//mcucore/extras/test_tools:sample_printable",
+        "//mcucore/src/http1:request_decoder",
+        "//mcucore/src/http1:request_router",
+        "//mcucore/src/strings:progmem_string_data",
+    ],
+)
