@@ -40,16 +40,21 @@ struct has_progmem_char_array
     : decltype(has_progmem_char_array_internal::test_progmem_array<
                remove_cv_t<T> >(0)) {};
 
+// WARNING  WARNING  WARNING  WARNING  WARNING  WARNING  WARNING  WARNING
+// WARNING  WARNING  WARNING  WARNING  WARNING  WARNING  WARNING  WARNING
+// WARNING  WARNING  WARNING  WARNING  WARNING  WARNING  WARNING  WARNING
+// enable_if_has_progmem_char_array is not yet working.
+
 // Since a common use case for has_progmem_char_array is to limit application
 // of a template function to types with a progmem_char_array, this helper
 // combines enable_if and has_progmem_char_array.
-template <typename T>
+template <typename T, typename V = void>
 struct enable_if_has_progmem_char_array
-    : enable_if_t<has_progmem_char_array<T>::value> {};
+    : enable_if_t<has_progmem_char_array<T>::value, V> {};
 
-template <typename T>
+template <typename T, typename V = void>
 using enable_if_has_progmem_char_array_t =
-    typename enable_if_has_progmem_char_array<T>::type;
+    typename enable_if_has_progmem_char_array<T, V>::type;
 
 }  // namespace mcucore
 

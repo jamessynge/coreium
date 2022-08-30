@@ -14,6 +14,7 @@
 
 #include "mcucore_platform.h"
 #include "semistd/type_traits.h"
+#include "strings/has_progmem_char_array.h"
 #include "strings/progmem_string.h"
 #include "strings/progmem_string_view.h"
 #include "strings/string_view.h"
@@ -50,6 +51,10 @@ class AnyPrintable : public Printable {
   template <uint8_t N>
   AnyPrintable(const TinyString<N>& value)  // NOLINT
       : AnyPrintable(StringView(value.data(), value.size())) {}
+  template <typename PSD,
+            typename = enable_if_t<has_progmem_char_array<PSD>::value>>
+  AnyPrintable(const PSD value)  // NOLINT
+      : AnyPrintable(ProgmemStringView(value)) {}
 
   // To avoid implicit conversions of values that aren't (weren't) necessarily
   // strings, we require the conversion to be explicit.

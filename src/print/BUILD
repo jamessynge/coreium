@@ -9,6 +9,7 @@ cc_library(
     deps = [
         "//mcucore/src:mcucore_platform",
         "//mcucore/src/semistd:type_traits",
+        "//mcucore/src/strings:has_progmem_char_array",
         "//mcucore/src/strings:progmem_string",
         "//mcucore/src/strings:progmem_string_view",
         "//mcucore/src/strings:string_view",
