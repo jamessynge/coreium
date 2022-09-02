@@ -103,6 +103,7 @@ cc_library(
     hdrs = ["print_to_buffer.h"],
     deps = [
         "//mcucore/src:mcucore_platform",
+        "//mcucore/src/log",
         "//mcucore/src/strings:string_view",
         "//mcucore/src/strings:tiny_string",
     ],

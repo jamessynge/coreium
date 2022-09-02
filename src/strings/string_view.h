@@ -173,6 +173,12 @@ class StringView {
   // unless you otherwise know that it is properly terminated.
   constexpr const char* data() const { return ptr_; }
 
+  // Like data(), but returns as a pointer to bytes, which is useful for passing
+  // to Print::write, which requires an array of bytes as input.
+  const uint8_t* bytes() const {
+    return reinterpret_cast<const uint8_t*>(ptr_);
+  }
+
   char at(size_type pos) const {
     MCU_DCHECK_LT(pos, size_);
     return ptr_[pos];

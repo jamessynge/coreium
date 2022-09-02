@@ -6,6 +6,7 @@
 
 #include "container/flash_string_table.h"
 #include "print/print_misc.h"
+#include "print/print_to_buffer.h"
 #include "strings/progmem_string_data.h"
 
 namespace mcucore {
@@ -298,88 +299,38 @@ size_t PrintValueTo(EDecodeBufferStatus v, Print& out) {
 // Support for debug logging of enums.
 
 std::ostream& operator<<(std::ostream& os, EEvent v) {
-  switch (v) {
-    case EEvent::kPathStart:
-      return os << "PathStart";
-    case EEvent::kPathSeparator:
-      return os << "PathSeparator";
-    case EEvent::kPathEnd:
-      return os << "PathEnd";
-    case EEvent::kPathEndQueryStart:
-      return os << "PathEndQueryStart";
-    case EEvent::kParamSeparator:
-      return os << "ParamSeparator";
-    case EEvent::kHttpVersion1_1:
-      return os << "HttpVersion1_1";
-    case EEvent::kHeadersEnd:
-      return os << "HeadersEnd";
-  }
-  return os << "Unknown EEvent, value=" << static_cast<int64_t>(v);
+  char buffer[256];
+  mcucore::PrintToBuffer print(buffer);
+  PrintValueTo(v, print);
+  return os << std::string_view(buffer, print.data_size());
 }
 
 std::ostream& operator<<(std::ostream& os, EToken v) {
-  switch (v) {
-    case EToken::kHttpMethod:
-      return os << "HttpMethod";
-    case EToken::kPathSegment:
-      return os << "PathSegment";
-    case EToken::kParamName:
-      return os << "ParamName";
-    case EToken::kParamValue:
-      return os << "ParamValue";
-    case EToken::kHeaderName:
-      return os << "HeaderName";
-    case EToken::kHeaderValue:
-      return os << "HeaderValue";
-  }
-  return os << "Unknown EToken, value=" << static_cast<int64_t>(v);
+  char buffer[256];
+  mcucore::PrintToBuffer print(buffer);
+  PrintValueTo(v, print);
+  return os << std::string_view(buffer, print.data_size());
 }
 
 std::ostream& operator<<(std::ostream& os, EPartialToken v) {
-  switch (v) {
-    case EPartialToken::kPathSegment:
-      return os << "PathSegment";
-    case EPartialToken::kParamName:
-      return os << "ParamName";
-    case EPartialToken::kParamValue:
-      return os << "ParamValue";
-    case EPartialToken::kRawQueryString:
-      return os << "RawQueryString";
-    case EPartialToken::kHeaderName:
-      return os << "HeaderName";
-    case EPartialToken::kHeaderValue:
-      return os << "HeaderValue";
-  }
-  return os << "Unknown EPartialToken, value=" << static_cast<int64_t>(v);
+  char buffer[256];
+  mcucore::PrintToBuffer print(buffer);
+  PrintValueTo(v, print);
+  return os << std::string_view(buffer, print.data_size());
 }
 
 std::ostream& operator<<(std::ostream& os, EPartialTokenPosition v) {
-  switch (v) {
-    case EPartialTokenPosition::kFirst:
-      return os << "First";
-    case EPartialTokenPosition::kMiddle:
-      return os << "Middle";
-    case EPartialTokenPosition::kLast:
-      return os << "Last";
-  }
-  return os << "Unknown EPartialTokenPosition, value="
-            << static_cast<int64_t>(v);
+  char buffer[256];
+  mcucore::PrintToBuffer print(buffer);
+  PrintValueTo(v, print);
+  return os << std::string_view(buffer, print.data_size());
 }
 
 std::ostream& operator<<(std::ostream& os, EDecodeBufferStatus v) {
-  switch (v) {
-    case EDecodeBufferStatus::kDecodingInProgress:
-      return os << "DecodingInProgress";
-    case EDecodeBufferStatus::kNeedMoreInput:
-      return os << "NeedMoreInput";
-    case EDecodeBufferStatus::kComplete:
-      return os << "Complete";
-    case EDecodeBufferStatus::kIllFormed:
-      return os << "IllFormed";
-    case EDecodeBufferStatus::kInternalError:
-      return os << "InternalError";
-  }
-  return os << "Unknown EDecodeBufferStatus, value=" << static_cast<int64_t>(v);
+  char buffer[256];
+  mcucore::PrintToBuffer print(buffer);
+  PrintValueTo(v, print);
+  return os << std::string_view(buffer, print.data_size());
 }
 
 #endif  // MCU_HOST_TARGET

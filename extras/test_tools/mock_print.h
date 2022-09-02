@@ -19,7 +19,7 @@
 namespace mcucore {
 namespace test {
 
-class MockPrint : public virtual Print {
+class MockPrint : public Print {
  public:
   // Print methods:
   MOCK_METHOD(size_t, write, (uint8_t), (override));

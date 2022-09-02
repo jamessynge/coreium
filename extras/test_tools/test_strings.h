@@ -1,12 +1,12 @@
 #ifndef MCUCORE_EXTRAS_TEST_TOOLS_TEST_STRINGS_H_
 #define MCUCORE_EXTRAS_TEST_TOOLS_TEST_STRINGS_H_
 
-// String literals of various lengths for use in tests. The strings have a
-// period every 100 characters, otherwise an English letter every 10th character
-// (first 'a' to 'z', then 'A' to 'Z', then starting over), and otherwise the
-// digits 1 to 9. These support tests in which we want to test the behavior of
-// printing functions and of the template meta-programming support for storing
-// string literals in program memory on AVR devices.
+// String literals of various lengths for use in tests. The strings have a '.'
+// (period) every 100 characters, otherwise an English letter every 10th
+// character (first 'a' to 'z', then 'A' to 'Z', then starting over), and
+// otherwise the digits 1 to 9. These support tests in which we want to test the
+// behavior of printing functions and of the template meta-programming support
+// for storing string literals in program memory on AVR devices.
 //
 // Author: james.synge@gmail.com
 
@@ -25,6 +25,7 @@ std::string GenerateTestString(size_t length);
 #define TEST_STR_16 TEST_STR_15 "6"
 #define TEST_STR_17 TEST_STR_16 "7"
 #define TEST_STR_18 TEST_STR_17 "8"
+#define TEST_STR_19 TEST_STR_18 "9"
 
 #define TEST_STR_31 "123456789a123456789b123456789c1"
 #define TEST_STR_32 TEST_STR_31 "2"

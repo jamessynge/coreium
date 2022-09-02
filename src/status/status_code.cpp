@@ -124,7 +124,7 @@ std::ostream& operator<<(std::ostream& os, StatusCode v) {
   char buffer[256];
   PrintToBuffer print(buffer);
   PrintValueTo(v, print);
-  return os << std::string_view(buffer, print.bytes_written());
+  return os << std::string_view(buffer, print.data_size());
 }
 
 #endif  // MCU_HOST_TARGET

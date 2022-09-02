@@ -69,9 +69,12 @@ cc_test(
     name = "print_to_buffer_test",
     srcs = ["print_to_buffer_test.cc"],
     deps = [
+        "//absl/strings",
         "//googletest:gunit_main",
+        "//mcucore/extras/test_tools:string_view_utils",
         "//mcucore/extras/test_tools:test_strings",
         "//mcucore/src/print:print_to_buffer",
+        "//mcucore/src/strings:string_view",
     ],
 )
 
