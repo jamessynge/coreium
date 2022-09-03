@@ -18,11 +18,9 @@ namespace {
 
 using ::testing::AtLeast;
 using ::testing::DoAll;
-using ::testing::EndsWith;
 using ::testing::InSequence;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
-using ::testing::Return;
 using ::testing::StartsWith;
 
 void ExpectIsFull(const PrintToBuffer& p2b) {

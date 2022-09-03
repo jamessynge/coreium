@@ -24,6 +24,32 @@ cc_library(
 )
 
 cc_library(
+    name = "decode_chunk_encoded",
+    srcs = ["decode_chunk_encoded.cc"],
+    hdrs = ["decode_chunk_encoded.h"],
+    deps = [
+        "//absl/status",
+        "//absl/status:statusor",
+        "//absl/strings",
+        "//util/task:status",
+    ],
+)
+
+cc_test(
+    name = "decode_chunk_encoded_test",
+    srcs = ["decode_chunk_encoded_test.cc"],
+    deps = [
+        ":decode_chunk_encoded",
+        "//absl/status",
+        "//absl/strings",
+        "//googletest:gunit_main",
+        "//mcucore/extras/test_tools:print_to_std_string",
+        "//mcucore/extras/test_tools:print_value_to_std_string",
+        "//mcucore/extras/test_tools:sample_printable",
+    ],
+)
+
+cc_library(
     name = "mock_request_decoder_listener",
     srcs = ["mock_request_decoder_listener.cc"],
     hdrs = ["mock_request_decoder_listener.h"],
