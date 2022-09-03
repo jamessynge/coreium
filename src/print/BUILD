@@ -86,6 +86,16 @@ cc_library(
 )
 
 cc_library(
+    name = "print_chunk_encoded",
+    srcs = ["print_chunk_encoded.cc"],
+    hdrs = ["print_chunk_encoded.h"],
+    deps = [
+        ":print_to_buffer",
+        "//mcucore/src:mcucore_platform",
+    ],
+)
+
+cc_library(
     name = "print_misc",
     srcs = ["print_misc.cc"],
     hdrs = ["print_misc.h"],

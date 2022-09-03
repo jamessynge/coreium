@@ -54,7 +54,7 @@ absl::StatusOr<std::pair<std::string_view, std::string_view>> DecodeOneChunk(
   const auto [size, remainder] = size_and_remainder;
   if (size > remainder.size()) {
     return absl::InvalidArgumentError(
-        absl::StrCat("Expected chunk size too long (", size, " > ",
+        absl::StrCat("Chunk size larger than available (", size, " > ",
                      remainder.size(), "): ", remainder));
   }
   const auto data = remainder.substr(0, size);

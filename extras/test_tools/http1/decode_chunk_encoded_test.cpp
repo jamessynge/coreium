@@ -96,10 +96,10 @@ TEST(DecodeOneChunkTest, BadChunks) {
                        "Expected chunk, got empty string."));
   EXPECT_THAT(DecodeOneChunk("F\r\n"),
               StatusIs(StatusCode::kInvalidArgument,
-                       "Expected chunk size too long (15 > 0): "));
+                       "Chunk size larger than available (15 > 0): "));
   EXPECT_THAT(DecodeOneChunk("2\r\n1"),
               StatusIs(StatusCode::kInvalidArgument,
-                       "Expected chunk size too long (2 > 1): 1"));
+                       "Chunk size larger than available (2 > 1): 1"));
   EXPECT_THAT(DecodeOneChunk("2\r\n12"),
               StatusIs(StatusCode::kInvalidArgument,
                        "String too short (0) for CRLF: "));
@@ -133,7 +133,7 @@ TEST(DecodeChunkEncodedTest, Empty) {
               IsOkAndHolds(Pair("", kExtraString)));
 }
 
-TEST(DecodeChunkEncodedTest, BadInput) {
+TEST(DecodeChunkEncodedTest, MissingLastChunk) {
   const char kTestString[] =
       "4\r\nWiki\r\n6\r\npedia \r\nE\r\nin \r\n\r\nchunks.\r\n";
   EXPECT_THAT(
@@ -141,6 +141,13 @@ TEST(DecodeChunkEncodedTest, BadInput) {
       StatusIs(
           StatusCode::kInvalidArgument,
           "Found no last chunk, after decoding: Wikipedia in \r\n\r\nchunks."));
+}
+
+TEST(DecodeChunkEncodedTest, ShortChunk) {
+  const char kTestString[] = "4\r\nWiki\r\n6\r\npedia \r\nE\r\nin \r\n\r";
+  EXPECT_THAT(DecodeChunkEncoded(kTestString),
+              StatusIs(StatusCode::kInvalidArgument,
+                       HasSubstr("Chunk size larger than available (14 >")));
 }
 
 }  // namespace

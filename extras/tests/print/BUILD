@@ -66,6 +66,18 @@ cc_test(
 )
 
 cc_test(
+    name = "print_chunk_encoded_test",
+    srcs = ["print_chunk_encoded_test.cc"],
+    deps = [
+        "//googletest:gunit_main",
+        "//mcucore/extras/test_tools:print_to_std_string",
+        "//mcucore/extras/test_tools:test_strings",
+        "//mcucore/extras/test_tools/http1:decode_chunk_encoded",
+        "//mcucore/src/print:print_chunk_encoded",
+    ],
+)
+
+cc_test(
     name = "print_to_buffer_test",
     srcs = ["print_to_buffer_test.cc"],
     deps = [

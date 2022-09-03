@@ -43,9 +43,6 @@ cc_test(
         "//absl/status",
         "//absl/strings",
         "//googletest:gunit_main",
-        "//mcucore/extras/test_tools:print_to_std_string",
-        "//mcucore/extras/test_tools:print_value_to_std_string",
-        "//mcucore/extras/test_tools:sample_printable",
     ],
 )
 

@@ -1,5 +1,7 @@
 #include "print/printable_cat.h"
 
+#include <limits>
+
 #include "extras/test_tools/print_value_to_std_string.h"
 #include "gtest/gtest.h"
 #include "print/any_printable.h"

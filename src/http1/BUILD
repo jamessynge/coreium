@@ -1,19 +1,6 @@
 # Package provides support for decoding HTTP/1.1 requests.
 
 cc_library(
-    name = "request_decoder_constants",
-    srcs = ["request_decoder_constants.cc"],
-    hdrs = ["request_decoder_constants.h"],
-    deps = [
-        "//mcucore/src:mcucore_platform",
-        "//mcucore/src/container:flash_string_table",
-        "//mcucore/src/print:print_misc",
-        "//mcucore/src/print:print_to_buffer",
-        "//mcucore/src/strings:progmem_string_data",
-    ],
-)
-
-cc_library(
     name = "request_decoder",
     srcs = ["request_decoder.cc"],
     hdrs = ["request_decoder.h"],
@@ -27,5 +14,18 @@ cc_library(
         "//mcucore/src/strings:progmem_string_view",
         "//mcucore/src/strings:string_compare",
         "//mcucore/src/strings:string_view",
+    ],
+)
+
+cc_library(
+    name = "request_decoder_constants",
+    srcs = ["request_decoder_constants.cc"],
+    hdrs = ["request_decoder_constants.h"],
+    deps = [
+        "//mcucore/src:mcucore_platform",
+        "//mcucore/src/container:flash_string_table",
+        "//mcucore/src/print:print_misc",
+        "//mcucore/src/print:print_to_buffer",
+        "//mcucore/src/strings:progmem_string_data",
     ],
 )
