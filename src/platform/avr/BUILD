@@ -26,6 +26,24 @@ cc_library(
 )
 
 cc_library(
+    name = "timer_counter",
+    srcs = ["timer_counter.cc"],
+    hdrs = ["timer_counter.h"],
+    deps = [
+        "//mcucore/src:mcucore_platform",
+        "//mcucore/src/container:flash_string_table",
+        "//mcucore/src/log",
+        "//mcucore/src/print:counting_print",
+        "//mcucore/src/print:has_print_to",
+        "//mcucore/src/print:print_misc",
+        "//mcucore/src/print:print_to_buffer",
+        "//mcucore/src/print:stream_to_print",
+        "//mcucore/src/semistd:type_traits",
+        "//mcucore/src/strings:progmem_string_data",
+    ],
+)
+
+cc_library(
     name = "watchdog",
     srcs = ["watchdog.cc"],
     hdrs = ["watchdog.h"],

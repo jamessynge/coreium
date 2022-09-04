@@ -33,6 +33,7 @@ cc_library(
         "//mcucore/src/misc:to_unsigned",
         "//mcucore/src/misc:uuid",
         "//mcucore/src/platform/avr:jitter_random",
+        "//mcucore/src/platform/avr:timer_counter",
         "//mcucore/src/platform/avr:watchdog",
         "//mcucore/src/print:any_printable",
         "//mcucore/src/print:counting_print",

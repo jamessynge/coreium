@@ -28,6 +28,7 @@
 #include "misc/to_unsigned.h"                 // IWYU pragma: export
 #include "misc/uuid.h"                        // IWYU pragma: export
 #include "platform/avr/jitter_random.h"       // IWYU pragma: export
+#include "platform/avr/timer_counter.h"       // IWYU pragma: export
 #include "platform/avr/watchdog.h"            // IWYU pragma: export
 #include "print/any_printable.h"              // IWYU pragma: export
 #include "print/counting_print.h"             // IWYU pragma: export
