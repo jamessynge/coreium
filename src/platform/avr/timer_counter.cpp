@@ -561,10 +561,15 @@ uint16_t TimerCounter5Pwm16Output::get_pulse_count() const {
   return TimerCounter5GetOutputCompareRegister(channel_);
 }
 
+}  // namespace mcucore
+
 // BEGIN_SOURCE_GENERATED_BY_MAKE_ENUM_TO_STRING
 
-const __FlashStringHelper* ToFlashStringHelper(ClockPrescaling v) {
-#ifdef TO_FLASH_STRING_HELPER_USE_SWITCH
+namespace mcucore {
+namespace {
+
+MCU_MAYBE_UNUSED_ATTRIBUTE inline const __FlashStringHelper*
+_ToFlashStringHelperViaSwitch(ClockPrescaling v) MCU_GCC_ATTRIBUTE_UNUSED {
   switch (v) {
     case ClockPrescaling::kDisabled:
       return MCU_FLASHSTR("Disabled");
@@ -580,7 +585,15 @@ const __FlashStringHelper* ToFlashStringHelper(ClockPrescaling v) {
       return MCU_FLASHSTR("DivideBy1024");
   }
   return nullptr;
-#elif defined(TO_FLASH_STRING_HELPER_PREFER_IF_STATEMENTS)
+}
+
+}  // namespace
+
+const __FlashStringHelper* ToFlashStringHelper(ClockPrescaling v) {
+#ifdef TO_FLASH_STRING_HELPER_PREFER_SWITCH
+  return _ToFlashStringHelperViaSwitch(v);
+#else  // not TO_FLASH_STRING_HELPER_PREFER_SWITCH
+#ifdef TO_FLASH_STRING_HELPER_PREFER_IF_STATEMENTS
   if (v == ClockPrescaling::kDisabled) {
     return MCU_FLASHSTR("Disabled");
   }
@@ -600,22 +613,36 @@ const __FlashStringHelper* ToFlashStringHelper(ClockPrescaling v) {
     return MCU_FLASHSTR("DivideBy1024");
   }
   return nullptr;
-#else   // Use flash string table.
-  static MCU_FLASH_STRING_TABLE(
+#else   // not TO_FLASH_STRING_HELPER_PREFER_IF_STATEMENTS
+  // Protection against enumerator definitions changing:
+  static_assert(ClockPrescaling::kDisabled == static_cast<ClockPrescaling>(0));
+  static_assert(ClockPrescaling::kDivideBy1 == static_cast<ClockPrescaling>(1));
+  static_assert(ClockPrescaling::kDivideBy8 == static_cast<ClockPrescaling>(2));
+  static_assert(ClockPrescaling::kDivideBy64 ==
+                static_cast<ClockPrescaling>(3));
+  static_assert(ClockPrescaling::kDivideBy256 ==
+                static_cast<ClockPrescaling>(4));
+  static_assert(ClockPrescaling::kDivideBy1024 ==
+                static_cast<ClockPrescaling>(5));
+  static MCU_FLASH_STRING_TABLE(  // Force new line.
       flash_string_table,
-      MCU_FLASHSTR("Disabled"),      // 0: kDisabled
-      MCU_FLASHSTR("DivideBy1"),     // 1: kDivideBy1
-      MCU_FLASHSTR("DivideBy8"),     // 2: kDivideBy8
-      MCU_FLASHSTR("DivideBy64"),    // 3: kDivideBy64
-      MCU_FLASHSTR("DivideBy256"),   // 4: kDivideBy256
-      MCU_FLASHSTR("DivideBy1024"),  // 5: kDivideBy1024
+      MCU_PSD("Disabled"),      // 0: kDisabled
+      MCU_PSD("DivideBy1"),     // 1: kDivideBy1
+      MCU_PSD("DivideBy8"),     // 2: kDivideBy8
+      MCU_PSD("DivideBy64"),    // 3: kDivideBy64
+      MCU_PSD("DivideBy256"),   // 4: kDivideBy256
+      MCU_PSD("DivideBy1024"),  // 5: kDivideBy1024
   );
   return mcucore::LookupFlashStringForDenseEnum<uint8_t>(flash_string_table, v);
-#endif  // TO_FLASH_STRING_HELPER_USE_SWITCH
+#endif  // TO_FLASH_STRING_HELPER_PREFER_IF_STATEMENTS
+#endif  // TO_FLASH_STRING_HELPER_PREFER_SWITCH
 }
 
-const __FlashStringHelper* ToFlashStringHelper(FastPwmCompareOutputMode v) {
-#ifdef TO_FLASH_STRING_HELPER_USE_SWITCH
+namespace {
+
+MCU_MAYBE_UNUSED_ATTRIBUTE inline const __FlashStringHelper*
+_ToFlashStringHelperViaSwitch(FastPwmCompareOutputMode v)
+    MCU_GCC_ATTRIBUTE_UNUSED {
   switch (v) {
     case FastPwmCompareOutputMode::kDisabled:
       return MCU_FLASHSTR("Disabled");
@@ -625,7 +652,14 @@ const __FlashStringHelper* ToFlashStringHelper(FastPwmCompareOutputMode v) {
       return MCU_FLASHSTR("InvertingMode");
   }
   return nullptr;
-#else   // Use if statements.
+}
+
+}  // namespace
+
+const __FlashStringHelper* ToFlashStringHelper(FastPwmCompareOutputMode v) {
+#ifdef TO_FLASH_STRING_HELPER_PREFER_SWITCH
+  return _ToFlashStringHelperViaSwitch(v);
+#else   // not TO_FLASH_STRING_HELPER_PREFER_SWITCH
   if (v == FastPwmCompareOutputMode::kDisabled) {
     return MCU_FLASHSTR("Disabled");
   }
@@ -636,11 +670,13 @@ const __FlashStringHelper* ToFlashStringHelper(FastPwmCompareOutputMode v) {
     return MCU_FLASHSTR("InvertingMode");
   }
   return nullptr;
-#endif  // TO_FLASH_STRING_HELPER_USE_SWITCH
+#endif  // TO_FLASH_STRING_HELPER_PREFER_SWITCH
 }
 
-const __FlashStringHelper* ToFlashStringHelper(TimerCounterChannel v) {
-#ifdef TO_FLASH_STRING_HELPER_USE_SWITCH
+namespace {
+
+MCU_MAYBE_UNUSED_ATTRIBUTE inline const __FlashStringHelper*
+_ToFlashStringHelperViaSwitch(TimerCounterChannel v) MCU_GCC_ATTRIBUTE_UNUSED {
   switch (v) {
     case TimerCounterChannel::A:
       return MCU_FLASHSTR("A");
@@ -650,7 +686,15 @@ const __FlashStringHelper* ToFlashStringHelper(TimerCounterChannel v) {
       return MCU_FLASHSTR("C");
   }
   return nullptr;
-#elif defined(TO_FLASH_STRING_HELPER_PREFER_IF_STATEMENTS)
+}
+
+}  // namespace
+
+const __FlashStringHelper* ToFlashStringHelper(TimerCounterChannel v) {
+#ifdef TO_FLASH_STRING_HELPER_PREFER_SWITCH
+  return _ToFlashStringHelperViaSwitch(v);
+#else  // not TO_FLASH_STRING_HELPER_PREFER_SWITCH
+#ifdef TO_FLASH_STRING_HELPER_PREFER_IF_STATEMENTS
   if (v == TimerCounterChannel::A) {
     return MCU_FLASHSTR("A");
   }
@@ -661,14 +705,20 @@ const __FlashStringHelper* ToFlashStringHelper(TimerCounterChannel v) {
     return MCU_FLASHSTR("C");
   }
   return nullptr;
-#else   // Use flash string table.
-  static MCU_FLASH_STRING_TABLE(flash_string_table,
-                                MCU_FLASHSTR("A"),  // 0: A
-                                MCU_FLASHSTR("B"),  // 1: B
-                                MCU_FLASHSTR("C"),  // 2: C
+#else   // not TO_FLASH_STRING_HELPER_PREFER_IF_STATEMENTS
+  // Protection against enumerator definitions changing:
+  static_assert(TimerCounterChannel::A == static_cast<TimerCounterChannel>(0));
+  static_assert(TimerCounterChannel::B == static_cast<TimerCounterChannel>(1));
+  static_assert(TimerCounterChannel::C == static_cast<TimerCounterChannel>(2));
+  static MCU_FLASH_STRING_TABLE(  // Force new line.
+      flash_string_table,
+      MCU_PSD("A"),  // 0: A
+      MCU_PSD("B"),  // 1: B
+      MCU_PSD("C"),  // 2: C
   );
   return mcucore::LookupFlashStringForDenseEnum<uint8_t>(flash_string_table, v);
-#endif  // TO_FLASH_STRING_HELPER_USE_SWITCH
+#endif  // TO_FLASH_STRING_HELPER_PREFER_IF_STATEMENTS
+#endif  // TO_FLASH_STRING_HELPER_PREFER_SWITCH
 }
 
 size_t PrintValueTo(ClockPrescaling v, Print& out) {

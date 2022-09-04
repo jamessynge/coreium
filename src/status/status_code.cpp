@@ -10,11 +10,13 @@
 #include "print/print_to_buffer.h"
 #include "strings/progmem_string_data.h"
 
-namespace mcucore {
 // BEGIN_SOURCE_GENERATED_BY_MAKE_ENUM_TO_STRING
 
-const __FlashStringHelper* ToFlashStringHelper(StatusCode v) {
-#ifdef TO_FLASH_STRING_HELPER_USE_SWITCH
+namespace mcucore {
+namespace {
+
+MCU_MAYBE_UNUSED_ATTRIBUTE inline const __FlashStringHelper*
+_ToFlashStringHelperViaSwitch(StatusCode v) MCU_GCC_ATTRIBUTE_UNUSED {
   switch (v) {
     case StatusCode::kOk:
       return MCU_FLASHSTR("Ok");
@@ -52,7 +54,14 @@ const __FlashStringHelper* ToFlashStringHelper(StatusCode v) {
       return MCU_FLASHSTR("Forbidden");
   }
   return nullptr;
-#else   // Use if statements.
+}
+
+}  // namespace
+
+const __FlashStringHelper* ToFlashStringHelper(StatusCode v) {
+#ifdef TO_FLASH_STRING_HELPER_PREFER_SWITCH
+  return _ToFlashStringHelperViaSwitch(v);
+#else   // not TO_FLASH_STRING_HELPER_PREFER_SWITCH
   if (v == StatusCode::kOk) {
     return MCU_FLASHSTR("Ok");
   }
@@ -105,7 +114,7 @@ const __FlashStringHelper* ToFlashStringHelper(StatusCode v) {
     return MCU_FLASHSTR("Forbidden");
   }
   return nullptr;
-#endif  // TO_FLASH_STRING_HELPER_USE_SWITCH
+#endif  // TO_FLASH_STRING_HELPER_PREFER_SWITCH
 }
 
 size_t PrintValueTo(StatusCode v, Print& out) {
@@ -113,8 +122,8 @@ size_t PrintValueTo(StatusCode v, Print& out) {
   if (flash_string != nullptr) {
     return out.print(flash_string);
   }
-  return PrintUnknownEnumValueTo(MCU_FLASHSTR("StatusCode"),
-                                 static_cast<uint32_t>(v), out);
+  return mcucore::PrintUnknownEnumValueTo(MCU_FLASHSTR("StatusCode"),
+                                          static_cast<uint32_t>(v), out);
 }
 
 #if MCU_HOST_TARGET
@@ -122,13 +131,13 @@ size_t PrintValueTo(StatusCode v, Print& out) {
 
 std::ostream& operator<<(std::ostream& os, StatusCode v) {
   char buffer[256];
-  PrintToBuffer print(buffer);
+  mcucore::PrintToBuffer print(buffer);
   PrintValueTo(v, print);
   return os << std::string_view(buffer, print.data_size());
 }
 
 #endif  // MCU_HOST_TARGET
 
-// END_SOURCE_GENERATED_BY_MAKE_ENUM_TO_STRING
-
 }  // namespace mcucore
+
+// END_SOURCE_GENERATED_BY_MAKE_ENUM_TO_STRING

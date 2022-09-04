@@ -25,6 +25,7 @@ cc_library(
     deps = [
         "//mcucore/src:mcucore_platform",
         "//mcucore/src/log",
+        "//mcucore/src/strings:has_progmem_char_array",
     ],
 )
 

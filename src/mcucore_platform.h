@@ -181,4 +181,20 @@ MillisT ElapsedMillis(MillisT start_time);
 #define MCU_UNREACHABLE (void)0
 #endif
 
+#define MCU_GCC_ATTRIBUTE_UNUSED
+#ifdef __has_cpp_attribute
+#if __has_attribute(unused) && (defined(__GNUC__) && !defined(__clang__))
+#undef MCU_GCC_ATTRIBUTE_UNUSED
+#define MCU_GCC_ATTRIBUTE_UNUSED __attribute__((unused))
+#endif
+#endif
+
+#define MCU_MAYBE_UNUSED_ATTRIBUTE
+#ifdef __has_cpp_attribute
+#if __has_cpp_attribute(maybe_unused)
+#undef MCU_MAYBE_UNUSED_ATTRIBUTE
+#define MCU_MAYBE_UNUSED_ATTRIBUTE [[maybe_unused]]
+#endif
+#endif
+
 #endif  // MCUCORE_SRC_MCUCORE_PLATFORM_H_

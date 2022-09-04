@@ -16,6 +16,7 @@
 #include "semistd/type_traits.h"
 
 #if MCU_HOST_TARGET
+// Must come after mcucore_platform.h so that MCU_HOST_TARGET is defined.
 #include <ostream>  // pragma: keep standard include
 #endif
 
@@ -102,7 +103,11 @@ struct has_to_status_code<
            is_same<StatusCode, decltype(ToStatusCode(T{}))>::value>>>
     : true_type {};
 
+}  // namespace mcucore
+
 // BEGIN_HEADER_GENERATED_BY_MAKE_ENUM_TO_STRING
+
+namespace mcucore {
 
 const __FlashStringHelper* ToFlashStringHelper(StatusCode v);
 
@@ -113,8 +118,8 @@ size_t PrintValueTo(StatusCode v, Print& out);
 std::ostream& operator<<(std::ostream& os, StatusCode v);
 #endif  // MCU_HOST_TARGET
 
-// END_HEADER_GENERATED_BY_MAKE_ENUM_TO_STRING
-
 }  // namespace mcucore
+
+// END_HEADER_GENERATED_BY_MAKE_ENUM_TO_STRING
 
 #endif  // MCUCORE_SRC_STATUS_STATUS_CODE_H_

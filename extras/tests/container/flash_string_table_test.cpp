@@ -1,6 +1,5 @@
 #include "container/flash_string_table.h"
 
-#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "strings/progmem_string_data.h"
 
@@ -8,8 +7,8 @@ namespace mcucore {
 namespace test {
 namespace {
 
-MCU_FLASH_STRING_TABLE(table, MCU_FLASHSTR("Entry0"), MCU_FLASHSTR("Entry1"),
-                       MCU_FLASHSTR("Entry2"), );
+MCU_FLASH_STRING_TABLE(table, MCU_PSD("Entry0"), MCU_PSD("Entry1"),
+                       MCU_PSD("Entry2"));
 
 // Size is implicit (determined via inferred non-type template parameter).
 TEST(FlashStringTableTest, LookupFlashString_ImplicitSize_Int) {

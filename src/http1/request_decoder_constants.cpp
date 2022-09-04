@@ -9,13 +9,14 @@
 #include "print/print_to_buffer.h"
 #include "strings/progmem_string_data.h"
 
-namespace mcucore {
-namespace http1 {
-
 // BEGIN_SOURCE_GENERATED_BY_MAKE_ENUM_TO_STRING
 
-const __FlashStringHelper* ToFlashStringHelper(EEvent v) {
-#ifdef TO_FLASH_STRING_HELPER_USE_SWITCH
+namespace mcucore {
+namespace http1 {
+namespace {
+
+MCU_MAYBE_UNUSED_ATTRIBUTE inline const __FlashStringHelper*
+_ToFlashStringHelperViaSwitch(EEvent v) MCU_GCC_ATTRIBUTE_UNUSED {
   switch (v) {
     case EEvent::kPathStart:
       return MCU_FLASHSTR("PathStart");
@@ -33,7 +34,15 @@ const __FlashStringHelper* ToFlashStringHelper(EEvent v) {
       return MCU_FLASHSTR("HeadersEnd");
   }
   return nullptr;
-#elif defined(TO_FLASH_STRING_HELPER_PREFER_IF_STATEMENTS)
+}
+
+}  // namespace
+
+const __FlashStringHelper* ToFlashStringHelper(EEvent v) {
+#ifdef TO_FLASH_STRING_HELPER_PREFER_SWITCH
+  return _ToFlashStringHelperViaSwitch(v);
+#else  // not TO_FLASH_STRING_HELPER_PREFER_SWITCH
+#ifdef TO_FLASH_STRING_HELPER_PREFER_IF_STATEMENTS
   if (v == EEvent::kPathStart) {
     return MCU_FLASHSTR("PathStart");
   }
@@ -56,24 +65,35 @@ const __FlashStringHelper* ToFlashStringHelper(EEvent v) {
     return MCU_FLASHSTR("HeadersEnd");
   }
   return nullptr;
-#else   // Use flash string table.
-  static MCU_FLASH_STRING_TABLE(
+#else   // not TO_FLASH_STRING_HELPER_PREFER_IF_STATEMENTS
+  // Protection against enumerator definitions changing:
+  static_assert(EEvent::kPathStart == static_cast<EEvent>(0));
+  static_assert(EEvent::kPathSeparator == static_cast<EEvent>(1));
+  static_assert(EEvent::kPathEnd == static_cast<EEvent>(2));
+  static_assert(EEvent::kPathEndQueryStart == static_cast<EEvent>(3));
+  static_assert(EEvent::kParamSeparator == static_cast<EEvent>(4));
+  static_assert(EEvent::kHttpVersion1_1 == static_cast<EEvent>(5));
+  static_assert(EEvent::kHeadersEnd == static_cast<EEvent>(6));
+  static MCU_FLASH_STRING_TABLE(  // Force new line.
       flash_string_table,
-      MCU_FLASHSTR("PathStart"),          // 0: kPathStart
-      MCU_FLASHSTR("PathSeparator"),      // 1: kPathSeparator
-      MCU_FLASHSTR("PathEnd"),            // 2: kPathEnd
-      MCU_FLASHSTR("PathEndQueryStart"),  // 3: kPathEndQueryStart
-      MCU_FLASHSTR("ParamSeparator"),     // 4: kParamSeparator
-      MCU_FLASHSTR("HttpVersion1_1"),     // 5: kHttpVersion1_1
-      MCU_FLASHSTR("HeadersEnd"),         // 6: kHeadersEnd
+      MCU_PSD("PathStart"),          // 0: kPathStart
+      MCU_PSD("PathSeparator"),      // 1: kPathSeparator
+      MCU_PSD("PathEnd"),            // 2: kPathEnd
+      MCU_PSD("PathEndQueryStart"),  // 3: kPathEndQueryStart
+      MCU_PSD("ParamSeparator"),     // 4: kParamSeparator
+      MCU_PSD("HttpVersion1_1"),     // 5: kHttpVersion1_1
+      MCU_PSD("HeadersEnd"),         // 6: kHeadersEnd
   );
-  return LookupFlashStringForDenseEnum<uint_fast8_t>(
+  return mcucore::LookupFlashStringForDenseEnum<uint_fast8_t>(
       flash_string_table, EEvent::kPathStart, EEvent::kHeadersEnd, v);
-#endif  // TO_FLASH_STRING_HELPER_USE_SWITCH
+#endif  // TO_FLASH_STRING_HELPER_PREFER_IF_STATEMENTS
+#endif  // TO_FLASH_STRING_HELPER_PREFER_SWITCH
 }
 
-const __FlashStringHelper* ToFlashStringHelper(EToken v) {
-#ifdef TO_FLASH_STRING_HELPER_USE_SWITCH
+namespace {
+
+MCU_MAYBE_UNUSED_ATTRIBUTE inline const __FlashStringHelper*
+_ToFlashStringHelperViaSwitch(EToken v) MCU_GCC_ATTRIBUTE_UNUSED {
   switch (v) {
     case EToken::kHttpMethod:
       return MCU_FLASHSTR("HttpMethod");
@@ -89,7 +109,15 @@ const __FlashStringHelper* ToFlashStringHelper(EToken v) {
       return MCU_FLASHSTR("HeaderValue");
   }
   return nullptr;
-#elif defined(TO_FLASH_STRING_HELPER_PREFER_IF_STATEMENTS)
+}
+
+}  // namespace
+
+const __FlashStringHelper* ToFlashStringHelper(EToken v) {
+#ifdef TO_FLASH_STRING_HELPER_PREFER_SWITCH
+  return _ToFlashStringHelperViaSwitch(v);
+#else  // not TO_FLASH_STRING_HELPER_PREFER_SWITCH
+#ifdef TO_FLASH_STRING_HELPER_PREFER_IF_STATEMENTS
   if (v == EToken::kHttpMethod) {
     return MCU_FLASHSTR("HttpMethod");
   }
@@ -109,22 +137,33 @@ const __FlashStringHelper* ToFlashStringHelper(EToken v) {
     return MCU_FLASHSTR("HeaderValue");
   }
   return nullptr;
-#else   // Use flash string table.
-  static MCU_FLASH_STRING_TABLE(flash_string_table,
-                                MCU_FLASHSTR("HttpMethod"),   // 0: kHttpMethod
-                                MCU_FLASHSTR("PathSegment"),  // 1: kPathSegment
-                                MCU_FLASHSTR("ParamName"),    // 2: kParamName
-                                MCU_FLASHSTR("ParamValue"),   // 3: kParamValue
-                                MCU_FLASHSTR("HeaderName"),   // 4: kHeaderName
-                                MCU_FLASHSTR("HeaderValue"),  // 5: kHeaderValue
+#else   // not TO_FLASH_STRING_HELPER_PREFER_IF_STATEMENTS
+  // Protection against enumerator definitions changing:
+  static_assert(EToken::kHttpMethod == static_cast<EToken>(0));
+  static_assert(EToken::kPathSegment == static_cast<EToken>(1));
+  static_assert(EToken::kParamName == static_cast<EToken>(2));
+  static_assert(EToken::kParamValue == static_cast<EToken>(3));
+  static_assert(EToken::kHeaderName == static_cast<EToken>(4));
+  static_assert(EToken::kHeaderValue == static_cast<EToken>(5));
+  static MCU_FLASH_STRING_TABLE(  // Force new line.
+      flash_string_table,
+      MCU_PSD("HttpMethod"),   // 0: kHttpMethod
+      MCU_PSD("PathSegment"),  // 1: kPathSegment
+      MCU_PSD("ParamName"),    // 2: kParamName
+      MCU_PSD("ParamValue"),   // 3: kParamValue
+      MCU_PSD("HeaderName"),   // 4: kHeaderName
+      MCU_PSD("HeaderValue"),  // 5: kHeaderValue
   );
-  return LookupFlashStringForDenseEnum<uint_fast8_t>(
+  return mcucore::LookupFlashStringForDenseEnum<uint_fast8_t>(
       flash_string_table, EToken::kHttpMethod, EToken::kHeaderValue, v);
-#endif  // TO_FLASH_STRING_HELPER_USE_SWITCH
+#endif  // TO_FLASH_STRING_HELPER_PREFER_IF_STATEMENTS
+#endif  // TO_FLASH_STRING_HELPER_PREFER_SWITCH
 }
 
-const __FlashStringHelper* ToFlashStringHelper(EPartialToken v) {
-#ifdef TO_FLASH_STRING_HELPER_USE_SWITCH
+namespace {
+
+MCU_MAYBE_UNUSED_ATTRIBUTE inline const __FlashStringHelper*
+_ToFlashStringHelperViaSwitch(EPartialToken v) MCU_GCC_ATTRIBUTE_UNUSED {
   switch (v) {
     case EPartialToken::kPathSegment:
       return MCU_FLASHSTR("PathSegment");
@@ -140,7 +179,15 @@ const __FlashStringHelper* ToFlashStringHelper(EPartialToken v) {
       return MCU_FLASHSTR("HeaderValue");
   }
   return nullptr;
-#elif defined(TO_FLASH_STRING_HELPER_PREFER_IF_STATEMENTS)
+}
+
+}  // namespace
+
+const __FlashStringHelper* ToFlashStringHelper(EPartialToken v) {
+#ifdef TO_FLASH_STRING_HELPER_PREFER_SWITCH
+  return _ToFlashStringHelperViaSwitch(v);
+#else  // not TO_FLASH_STRING_HELPER_PREFER_SWITCH
+#ifdef TO_FLASH_STRING_HELPER_PREFER_IF_STATEMENTS
   if (v == EPartialToken::kPathSegment) {
     return MCU_FLASHSTR("PathSegment");
   }
@@ -160,24 +207,36 @@ const __FlashStringHelper* ToFlashStringHelper(EPartialToken v) {
     return MCU_FLASHSTR("HeaderValue");
   }
   return nullptr;
-#else   // Use flash string table.
-  static MCU_FLASH_STRING_TABLE(
+#else   // not TO_FLASH_STRING_HELPER_PREFER_IF_STATEMENTS
+  // Protection against enumerator definitions changing:
+  static_assert(EPartialToken::kPathSegment == static_cast<EPartialToken>(0));
+  static_assert(EPartialToken::kParamName == static_cast<EPartialToken>(1));
+  static_assert(EPartialToken::kParamValue == static_cast<EPartialToken>(2));
+  static_assert(EPartialToken::kRawQueryString ==
+                static_cast<EPartialToken>(3));
+  static_assert(EPartialToken::kHeaderName == static_cast<EPartialToken>(4));
+  static_assert(EPartialToken::kHeaderValue == static_cast<EPartialToken>(5));
+  static MCU_FLASH_STRING_TABLE(  // Force new line.
       flash_string_table,
-      MCU_FLASHSTR("PathSegment"),     // 0: kPathSegment
-      MCU_FLASHSTR("ParamName"),       // 1: kParamName
-      MCU_FLASHSTR("ParamValue"),      // 2: kParamValue
-      MCU_FLASHSTR("RawQueryString"),  // 3: kRawQueryString
-      MCU_FLASHSTR("HeaderName"),      // 4: kHeaderName
-      MCU_FLASHSTR("HeaderValue"),     // 5: kHeaderValue
+      MCU_PSD("PathSegment"),     // 0: kPathSegment
+      MCU_PSD("ParamName"),       // 1: kParamName
+      MCU_PSD("ParamValue"),      // 2: kParamValue
+      MCU_PSD("RawQueryString"),  // 3: kRawQueryString
+      MCU_PSD("HeaderName"),      // 4: kHeaderName
+      MCU_PSD("HeaderValue"),     // 5: kHeaderValue
   );
-  return LookupFlashStringForDenseEnum<uint_fast8_t>(
+  return mcucore::LookupFlashStringForDenseEnum<uint_fast8_t>(
       flash_string_table, EPartialToken::kPathSegment,
       EPartialToken::kHeaderValue, v);
-#endif  // TO_FLASH_STRING_HELPER_USE_SWITCH
+#endif  // TO_FLASH_STRING_HELPER_PREFER_IF_STATEMENTS
+#endif  // TO_FLASH_STRING_HELPER_PREFER_SWITCH
 }
 
-const __FlashStringHelper* ToFlashStringHelper(EPartialTokenPosition v) {
-#ifdef TO_FLASH_STRING_HELPER_USE_SWITCH
+namespace {
+
+MCU_MAYBE_UNUSED_ATTRIBUTE inline const __FlashStringHelper*
+_ToFlashStringHelperViaSwitch(EPartialTokenPosition v)
+    MCU_GCC_ATTRIBUTE_UNUSED {
   switch (v) {
     case EPartialTokenPosition::kFirst:
       return MCU_FLASHSTR("First");
@@ -187,7 +246,15 @@ const __FlashStringHelper* ToFlashStringHelper(EPartialTokenPosition v) {
       return MCU_FLASHSTR("Last");
   }
   return nullptr;
-#elif defined(TO_FLASH_STRING_HELPER_PREFER_IF_STATEMENTS)
+}
+
+}  // namespace
+
+const __FlashStringHelper* ToFlashStringHelper(EPartialTokenPosition v) {
+#ifdef TO_FLASH_STRING_HELPER_PREFER_SWITCH
+  return _ToFlashStringHelperViaSwitch(v);
+#else  // not TO_FLASH_STRING_HELPER_PREFER_SWITCH
+#ifdef TO_FLASH_STRING_HELPER_PREFER_IF_STATEMENTS
   if (v == EPartialTokenPosition::kFirst) {
     return MCU_FLASHSTR("First");
   }
@@ -198,36 +265,28 @@ const __FlashStringHelper* ToFlashStringHelper(EPartialTokenPosition v) {
     return MCU_FLASHSTR("Last");
   }
   return nullptr;
-#else   // Use flash string table.
-  static MCU_FLASH_STRING_TABLE(flash_string_table,
-                                MCU_FLASHSTR("First"),   // 0: kFirst
-                                MCU_FLASHSTR("Middle"),  // 1: kMiddle
-                                MCU_FLASHSTR("Last"),    // 2: kLast
+#else   // not TO_FLASH_STRING_HELPER_PREFER_IF_STATEMENTS
+  // Protection against enumerator definitions changing:
+  static_assert(EPartialTokenPosition::kFirst ==
+                static_cast<EPartialTokenPosition>(0));
+  static_assert(EPartialTokenPosition::kMiddle ==
+                static_cast<EPartialTokenPosition>(1));
+  static_assert(EPartialTokenPosition::kLast ==
+                static_cast<EPartialTokenPosition>(2));
+  static MCU_FLASH_STRING_TABLE(  // Force new line.
+      flash_string_table,
+      MCU_PSD("First"),   // 0: kFirst
+      MCU_PSD("Middle"),  // 1: kMiddle
+      MCU_PSD("Last"),    // 2: kLast
   );
-  return LookupFlashStringForDenseEnum<uint_fast8_t>(
+  return mcucore::LookupFlashStringForDenseEnum<uint_fast8_t>(
       flash_string_table, EPartialTokenPosition::kFirst,
       EPartialTokenPosition::kLast, v);
-#endif  // TO_FLASH_STRING_HELPER_USE_SWITCH
+#endif  // TO_FLASH_STRING_HELPER_PREFER_IF_STATEMENTS
+#endif  // TO_FLASH_STRING_HELPER_PREFER_SWITCH
 }
 
 const __FlashStringHelper* ToFlashStringHelper(EDecodeBufferStatus v) {
-#ifdef TO_FLASH_STRING_HELPER_USE_SWITCH
-  switch (v) {
-    case EDecodeBufferStatus::kDecodingInProgress:
-      return MCU_FLASHSTR("DecodingInProgress");
-    case EDecodeBufferStatus::kNeedMoreInput:
-      return MCU_FLASHSTR("NeedMoreInput");
-    case EDecodeBufferStatus::kComplete:
-      return MCU_FLASHSTR("Complete");
-    case EDecodeBufferStatus::kLastOkStatus:
-      return MCU_FLASHSTR("LastOkStatus");
-    case EDecodeBufferStatus::kIllFormed:
-      return MCU_FLASHSTR("IllFormed");
-    case EDecodeBufferStatus::kInternalError:
-      return MCU_FLASHSTR("InternalError");
-  }
-  return nullptr;
-#else   // Use if statements.
   if (v == EDecodeBufferStatus::kDecodingInProgress) {
     return MCU_FLASHSTR("DecodingInProgress");
   }
@@ -247,7 +306,6 @@ const __FlashStringHelper* ToFlashStringHelper(EDecodeBufferStatus v) {
     return MCU_FLASHSTR("InternalError");
   }
   return nullptr;
-#endif  // TO_FLASH_STRING_HELPER_USE_SWITCH
 }
 
 size_t PrintValueTo(EEvent v, Print& out) {
@@ -255,8 +313,8 @@ size_t PrintValueTo(EEvent v, Print& out) {
   if (flash_string != nullptr) {
     return out.print(flash_string);
   }
-  return PrintUnknownEnumValueTo(MCU_FLASHSTR("EEvent"),
-                                 static_cast<uint32_t>(v), out);
+  return mcucore::PrintUnknownEnumValueTo(MCU_FLASHSTR("EEvent"),
+                                          static_cast<uint32_t>(v), out);
 }
 
 size_t PrintValueTo(EToken v, Print& out) {
@@ -264,8 +322,8 @@ size_t PrintValueTo(EToken v, Print& out) {
   if (flash_string != nullptr) {
     return out.print(flash_string);
   }
-  return PrintUnknownEnumValueTo(MCU_FLASHSTR("EToken"),
-                                 static_cast<uint32_t>(v), out);
+  return mcucore::PrintUnknownEnumValueTo(MCU_FLASHSTR("EToken"),
+                                          static_cast<uint32_t>(v), out);
 }
 
 size_t PrintValueTo(EPartialToken v, Print& out) {
@@ -273,8 +331,8 @@ size_t PrintValueTo(EPartialToken v, Print& out) {
   if (flash_string != nullptr) {
     return out.print(flash_string);
   }
-  return PrintUnknownEnumValueTo(MCU_FLASHSTR("EPartialToken"),
-                                 static_cast<uint32_t>(v), out);
+  return mcucore::PrintUnknownEnumValueTo(MCU_FLASHSTR("EPartialToken"),
+                                          static_cast<uint32_t>(v), out);
 }
 
 size_t PrintValueTo(EPartialTokenPosition v, Print& out) {
@@ -282,8 +340,8 @@ size_t PrintValueTo(EPartialTokenPosition v, Print& out) {
   if (flash_string != nullptr) {
     return out.print(flash_string);
   }
-  return PrintUnknownEnumValueTo(MCU_FLASHSTR("EPartialTokenPosition"),
-                                 static_cast<uint32_t>(v), out);
+  return mcucore::PrintUnknownEnumValueTo(MCU_FLASHSTR("EPartialTokenPosition"),
+                                          static_cast<uint32_t>(v), out);
 }
 
 size_t PrintValueTo(EDecodeBufferStatus v, Print& out) {
@@ -291,8 +349,8 @@ size_t PrintValueTo(EDecodeBufferStatus v, Print& out) {
   if (flash_string != nullptr) {
     return out.print(flash_string);
   }
-  return PrintUnknownEnumValueTo(MCU_FLASHSTR("EDecodeBufferStatus"),
-                                 static_cast<uint32_t>(v), out);
+  return mcucore::PrintUnknownEnumValueTo(MCU_FLASHSTR("EDecodeBufferStatus"),
+                                          static_cast<uint32_t>(v), out);
 }
 
 #if MCU_HOST_TARGET
@@ -334,8 +392,7 @@ std::ostream& operator<<(std::ostream& os, EDecodeBufferStatus v) {
 }
 
 #endif  // MCU_HOST_TARGET
-
-// END_SOURCE_GENERATED_BY_MAKE_ENUM_TO_STRING
-
 }  // namespace http1
 }  // namespace mcucore
+
+// END_SOURCE_GENERATED_BY_MAKE_ENUM_TO_STRING

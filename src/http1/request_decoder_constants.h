@@ -11,6 +11,7 @@
 #include "mcucore_platform.h"
 
 #if MCU_HOST_TARGET
+// Must come after mcucore_platform.h so that MCU_HOST_TARGET is defined.
 #include <ostream>  // pragma: keep standard include
 #endif
 
@@ -156,7 +157,13 @@ enum class EDecodeBufferStatus : uint_fast8_t {
   kInternalError,
 };
 
+}  // namespace http1
+}  // namespace mcucore
+
 // BEGIN_HEADER_GENERATED_BY_MAKE_ENUM_TO_STRING
+
+namespace mcucore {
+namespace http1 {
 
 const __FlashStringHelper* ToFlashStringHelper(EEvent v);
 const __FlashStringHelper* ToFlashStringHelper(EToken v);
@@ -179,9 +186,9 @@ std::ostream& operator<<(std::ostream& os, EPartialTokenPosition v);
 std::ostream& operator<<(std::ostream& os, EDecodeBufferStatus v);
 #endif  // MCU_HOST_TARGET
 
-// END_HEADER_GENERATED_BY_MAKE_ENUM_TO_STRING
-
 }  // namespace http1
 }  // namespace mcucore
+
+// END_HEADER_GENERATED_BY_MAKE_ENUM_TO_STRING
 
 #endif  // MCUCORE_SRC_HTTP1_REQUEST_DECODER_CONSTANTS_H_

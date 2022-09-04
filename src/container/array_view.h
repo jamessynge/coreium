@@ -49,8 +49,8 @@ class ArrayView {
   constexpr size_type size() const { return size_; }
 
   // Returns a pointer to the first element of the underlying array.
-  constexpr pointer data() { return ptr_; }
-  constexpr const_pointer data() const { return ptr_; }
+  pointer data() { return ptr_; }
+  const_pointer data() const { return ptr_; }
 
   // Element access:
   reference operator[](size_type ndx) {

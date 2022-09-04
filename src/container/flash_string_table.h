@@ -12,6 +12,7 @@
 // Author: james.synge@gmail.com
 
 #include "mcucore_platform.h"
+#include "strings/has_progmem_char_array.h"
 
 namespace mcucore {
 namespace flash_string_table_internal {
@@ -21,13 +22,19 @@ namespace flash_string_table_internal {
 // flash.
 class FlashStringTableElement {
  public:
-  constexpr FlashStringTableElement(const __FlashStringHelper* ptr)  // NOLINT
-      : ptr_(ptr) {}
+  // constexpr FlashStringTableElement(const __FlashStringHelper* ptr)  //
+  // NOLINT
+  //     : ptr_(ptr) {}
+
+  template <typename PSD,
+            typename = enable_if_t<has_progmem_char_array<PSD>::value>>
+  constexpr FlashStringTableElement(const PSD /*value*/)  // NOLINT
+      : ptr_(PSD::kData) {}
 
   const __FlashStringHelper* ToFlashStringHelper() const;
 
  private:
-  const __FlashStringHelper* ptr_;
+  const char* ptr_;
 };
 
 }  // namespace flash_string_table_internal

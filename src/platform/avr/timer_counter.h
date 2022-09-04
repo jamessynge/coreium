@@ -26,6 +26,7 @@
 #include "mcucore_platform.h"
 
 #if MCU_HOST_TARGET
+// Must come after mcucore_platform.h so that MCU_HOST_TARGET is defined.
 #include <ostream>  // pragma: keep standard include
 #endif
 
