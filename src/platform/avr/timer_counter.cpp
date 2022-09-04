@@ -568,8 +568,8 @@ uint16_t TimerCounter5Pwm16Output::get_pulse_count() const {
 namespace mcucore {
 namespace {
 
-MCU_MAYBE_UNUSED_ATTRIBUTE inline const __FlashStringHelper*
-_ToFlashStringHelperViaSwitch(ClockPrescaling v) MCU_GCC_ATTRIBUTE_UNUSED {
+MCU_MAYBE_UNUSED_FUNCTION inline const __FlashStringHelper*
+_ToFlashStringHelperViaSwitch(ClockPrescaling v) {
   switch (v) {
     case ClockPrescaling::kDisabled:
       return MCU_FLASHSTR("Disabled");
@@ -640,9 +640,8 @@ const __FlashStringHelper* ToFlashStringHelper(ClockPrescaling v) {
 
 namespace {
 
-MCU_MAYBE_UNUSED_ATTRIBUTE inline const __FlashStringHelper*
-_ToFlashStringHelperViaSwitch(FastPwmCompareOutputMode v)
-    MCU_GCC_ATTRIBUTE_UNUSED {
+MCU_MAYBE_UNUSED_FUNCTION inline const __FlashStringHelper*
+_ToFlashStringHelperViaSwitch(FastPwmCompareOutputMode v) {
   switch (v) {
     case FastPwmCompareOutputMode::kDisabled:
       return MCU_FLASHSTR("Disabled");
@@ -675,8 +674,8 @@ const __FlashStringHelper* ToFlashStringHelper(FastPwmCompareOutputMode v) {
 
 namespace {
 
-MCU_MAYBE_UNUSED_ATTRIBUTE inline const __FlashStringHelper*
-_ToFlashStringHelperViaSwitch(TimerCounterChannel v) MCU_GCC_ATTRIBUTE_UNUSED {
+MCU_MAYBE_UNUSED_FUNCTION inline const __FlashStringHelper*
+_ToFlashStringHelperViaSwitch(TimerCounterChannel v) {
   switch (v) {
     case TimerCounterChannel::A:
       return MCU_FLASHSTR("A");

@@ -15,8 +15,8 @@ namespace mcucore {
 namespace http1 {
 namespace {
 
-MCU_MAYBE_UNUSED_ATTRIBUTE inline const __FlashStringHelper*
-_ToFlashStringHelperViaSwitch(EEvent v) MCU_GCC_ATTRIBUTE_UNUSED {
+MCU_MAYBE_UNUSED_FUNCTION inline const __FlashStringHelper*
+_ToFlashStringHelperViaSwitch(EEvent v) {
   switch (v) {
     case EEvent::kPathStart:
       return MCU_FLASHSTR("PathStart");
@@ -92,8 +92,8 @@ const __FlashStringHelper* ToFlashStringHelper(EEvent v) {
 
 namespace {
 
-MCU_MAYBE_UNUSED_ATTRIBUTE inline const __FlashStringHelper*
-_ToFlashStringHelperViaSwitch(EToken v) MCU_GCC_ATTRIBUTE_UNUSED {
+MCU_MAYBE_UNUSED_FUNCTION inline const __FlashStringHelper*
+_ToFlashStringHelperViaSwitch(EToken v) {
   switch (v) {
     case EToken::kHttpMethod:
       return MCU_FLASHSTR("HttpMethod");
@@ -162,8 +162,8 @@ const __FlashStringHelper* ToFlashStringHelper(EToken v) {
 
 namespace {
 
-MCU_MAYBE_UNUSED_ATTRIBUTE inline const __FlashStringHelper*
-_ToFlashStringHelperViaSwitch(EPartialToken v) MCU_GCC_ATTRIBUTE_UNUSED {
+MCU_MAYBE_UNUSED_FUNCTION inline const __FlashStringHelper*
+_ToFlashStringHelperViaSwitch(EPartialToken v) {
   switch (v) {
     case EPartialToken::kPathSegment:
       return MCU_FLASHSTR("PathSegment");
@@ -234,9 +234,8 @@ const __FlashStringHelper* ToFlashStringHelper(EPartialToken v) {
 
 namespace {
 
-MCU_MAYBE_UNUSED_ATTRIBUTE inline const __FlashStringHelper*
-_ToFlashStringHelperViaSwitch(EPartialTokenPosition v)
-    MCU_GCC_ATTRIBUTE_UNUSED {
+MCU_MAYBE_UNUSED_FUNCTION inline const __FlashStringHelper*
+_ToFlashStringHelperViaSwitch(EPartialTokenPosition v) {
   switch (v) {
     case EPartialTokenPosition::kFirst:
       return MCU_FLASHSTR("First");

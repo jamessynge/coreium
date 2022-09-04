@@ -15,8 +15,8 @@
 namespace mcucore {
 namespace {
 
-MCU_MAYBE_UNUSED_ATTRIBUTE inline const __FlashStringHelper*
-_ToFlashStringHelperViaSwitch(StatusCode v) MCU_GCC_ATTRIBUTE_UNUSED {
+MCU_MAYBE_UNUSED_FUNCTION inline const __FlashStringHelper*
+_ToFlashStringHelperViaSwitch(StatusCode v) {
   switch (v) {
     case StatusCode::kOk:
       return MCU_FLASHSTR("Ok");
