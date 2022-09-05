@@ -35,6 +35,8 @@ cc_test(
         "//googletest:gunit_main",
         "//mcucore/extras/test_tools:status_or_test_utils",
         "//mcucore/extras/test_tools:status_test_utils",
+        "//mcucore/extras/test_tools:string_view_utils",
+        "//mcucore/extras/test_tools:test_has_failed",
         "//mcucore/src/container:serial_map",
         "//mcucore/src/strings:progmem_string",
         "//mcucore/src/strings:progmem_string_data",

@@ -252,6 +252,12 @@ cc_library(
 )
 
 cc_library(
+    name = "test_has_failed",
+    hdrs = ["test_has_failed.h"],
+    deps = ["//googletest:gunit_headers"],
+)
+
+cc_library(
     name = "test_strings",
     srcs = ["test_strings.cc"],
     hdrs = ["test_strings.h"],

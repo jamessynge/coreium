@@ -17,7 +17,7 @@
 //
 // Author: james.synge@gmail.com
 
-#include <string.h>  // For memcpy, memcmp
+#include <string.h>  // For memcpy, etc.
 
 #include "log/log.h"
 #include "mcucore_platform.h"
@@ -122,8 +122,7 @@ class SerialMap {
     return InsertOrAssignHelper(key, length, value, true);
   }
   Status Insert(const KEY key, const StringView value) {
-    return Insert(key, value.size(),
-                  reinterpret_cast<const uint8_t*>(value.data()));
+    return Insert(key, value.size(), value.bytes());
   }
   template <typename T, enable_if_t<is_arithmetic<T>::value, bool> = true>
   Status Insert(const KEY key, const T value) {
@@ -135,10 +134,7 @@ class SerialMap {
     return InsertOrAssignHelper(key, length, value, false);
   }
   Status InsertOrAssign(const KEY key, const StringView value) {
-    static_assert(
-        is_same<decltype(Entry::value), StringView::size_type>::value);
-    return InsertOrAssign(key, value.size(),
-                          reinterpret_cast<const uint8_t*>(value.data()));
+    return InsertOrAssign(key, value.size(), value.bytes());
   }
   template <typename T, enable_if_t<is_arithmetic<T>::value, bool> = true>
   Status InsertOrAssign(const KEY key, const T value) {
@@ -209,7 +205,7 @@ class SerialMap {
       MCU_DCHECK_LT(entry_offset, next_offset);
       MCU_DCHECK_LT(next_offset, old_end);
       const auto remaining_entries_size = end_ - next_offset;
-      memcpy(&entry, next_ptr, remaining_entries_size);
+      memmove(&entry, next_ptr, remaining_entries_size);
       end_ -= (next_offset - entry_offset);
     }
     // TODO(jamessynge): If asan enabled, mark data after the last remaining

@@ -15,6 +15,7 @@
 #include "extras/test_tools/http1/collapsing_request_decoder_listener.h"
 #include "extras/test_tools/http1/mock_request_decoder_listener.h"
 #include "extras/test_tools/http1/string_utils.h"
+#include "extras/test_tools/test_has_failed.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "http1/request_decoder_constants.h"
@@ -42,6 +43,7 @@ using ::mcucore::test::EveryChar;
 using ::mcucore::test::GenerateInvalidPercentEncodedChar;
 using ::mcucore::test::GenerateMultipleRequestPartitions;
 using ::mcucore::test::PercentEncodeAllChars;
+using ::mcucore::test::TestHasFailed;
 using ::testing::InSequence;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Mock;
@@ -58,11 +60,6 @@ std::vector<std::vector<std::string>> GenerateMultipleRequestPartitions(
   return GenerateMultipleRequestPartitions(
       full_request, kDecodeBufferSize,
       std::string_view(kLongestMatchedLiteral).size());
-}
-
-bool TestHasFailed() {
-  auto test_info = testing::UnitTest::GetInstance()->current_test_info();
-  return test_info->result()->Failed();
 }
 
 // Decode the contents of buffer as long as it isn't empty and the decoder isn't
