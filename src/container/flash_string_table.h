@@ -7,6 +7,11 @@
 // NOTE: So far this only works if the table is stored in the first 64KB of
 // flash because this uses the "near pointer" API.
 //
+// TODO(jamessynge): Consider whether to add a form of the table as a map from
+// sparse enum values to flash strings. Could use template metaprogramming to
+// sort entries by enum value, and maybe use the same for eliminating multiple
+// enumerators with the same value.
+//
 // TODO(jamessynge): Add examples showing how to use this.
 //
 // Author: james.synge@gmail.com
@@ -63,6 +68,8 @@ const __FlashStringHelper* LookupFlashString(
 }
 
 // Lookup for the case where min_enumerator might be non-zero.
+// TODO(jamessynge): Add static_assert or similar compile time check that the
+// min and max enumerators are appropriate for the size of the table.
 template <typename U, typename E>
 const __FlashStringHelper* LookupFlashStringForDenseEnum(FlashStringTable table,
                                                          E min_enumerator,
