@@ -78,6 +78,7 @@ cc_test(
         "//googletest:gunit_main",
         "//mcucore/extras/test_tools:print_value_to_std_string",
         "//mcucore/extras/test_tools:test_strings",
+        "//mcucore/extras/test_tools/log:check_sink_test_base",
         "//mcucore/src/strings:tiny_string",
     ],
 )

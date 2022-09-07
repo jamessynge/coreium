@@ -40,13 +40,32 @@
 
 namespace mcucore {
 namespace {
+void PrintLocation(Print& out, ProgmemString file, const uint16_t line_number) {
+  if (file != nullptr && file.printTo(out) > 0) {
+    if (line_number != 0) {
+      out.print(':');
+      out.print(line_number);
+    }
+    out.print(']');
+    out.print(' ');
+  }
+}
+}  // namespace
+
 #if MCU_HOST_TARGET
 
-Print* the_print_for_log_sink = &(DEFAULT_SINK_OUT);
-inline Print& GetPrintForLogSink() { return *the_print_for_log_sink; }
+namespace {
+Print* the_print_for_log_sink = nullptr;
+inline Print& GetPrintForLogSink() {
+  return the_print_for_log_sink == nullptr ? DEFAULT_SINK_OUT
+                                           : *the_print_for_log_sink;
+}
 
-Print* the_print_for_check_sink = &(DEFAULT_SINK_OUT);
-inline Print& GetPrintForCheckSink() { return *the_print_for_check_sink; }
+Print* the_print_for_check_sink = nullptr;
+inline Print& GetPrintForCheckSink() {
+  return the_print_for_check_sink == nullptr ? DEFAULT_SINK_OUT
+                                             : *the_print_for_check_sink;
+}
 
 CheckSinkExitFn* the_check_sink_exit_fn = nullptr;
 inline void CheckSinkExit(std::string_view message) {
@@ -60,35 +79,10 @@ inline void CheckSinkExit(std::string_view message) {
     LOG(FATAL) << message;  // COV_NF_LINE
   }
 }
-
-#else  // !MCU_HOST_TARGET
-
-inline Print& GetPrintForLogSink() { return DEFAULT_SINK_OUT; }
-inline Print& GetPrintForCheckSink() { return DEFAULT_SINK_OUT; }
-
-#endif  // MCU_HOST_TARGET
-
-void PrintLocation(Print& out, ProgmemString file, const uint16_t line_number) {
-  if (file != nullptr && file.printTo(out) > 0) {
-    if (line_number != 0) {
-      out.print(':');
-      out.print(line_number);
-    }
-    out.print(']');
-    out.print(' ');
-  }
-}
-
 }  // namespace
 
-#if MCU_HOST_TARGET
-
-void SetPrintForLogSink(Print* out) {
-  the_print_for_log_sink = out != nullptr ? out : &(DEFAULT_SINK_OUT);
-}
-void SetPrintForCheckSink(Print* out) {
-  the_print_for_check_sink = out != nullptr ? out : &(DEFAULT_SINK_OUT);
-}
+void SetPrintForLogSink(Print* out) { the_print_for_log_sink = out; }
+void SetPrintForCheckSink(Print* out) { the_print_for_check_sink = out; }
 void SetCheckSinkExitFn(CheckSinkExitFn exit_fn) {
   if (the_check_sink_exit_fn != nullptr) {
     delete the_check_sink_exit_fn;
@@ -98,6 +92,13 @@ void SetCheckSinkExitFn(CheckSinkExitFn exit_fn) {
     the_check_sink_exit_fn = new CheckSinkExitFn(exit_fn);
   }
 }
+
+#else  // !MCU_HOST_TARGET
+
+namespace {
+inline Print& GetPrintForLogSink() { return DEFAULT_SINK_OUT; }
+inline Print& GetPrintForCheckSink() { return DEFAULT_SINK_OUT; }
+}  // namespace
 
 #endif  // MCU_HOST_TARGET
 
@@ -135,6 +136,9 @@ CheckSink::~CheckSink() {
   // intervention isn't required to "recover"; i.e. reboot/restart and try
   // again.
   avr::EnableWatchdogResetMode(4);
+  while (true) {
+    // Do nothing
+  }
 #elif MCU_HOST_TARGET
   CheckSinkExit("MCU_CHECK FAILED");
 #else

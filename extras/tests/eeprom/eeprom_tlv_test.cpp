@@ -18,6 +18,7 @@
 #include "extras/test_tools/print_value_to_std_string.h"
 #include "extras/test_tools/status_or_test_utils.h"
 #include "extras/test_tools/status_test_utils.h"
+#include "extras/test_tools/string_view_utils.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "mcucore_platform.h"
@@ -120,6 +121,15 @@ TEST(EepromTlvGetIfValidTest, InitializeEepromFirst) {
   EepromTlv::ClearAndInitializeEeprom(eeprom);
   auto status_or_eeprom_tlv = EepromTlv::GetIfValid(eeprom);
   ASSERT_STATUS_OK(status_or_eeprom_tlv.status());
+}
+
+TEST(EepromTlvBasicsTest, WriteAndReadEntry) {
+  EEPROMClass eeprom;
+  EepromTlv tlv = EepromTlv::GetOrDie(eeprom);
+  const std::string value = "lkaslujwoiu";
+  StringView sv = MakeStringView(value);
+  EepromTag tag{MCU_DOMAIN(1), 3};
+  EXPECT_STATUS_OK(tlv.WriteEntry(tag, sv.bytes(), sv.size()));
 }
 
 class UnreadableEepromClass : public EEPROMClass {

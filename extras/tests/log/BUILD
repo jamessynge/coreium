@@ -21,6 +21,7 @@ cc_test(
         "//absl/strings",
         "//googletest:gunit_main",
         "//mcucore/extras/test_tools:print_to_std_string",
+        "//mcucore/extras/test_tools/log:check_sink_test_base",
         "//mcucore/src/log",
         "//mcucore/src/strings:progmem_string_view",
     ],

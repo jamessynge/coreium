@@ -33,6 +33,7 @@ cc_test(
     srcs = ["serial_map_test.cc"],
     deps = [
         "//googletest:gunit_main",
+        "//mcucore/extras/test_tools:print_value_to_std_string",
         "//mcucore/extras/test_tools:status_or_test_utils",
         "//mcucore/extras/test_tools:status_test_utils",
         "//mcucore/extras/test_tools:string_view_utils",

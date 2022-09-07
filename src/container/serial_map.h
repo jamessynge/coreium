@@ -161,6 +161,9 @@ class SerialMap {
     const auto available = SIZE - end_;
     const auto need = offsetof(Entry, value) + length;
     if (need > available) {
+      // Note we're not handling the case here where the key already exists in
+      // the map, and thus there might be room if we subtracted the existing
+      // space used for it.
       MCU_VLOG(3) << MCU_PSD("Map too full") << MCU_NAME_VAL(length)
                   << MCU_NAME_VAL(need) << MCU_NAME_VAL(available)
                   << MCU_PSD(" offset of value=") << offsetof(Entry, value);

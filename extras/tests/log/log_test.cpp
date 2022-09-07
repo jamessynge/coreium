@@ -21,6 +21,7 @@
 #include <string_view>
 
 #include "absl/strings/str_cat.h"
+#include "extras/test_tools/log/check_sink_test_base.h"
 #include "extras/test_tools/print_to_std_string.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -185,30 +186,18 @@ TEST_F(McuVLogTest, VLogIfDisabledOrFalse) {
   EXPECT_THAT(TakeStr(), IsEmpty());
 }
 
-class McuCheckTest : public testing::Test {
+class McuCheckTest : public CheckSinkTestBase {
  protected:
-  void SetUp() override {
-    SetCheckSinkExitFn(mock_exit_fn_.AsStdFunction());
-    SetPrintForCheckSink(&out_);
-  }
-  void TearDown() override {
-    SetCheckSinkExitFn(nullptr);
-    SetPrintForCheckSink(nullptr);
-  }
-
-  void VerifyFailure(std::function<int()> failing_func,
+  // failing_func returns the line number from which the failure is expected to
+  // be reported.
+  void VerifyFailure(const std::function<int()>& failing_func,
                      std::string_view expression_text,
                      std::string_view message_text) {
-    out_.reset();
-    EXPECT_CALL(mock_exit_fn_, Call("MCU_CHECK FAILED"));
-    const int line_number = failing_func();
-    EXPECT_EQ(out_.str(),
-              absl::StrCat("MCU_CHECK FAILED: log_test.cc:", line_number, "] ",
-                           expression_text, " ", message_text, "\n"));
+    CheckSinkTestBase::VerifyFailure(failing_func,
+                                     MCU_BASENAME_TYPE(__FILE__)::kData,
+                                     expression_text, message_text,
+                                     /*verify_line_number=*/true);
   }
-
-  PrintToStdString out_;
-  testing::MockFunction<void(std::string_view)> mock_exit_fn_;
 };
 
 TEST_F(McuCheckTest, NonFailures) {

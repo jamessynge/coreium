@@ -28,3 +28,8 @@ cc_library(
         "//mcucore/src/status",
     ],
 )
+
+cc_library(
+    name = "preproc",
+    hdrs = ["preproc.h"],
+)

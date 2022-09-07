@@ -21,7 +21,10 @@ cc_library(
 cc_library(
     name = "progmem_string_data",
     hdrs = ["progmem_string_data.h"],
-    deps = ["//mcucore/src:mcucore_platform"],
+    deps = [
+        "//mcucore/src:mcucore_platform",
+        "//mcucore/src/misc:preproc",
+    ],
 )
 
 cc_library(

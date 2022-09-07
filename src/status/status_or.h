@@ -32,9 +32,9 @@ class StatusOr {
       : value_(value) {}
   /*implicit*/ StatusOr(const Status& status)  // NOLINT
       : status_(status) {
-    MCU_DCHECK(!status.ok());
+    MCU_DCHECK(!status_.ok());
     if (status_.ok()) {
-      status_ = Status(StatusCode::kUnknown);  // COV_NF_LINE
+      status_ = Status(StatusCode::kUnknown);
     }
   }
 
@@ -92,8 +92,8 @@ bool operator!=(const StatusOr<T>& a, const StatusOr<T>& b) {
 
 }  // namespace mcucore
 
-#define MCU_ASSIGN_OR_RETURN(lhs, status_or_expression)                \
-  MCU_ASSIGN_OR_RETURN_IMPL_(MAKE_UNIQUE_NAME(_status_or_value_), lhs, \
+#define MCU_ASSIGN_OR_RETURN(lhs, status_or_expression)                  \
+  MCU_ASSIGN_OR_RETURN_IMPL_(MCU_PP_UNIQUE_NAME(_status_or_value_), lhs, \
                              status_or_expression)
 
 #define MCU_ASSIGN_OR_RETURN_IMPL_(statusor, lhs, status_or_expression) \
@@ -103,8 +103,8 @@ bool operator!=(const StatusOr<T>& a, const StatusOr<T>& b) {
   }                                                                     \
   lhs = statusor.value();
 
-#define MCU_CHECK_OK_AND_ASSIGN(lhs, status_or_expression)                \
-  MCU_CHECK_OK_AND_ASSIGN_IMPL_(MAKE_UNIQUE_NAME(_status_or_value_), lhs, \
+#define MCU_CHECK_OK_AND_ASSIGN(lhs, status_or_expression)                  \
+  MCU_CHECK_OK_AND_ASSIGN_IMPL_(MCU_PP_UNIQUE_NAME(_status_or_value_), lhs, \
                                 status_or_expression)
 
 #define MCU_CHECK_OK_AND_ASSIGN_IMPL_(statusor, lhs, status_or_expression) \

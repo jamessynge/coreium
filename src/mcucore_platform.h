@@ -135,22 +135,6 @@ MillisT ElapsedMillis(MillisT start_time);
 #define MCU_HAVE_MEMORY_SANITIZER 1
 #endif
 
-// Concatenates macro args, which is necessary when attempting to concatenate
-// args and pass them to another macro due to the order that the preprocessor
-// evaluates tokens in a macro expansion.
-#define MCU_CONCAT_NAME(x, y) MCU_CONCAT_NAME_INNER_(x, y)
-#define MCU_CONCAT_NAME_INNER_(x, y) x##y
-
-// MCU_UNIQUE_NAME helps with generating a unique symbol name. If __COUNTER__,
-// a non-standard feature is available, we'll use it, else we'll fallback to
-// using __LINE__ has the unique-ifying value; that works as long as we don't
-// need to generate more than one such name on a single line.
-#if defined(__clang__) || defined(__GNUC__)
-#define MAKE_UNIQUE_NAME(base_name) MCU_CONCAT_NAME(base_name, __COUNTER__)
-#else
-#define MAKE_UNIQUE_NAME(base_name) MCU_CONCAT_NAME(base_name, __LINE__)
-#endif
-
 #ifndef __cplusplus
 // Very odd if not compiling for C++.
 #define __cplusplus 0

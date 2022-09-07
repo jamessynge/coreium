@@ -50,6 +50,7 @@ cc_test(
         "//mcucore/extras/test_tools:print_value_to_std_string",
         "//mcucore/extras/test_tools:status_or_test_utils",
         "//mcucore/extras/test_tools:status_test_utils",
+        "//mcucore/extras/test_tools:string_view_utils",
         "//mcucore/src:mcucore_platform",
         "//mcucore/src/eeprom:eeprom_region",
         "//mcucore/src/eeprom:eeprom_tag",

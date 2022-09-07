@@ -1,7 +1,24 @@
+// Enable all of the logging features before including *any* files.
+#undef MCU_DISABLE_CHECK
+#undef MCU_DISABLE_CHECK_LOCATION
+#undef MCU_DISABLE_DCHECK
+#undef MCU_DISABLE_DCHECK_LOCATION
+#undef MCU_DISABLE_VLOG
+#undef MCU_DISABLE_VLOG_LOCATION
+
+#define MCU_ENABLED_VLOG_LEVEL 5
+#define MCU_ENABLE_CHECK
+#define MCU_ENABLE_CHECK_LOCATION
+#define MCU_ENABLE_DCHECK
+#define MCU_ENABLE_DCHECK_LOCATION
+#define MCU_ENABLE_VLOG
+#define MCU_ENABLE_VLOG_LOCATION
+
 #include "status/status_or.h"
 
 #include <stdint.h>
 
+#include "extras/test_tools/log/check_sink_test_base.h"
 #include "extras/test_tools/status_or_test_utils.h"
 #include "extras/test_tools/status_test_utils.h"
 #include "gtest/gtest.h"
@@ -167,20 +184,49 @@ TEST(StatusOrTest, AssignOrReturn_CallReturnsError) {
   EXPECT_TRUE(did_return);
 }
 
-#ifdef MCU_ENABLE_DCHECK
+TEST(StatusOrTest, Equals) {
+  EXPECT_EQ(StatusOr<int>(), StatusOr<int>());
+  EXPECT_EQ(StatusOr<int>(), StatusOr<int>(UnknownError()));
+  EXPECT_EQ(StatusOr<int>(123), StatusOr<int>(123));
 
-TEST(StatusOrDeathTest, BadCtorCall) {
-  // Not OK to initialize with an OK Status.
-  EXPECT_DEATH(
-      {
-        StatusOr<int> status_or_int(OkStatus());
-        EXPECT_FALSE(status_or_int.ok());
-        EXPECT_EQ(status_or_int.status(), Status(StatusCode::kUnknown));
-      },
-      "status.ok");
+  EXPECT_FALSE(StatusOr<int>() == StatusOr<int>(123));
+  EXPECT_FALSE(StatusOr<int>() == StatusOr<int>(AbortedError()));
+  EXPECT_FALSE(StatusOr<int>(123) == StatusOr<int>(234));
 }
 
-#endif
+TEST(StatusOrTest, NotEquals) {
+  EXPECT_NE(StatusOr<int>(), StatusOr<int>(123));
+  EXPECT_NE(StatusOr<int>(), StatusOr<int>(AbortedError()));
+  EXPECT_NE(StatusOr<int>(123), StatusOr<int>(234));
+
+  EXPECT_FALSE(StatusOr<int>() != StatusOr<int>());
+  EXPECT_FALSE(StatusOr<int>() != StatusOr<int>(UnknownError()));
+  EXPECT_FALSE(StatusOr<int>(123) != StatusOr<int>(123));
+}
+
+TEST(StatusOrTest, ConstOkValue) {
+  const auto status_or = StatusOr<float>(1.23f);
+  EXPECT_STATUS_OK(status_or);
+  EXPECT_EQ(status_or.status(), OkStatus());
+  EXPECT_EQ(status_or.value(), 1.23f);
+
+  // operator const Status&()
+  const auto status = [&]() -> Status { return status_or; }();
+  EXPECT_STATUS_OK(status);
+}
+
+using StatusOrCheckTest = CheckSinkTestBase;
+
+TEST_F(StatusOrCheckTest, BadCtorCall) {
+  // Not OK to initialize with an OK Status.
+  VerifyFailure(
+      []() {
+        Status ok_status = OkStatus();
+        StatusOr<int> status_or_int(ok_status);
+        return __LINE__ - 1;
+      },
+      "status_or.h", "!status_.ok()", "", /*verify_line_number=*/false);
+}
 
 }  // namespace
 }  // namespace test

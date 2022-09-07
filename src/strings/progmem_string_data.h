@@ -78,6 +78,7 @@
 // Author: james.synge@gmail.com
 
 #include "mcucore_platform.h"
+#include "misc/preproc.h"
 
 namespace mcucore {
 namespace progmem_string_data {
@@ -470,22 +471,17 @@ auto ProvideStorage(LengthCheck<LengthOk>, PathFragment<FoundSlash, C...>)
 // concatenated together.
 #define _PSD_CONCAT_TYPE(t1, t2) decltype(_PSD_NS::Concat(t1(), t2()))
 
-// Concatenates two preprocessor tokens together. This is used below to ensure
-// that two macro arguments are expanded before they are concatenated to produce
-// a new token.
-#define _PSD_CONCAT_TOKENS(token1, token2) token1##token2
-
 // Expands to the type from concatenating the types of two string fragments of
 // 16 characters starting at 0x##hex0##hex1##0 and at 0x##hex0##hex2##0.
 #define _PSD_CONCAT_FRAGMENTS_TYPE(fragtype, hex0, hex1, hex2, x) \
-  _PSD_CONCAT_TYPE(fragtype(_PSD_CONCAT_TOKENS(hex0, hex1), x),   \
-                   fragtype(_PSD_CONCAT_TOKENS(hex0, hex2), x))
+  _PSD_CONCAT_TYPE(fragtype(MCU_PP_CONCAT_TOKENS(hex0, hex1), x), \
+                   fragtype(MCU_PP_CONCAT_TOKENS(hex0, hex2), x))
 
 // Expands to the type from concatenating the types of two path fragments of 16
 // characters starting at 0x##hex0##hex1##0 and at 0x##hex0##hex2##0.
-#define _PSD_CONCAT_PATHFRAG_TYPE(hex0, hex1, hex2, x)                    \
-  _PSD_CONCAT_TYPE(_PSD_PATHFRAG_TYPE(_PSD_CONCAT_TOKENS(hex0, hex1), x), \
-                   _PSD_PATHFRAG_TYPE(_PSD_CONCAT_TOKENS(hex0, hex2), x))
+#define _PSD_CONCAT_PATHFRAG_TYPE(hex0, hex1, hex2, x)                      \
+  _PSD_CONCAT_TYPE(_PSD_PATHFRAG_TYPE(MCU_PP_CONCAT_TOKENS(hex0, hex1), x), \
+                   _PSD_PATHFRAG_TYPE(MCU_PP_CONCAT_TOKENS(hex0, hex2), x))
 
 ////////////////////////////////////////////////////////////////////////////////
 // Macros for producing StringFragment, PathFragment and ProgmemStringData types
@@ -542,22 +538,22 @@ auto ProvideStorage(LengthCheck<LengthOk>, PathFragment<FoundSlash, C...>)
 #define _PSD_TYPE_256(fragtype, x) _MAKE_PSD_TYPE_nnn(256, fragtype, x)
 
 /* 2^9 = 512 */
-#define _PSD_CONCAT_512_TYPE(fragtype, n, x)                       \
-  _PSD_CONCAT_TYPE(                                                \
-      _PSD_CONCAT_256_TYPE(fragtype, _PSD_CONCAT_TOKENS(n, 0), x), \
-      _PSD_CONCAT_256_TYPE(fragtype, _PSD_CONCAT_TOKENS(n, 1), x))
+#define _PSD_CONCAT_512_TYPE(fragtype, n, x)                         \
+  _PSD_CONCAT_TYPE(                                                  \
+      _PSD_CONCAT_256_TYPE(fragtype, MCU_PP_CONCAT_TOKENS(n, 0), x), \
+      _PSD_CONCAT_256_TYPE(fragtype, MCU_PP_CONCAT_TOKENS(n, 1), x))
 
 #define _PSD_TYPE_512(fragtype, x) _MAKE_PSD_TYPE_nnn(512, fragtype, x)
 
 /* 2^10 = 1024 */
-#define _PSD_CONCAT_1024_TYPE(fragtype, n, x)                           \
-  _PSD_CONCAT_TYPE(                                                     \
-      _PSD_CONCAT_TYPE(                                                 \
-          _PSD_CONCAT_256_TYPE(fragtype, _PSD_CONCAT_TOKENS(n, 0), x),  \
-          _PSD_CONCAT_256_TYPE(fragtype, _PSD_CONCAT_TOKENS(n, 1), x)), \
-      _PSD_CONCAT_TYPE(                                                 \
-          _PSD_CONCAT_256_TYPE(fragtype, _PSD_CONCAT_TOKENS(n, 2), x),  \
-          _PSD_CONCAT_256_TYPE(fragtype, _PSD_CONCAT_TOKENS(n, 3), x)))
+#define _PSD_CONCAT_1024_TYPE(fragtype, n, x)                             \
+  _PSD_CONCAT_TYPE(                                                       \
+      _PSD_CONCAT_TYPE(                                                   \
+          _PSD_CONCAT_256_TYPE(fragtype, MCU_PP_CONCAT_TOKENS(n, 0), x),  \
+          _PSD_CONCAT_256_TYPE(fragtype, MCU_PP_CONCAT_TOKENS(n, 1), x)), \
+      _PSD_CONCAT_TYPE(                                                   \
+          _PSD_CONCAT_256_TYPE(fragtype, MCU_PP_CONCAT_TOKENS(n, 2), x),  \
+          _PSD_CONCAT_256_TYPE(fragtype, MCU_PP_CONCAT_TOKENS(n, 3), x)))
 
 #define _PSD_TYPE_1024(fragtype, x) _MAKE_PSD_TYPE_nnn(1024, fragtype, x)
 
@@ -657,6 +653,7 @@ auto ProvideStorage(LengthCheck<LengthOk>, PathFragment<FoundSlash, C...>)
 // to another location, and thus their original file path may be shorter or
 // longer than the one used when they're compiled.
 
+#define MCU_BASENAME_TYPE(x) MCU_BASENAME_TYPE_512(x)
 #define MCU_BASENAME(x) MCU_BASENAME_512(x)
 
 #endif  // MCUCORE_SRC_STRINGS_PROGMEM_STRING_DATA_H_

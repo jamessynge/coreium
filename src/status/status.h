@@ -37,6 +37,7 @@
 
 #include "log/log.h"
 #include "mcucore_platform.h"
+#include "misc/preproc.h"
 #include "semistd/type_traits.h"
 #include "status/status_code.h"  // pragma IWYU: export
 #include "strings/progmem_string_view.h"
@@ -153,14 +154,14 @@ inline const Status& GetStatus(const T& status_source) {
 // `MCU_RETURN_IF_ERROR(expr)` evaluates `expr`, whose type must be convertable
 // to Status, and returns the Status if it is not OK.
 #define MCU_RETURN_IF_ERROR(expr) \
-  MCU_RETURN_IF_ERROR_IMPL_(MAKE_UNIQUE_NAME(_return_if_error_status_), expr)
+  MCU_RETURN_IF_ERROR_IMPL_(MCU_PP_UNIQUE_NAME(_return_if_error_status_), expr)
 
 #define MCU_CHECK_OK(expr) \
-  MCU_CHECK_OK_IMPL_(MAKE_UNIQUE_NAME(_check_status_ok_), expr)
+  MCU_CHECK_OK_IMPL_(MCU_PP_UNIQUE_NAME(_check_status_ok_), expr)
 
 #ifdef MCU_ENABLE_DCHECK
 #define MCU_DCHECK_OK(expr) \
-  MCU_CHECK_OK_IMPL_(MAKE_UNIQUE_NAME(_dcheck_status_ok_), expr)
+  MCU_CHECK_OK_IMPL_(MCU_PP_UNIQUE_NAME(_dcheck_status_ok_), expr)
 #else
 #define MCU_DCHECK_OK(expr) MCU_DCHECK(true)
 #endif  // MCU_ENABLE_DCHECK

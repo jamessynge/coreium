@@ -82,6 +82,7 @@
 
 #include "log/log.h"
 #include "mcucore_platform.h"
+#include "misc/preproc.h"
 
 namespace mcucore {
 namespace internal {
@@ -156,8 +157,9 @@ inline bool operator!=(const EepromTag& a, const EepromTag& b) {
 // result in a different CollisionDetector function name, and thus the collision
 // wouldn't be detected.
 
-#define MCU_DECLARE_DOMAIN(DOMAIN) \
-  ::mcucore::EepromDomain _MakeEepromDomain_##DOMAIN##_CollisionDetector()
+#define MCU_DECLARE_DOMAIN(DOMAIN)                                           \
+  ::mcucore::EepromDomain MCU_PP_CONCAT_3_TOKENS(_MakeEepromDomain_, DOMAIN, \
+                                                 _CollisionDetector)()
 
 #define MCU_DECLARE_NAMED_DOMAIN(NAME, DOMAIN) \
   MCU_DECLARE_DOMAIN(DOMAIN);                  \

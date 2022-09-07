@@ -30,6 +30,16 @@ inline std::string MakeStdString(const ProgmemStringView& view) {
 
 }  // namespace test
 
+// The equals operators below are used for tests, CHECK_EQ, etc., where we want
+// to compare StringViews against strings from the standard library. They aren't
+// used by the embedded portion of the decoder.
+inline bool operator==(const ProgmemStringView& a, std::string_view b) {
+  return test::MakeStdString(a) == b;
+}
+inline bool operator==(std::string_view a, const ProgmemStringView& b) {
+  return a == test::MakeStdString(b);
+}
+
 inline std::ostream& operator<<(std::ostream& out,
                                 const ProgmemStringView& view) {
   for (const char c : view) {

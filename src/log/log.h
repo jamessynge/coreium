@@ -117,7 +117,8 @@
 
 #include "log/log_sink.h"  // IWYU pragma: export
 #include "mcucore_config.h"
-#include "mcucore_platform.h"             // IWYU pragma: keep
+#include "mcucore_platform.h"  // IWYU pragma: keep
+#include "misc/preproc.h"
 #include "print/o_print_stream.h"         // IWYU pragma: export
 #include "strings/progmem_string_data.h"  // IWYU pragma: export
 
@@ -196,7 +197,8 @@
 #endif
 
 #define MCU_VLOG_IS_ON(level) \
-  (MCU_ENABLED_VLOG_LEVEL >= (_MCU_VLOG_LEVEL_##level##_IS_VALID_))
+  (MCU_ENABLED_VLOG_LEVEL >=  \
+   (MCU_PP_CONCAT_3_TOKENS(_MCU_VLOG_LEVEL_, level, _IS_VALID_)))
 
 #define MCU_VLOG(level)                  \
   switch (0)                             \

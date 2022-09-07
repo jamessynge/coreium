@@ -7,12 +7,14 @@
 #include <string>
 #include <tuple>
 #include <utility>
+#include <vector>
 
 #include "extras/test_tools/print_to_std_string.h"
 #include "extras/test_tools/progmem_string_view_utils.h"
 #include "extras/test_tools/status_test_utils.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "misc/preproc.h"
 #include "print/o_print_stream.h"
 #include "status/status_code.h"
 #include "strings/progmem_string_data.h"
@@ -26,6 +28,30 @@ using ::testing::AllOf;
 using ::testing::HasSubstr;
 using ::testing::Not;
 using ::testing::StartsWith;
+
+// Lexically, the first name:
+#define FIRST_ERROR_NAME Aborted
+
+#define HANDLE_ALL_ERROR_CODES    \
+  HANDLE_CODE(Aborted)            \
+  HANDLE_CODE(AlreadyExists)      \
+  HANDLE_CODE(Cancelled)          \
+  HANDLE_CODE(DataLoss)           \
+  HANDLE_CODE(DeadlineExceeded)   \
+  HANDLE_CODE(FailedPrecondition) \
+  HANDLE_CODE(Forbidden)          \
+  HANDLE_CODE(Internal)           \
+  HANDLE_CODE(InvalidArgument)    \
+  HANDLE_CODE(NotFound)           \
+  HANDLE_CODE(OutOfRange)         \
+  HANDLE_CODE(ResourceExhausted)  \
+  HANDLE_CODE(Unauthorized)       \
+  HANDLE_CODE(Unavailable)        \
+  HANDLE_CODE(Unimplemented)      \
+  HANDLE_CODE(Unknown)
+
+#define HANDLE_ALL_CODES HANDLE_CODE(Ok) ALL_ERROR_NAMES
+#define CODE_NAME_TO_ENUM(CODE) StatusCode::MCU_PP_CONCAT_TOKENS(k, CODE)
 
 Status ReturnStatusWithoutMessage(StatusCode code) { return Status(code); }
 Status ReturnStatusWithMessage(StatusCode code, ProgmemStringView message) {
@@ -130,20 +156,13 @@ TEST(StatusTest, NamedErrorFunctions) {
   using NamedErrorInfo =
       std::tuple<StatusCode, MakeNamedErrorFn, IsNamedErrorFn>;
 
-  std::vector<NamedErrorInfo> named_error_infos = {
-      std::make_tuple(StatusCode::kDataLoss, DataLossError, IsDataLoss),
-      std::make_tuple(StatusCode::kFailedPrecondition, FailedPreconditionError,
-                      IsFailedPrecondition),
-      std::make_tuple(StatusCode::kInternal, InternalError, IsInternal),
-      std::make_tuple(StatusCode::kInvalidArgument, InvalidArgumentError,
-                      IsInvalidArgument),
-      std::make_tuple(StatusCode::kNotFound, NotFoundError, IsNotFound),
-      std::make_tuple(StatusCode::kOutOfRange, OutOfRangeError, IsOutOfRange),
-      std::make_tuple(StatusCode::kResourceExhausted, ResourceExhaustedError,
-                      IsResourceExhausted),
-      std::make_tuple(StatusCode::kUnimplemented, UnimplementedError,
-                      IsUnimplemented),
-      std::make_tuple(StatusCode::kUnknown, UnknownError, IsUnknown)};
+#define HANDLE_CODE(CODE)                                                     \
+  std::make_tuple(CODE_NAME_TO_ENUM(CODE), MCU_PP_CONCAT_TOKENS(CODE, Error), \
+                  MCU_PP_CONCAT_TOKENS(Is, CODE)),
+
+  std::vector<NamedErrorInfo> named_error_infos = {HANDLE_ALL_ERROR_CODES};
+
+#undef HANDLE_CODE
 
   for (int i = 0; i < named_error_infos.size(); ++i) {
     const auto code = std::get<0>(named_error_infos[i]);
@@ -201,33 +220,19 @@ TEST(StatusTest, FormatStatusCode) {
   // the map.
   std::map<StatusCode, std::string> code_to_name;
 
-#define HANDLE_CODE(CODE)                      \
-  case StatusCode::k##CODE:                    \
-    code_to_name[StatusCode::k##CODE] = #CODE; \
+#define HANDLE_CODE(CODE)                          \
+  case CODE_NAME_TO_ENUM(CODE):                    \
+    code_to_name[CODE_NAME_TO_ENUM(CODE)] = #CODE; \
     MCU_FALLTHROUGH_INTENDED;
 
-  volatile StatusCode v = StatusCode::kAborted;
+  volatile StatusCode v = CODE_NAME_TO_ENUM(FIRST_ERROR_NAME);
   switch (v) {
-    HANDLE_CODE(Aborted);  // v must be set to the first case's code.
-    HANDLE_CODE(AlreadyExists);
-    HANDLE_CODE(Cancelled);
-    HANDLE_CODE(DataLoss);
-    HANDLE_CODE(DeadlineExceeded);
-    HANDLE_CODE(FailedPrecondition);
-    HANDLE_CODE(Forbidden);
-    HANDLE_CODE(Internal);
-    HANDLE_CODE(InvalidArgument);
-    HANDLE_CODE(NotFound);
-    HANDLE_CODE(OutOfRange);
-    HANDLE_CODE(ResourceExhausted);
-    HANDLE_CODE(Unauthorized);
-    HANDLE_CODE(Unavailable);
-    HANDLE_CODE(Unimplemented);
-    HANDLE_CODE(Unknown);
-
+    HANDLE_ALL_ERROR_CODES
     case StatusCode::kOk:
       code_to_name[StatusCode::kOk] = "Ok";
   }
+
+#undef HANDLE_CODE
 
   for (const auto [code, str] : code_to_name) {
     PrintToStdString p2ss;

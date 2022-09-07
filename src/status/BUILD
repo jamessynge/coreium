@@ -9,6 +9,7 @@ cc_library(
         ":status_code",
         "//mcucore/src:mcucore_platform",
         "//mcucore/src/log",
+        "//mcucore/src/misc:preproc",
         "//mcucore/src/print:counting_print",
         "//mcucore/src/print:hex_escape",
         "//mcucore/src/print:o_print_stream",

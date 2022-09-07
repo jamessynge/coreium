@@ -38,6 +38,7 @@ cc_library(
     deps = [
         "//mcucore/src:mcucore_platform",
         "//mcucore/src/log",
+        "//mcucore/src/misc:preproc",
     ],
 )
 

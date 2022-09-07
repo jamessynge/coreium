@@ -25,20 +25,39 @@ namespace {
 
 using ::testing::IsEmpty;
 
-constexpr char kLowerStr[] AVR_PROGMEM = "some\\thing\twith\r\n\b\f\"quotes\".";
-constexpr char kMixedStr[] AVR_PROGMEM = "Some\\thing\tWith\r\n\b\f\"Quotes\".";
-constexpr char kUpperStr[] AVR_PROGMEM = "SOME\\THING\tWITH\r\n\b\f\"QUOTES\".";
+#define LOWER_STR "some\\thing\twith\r\n\b\f\"quotes\"."
+#define MIXED_STR "Some\\thing\tWith\r\n\b\f\"Quotes\"."
+#define UPPER_STR "SOME\\THING\tWITH\r\n\b\f\"QUOTES\"."
 
-constexpr StringView kLowerView(kLowerStr);
-constexpr StringView kMixedView(kMixedStr);
-constexpr StringView kUpperView(kUpperStr);
+constexpr char kLowerStr[] AVR_PROGMEM = LOWER_STR;
+constexpr char kMixedStr[] AVR_PROGMEM = MIXED_STR;
+constexpr char kUpperStr[] AVR_PROGMEM = UPPER_STR;
 
-constexpr char kLowerJson[] AVR_PROGMEM =
-    "\"some\\\\thing\\twith\\r\\n\\b\\f\\\"quotes\\\".\"";
-constexpr char kLowerHexEscaped[] AVR_PROGMEM =
+constexpr StringView kLowerView(LOWER_STR);
+constexpr StringView kMixedView(MIXED_STR);
+constexpr StringView kUpperView(UPPER_STR);
+
+constexpr char kLowerHexEscaped[] =
     "\"some\\\\thing\\x09with\\r\\n\\x08\\x0C\\\"quotes\\\".\"";
-constexpr char kUpperHexEscaped[] AVR_PROGMEM =
-    "\"SOME\\\\THING\\tWITH\\r\\n\\x08\\x0C\\\"QUOTES\\\".\"";
+
+TEST(ProgmemStringViewTest, CreateFromAvrProgmemCharArray) {
+  ProgmemStringView psv(kLowerStr);
+  EXPECT_EQ(psv.size(), kLowerView.size());
+  EXPECT_EQ(psv.progmem_ptr(), reinterpret_cast<PGM_VOID_P>(kLowerStr));
+  EXPECT_EQ(psv, kLowerView);
+  EXPECT_EQ(psv.at(0), LOWER_STR[0]);
+  EXPECT_EQ(psv.substr(1, 4), kLowerView.substr(1, 4));
+}
+
+TEST(ProgmemStringViewTest, CreateFromProgmemStringData) {
+  ProgmemStringView psv(MCU_PSD(MIXED_STR));
+  EXPECT_EQ(psv.size(), kMixedView.size());
+  EXPECT_EQ(psv.progmem_ptr(),
+            reinterpret_cast<PGM_VOID_P>(MCU_PSD_TYPE(MIXED_STR)::kData));
+  EXPECT_EQ(psv, kMixedView);
+  EXPECT_EQ(psv.at(0), MIXED_STR[0]);
+  EXPECT_EQ(psv.substr(5, 3), kMixedView.substr(5, 3));
+}
 
 TEST(ProgmemStringViewTest, LowerComparison) {
   ProgmemStringView psv(kLowerStr);

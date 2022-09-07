@@ -92,6 +92,19 @@ TEST(StringViewTest, CreateEmpty) {
   }
 }
 
+TEST(StringViewTest, CreateFromCString) {
+  {
+    StringView view = StringView::FromCString("");
+    EXPECT_EQ(view.size(), 0);
+  }
+  {
+    StringView view = StringView::FromCString("a");
+    EXPECT_NE(view.data(), nullptr);
+    EXPECT_EQ(view.size(), 1);
+    EXPECT_EQ(view, "a");
+  }
+}
+
 TEST(StringViewTest, CopyConstructor) {
   StringView view1("123");
   EXPECT_NE(view1.data(), nullptr);
@@ -488,6 +501,48 @@ TEST(StringViewTest, ToDoubleFails) {
   }
 }
 
+TEST(StringViewTest, PrintTo) {
+  PrintToStdString p2ss;
+  const std::string s("abc'\"\t\r\e");
+  const StringView view = MakeStringView(s);
+  view.printTo(p2ss);
+  EXPECT_EQ(p2ss.str(), s);
+}
+
+TEST(StringViewTest, StreamOutOperator) {
+  std::ostringstream oss;
+  const std::string s("abc'\"\t\r\e");
+  const StringView view = MakeStringView(s);
+  oss << view;
+  EXPECT_EQ(oss.str(), s);
+}
+
+TEST(StringViewTest, StreamOutOperatorObeysLimits) {
+  {
+    // Confirm that it doesn't print beyond the size it has.
+    std::ostringstream oss;
+    StringView view("abcdef", 4);
+    oss << view;
+    EXPECT_EQ(oss.str(), "abcd");
+  }
+  {
+    // Confirm that it doesn't print beyond the size it has.
+    std::ostringstream oss;
+    StringView view("abcdefghi");
+    view.remove_prefix(3);
+    view.remove_suffix(3);
+    oss << view;
+    EXPECT_EQ(oss.str(), "def");
+  }
+  {
+    // Confirm that it doesn't print beyond the size it has.
+    std::ostringstream oss;
+    StringView view;
+    oss << view;
+    EXPECT_EQ(oss.str(), "");
+  }
+}
+
 #ifdef NDEBUG
 // Really slow if not optimized.
 #if MCU_ENABLED_VLOG_LEVEL < 1
@@ -537,48 +592,6 @@ TEST(StringViewTest, ToInt32All) {
 #endif  // 0
 #endif  // MCU_ENABLED_VLOG_LEVEL < 1
 #endif  // NDEBUG
-
-TEST(StringViewTest, PrintTo) {
-  PrintToStdString p2ss;
-  const std::string s("abc'\"\t\r\e");
-  const StringView view = MakeStringView(s);
-  view.printTo(p2ss);
-  EXPECT_EQ(p2ss.str(), s);
-}
-
-TEST(StringViewTest, StreamOutOperator) {
-  std::ostringstream oss;
-  const std::string s("abc'\"\t\r\e");
-  const StringView view = MakeStringView(s);
-  oss << view;
-  EXPECT_EQ(oss.str(), s);
-}
-
-TEST(StringViewTest, StreamOutOperatorObeysLimits) {
-  {
-    // Confirm that it doesn't print beyond the size it has.
-    std::ostringstream oss;
-    StringView view("abcdef", 4);
-    oss << view;
-    EXPECT_EQ(oss.str(), "abcd");
-  }
-  {
-    // Confirm that it doesn't print beyond the size it has.
-    std::ostringstream oss;
-    StringView view("abcdefghi");
-    view.remove_prefix(3);
-    view.remove_suffix(3);
-    oss << view;
-    EXPECT_EQ(oss.str(), "def");
-  }
-  {
-    // Confirm that it doesn't print beyond the size it has.
-    std::ostringstream oss;
-    StringView view;
-    oss << view;
-    EXPECT_EQ(oss.str(), "");
-  }
-}
 
 }  // namespace
 }  // namespace test

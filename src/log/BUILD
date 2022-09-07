@@ -7,6 +7,7 @@ cc_library(
         ":log_sink",
         "//mcucore/src:mcucore_config",
         "//mcucore/src:mcucore_platform",
+        "//mcucore/src/misc:preproc",
         "//mcucore/src/print:o_print_stream",
         "//mcucore/src/strings:progmem_string_data",
     ],

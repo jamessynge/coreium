@@ -113,7 +113,7 @@ IsOkAndHoldsMatcher<typename std::decay<InnerMatcher>::type> IsOkAndHolds(
 
 #define ASSERT_STATUS_OK_AND_ASSIGN(lhs, status_or_expression) \
   ASSERT_STATUS_OK_AND_ASSIGN_IMPL_(                           \
-      MAKE_UNIQUE_NAME(_assign_status_or_value_), lhs, status_or_expression)
+      MCU_PP_UNIQUE_NAME(_assign_status_or_value_), lhs, status_or_expression)
 
 #define ASSERT_STATUS_OK_AND_ASSIGN_IMPL_(statusor, lhs, status_or_expression) \
   auto statusor = status_or_expression;                                        \

@@ -18,6 +18,8 @@ namespace mcucore {
 // The maximum maximum_size (N) is 255.
 template <uint8_t N>
 class TinyString {
+  static_assert(N > 0);
+
  public:
   using size_type = uint8_t;
 
