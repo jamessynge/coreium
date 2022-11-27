@@ -166,6 +166,10 @@ inline const Status& GetStatus(const T& status_source) {
 #define MCU_DCHECK_OK(expr) MCU_DCHECK(true)
 #endif  // MCU_ENABLE_DCHECK
 
+#define MCU_VLOG_IF_ERROR(level, status)                \
+  MCU_VLOG_IF(level, ::mcucore::GetStatus(status).ok()) \
+      << ::mcucore::GetStatus(status)
+
 ////////////////////////////////////////////////////////////////////////////////
 // Internal macros, not for direct use.
 

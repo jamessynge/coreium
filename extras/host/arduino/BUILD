@@ -37,7 +37,7 @@ cc_library(
         "-Wl,--undefined=loop",
     ],
     deps = [
-        "//absl/flags:flag",
+        ":call_setup_and_loop",
         "//base",
     ],
 )
@@ -104,4 +104,23 @@ cc_library(
 cc_library(
     name = "wstring",
     hdrs = ["wstring.h"],
+)
+
+cc_library(
+    name = "call_setup_and_loop",
+    srcs = ["call_setup_and_loop.cc"],
+    hdrs = ["call_setup_and_loop.h"],
+    linkopts = [
+        # Don't complain that setup and loop aren't defined. They'll be provided
+        # by the cc_binary that links in this library, by way of the setup and
+        # loop functions in the source of the sketch (.ino file).
+        "-Wl,--undefined=setup",
+        "-Wl,--undefined=loop",
+    ],
+    deps = [
+        "//absl/flags:flag",
+        "//absl/log",
+        "//absl/log:check",
+        "//absl/time",
+    ],
 )
