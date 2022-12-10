@@ -24,10 +24,7 @@
 #include "absl/container/btree_map.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
-#include "extras/test_tools/print_to_std_string.h"
 #include "extras/test_tools/random_utils.h"
-#include "extras/test_tools/sample_printable.h"
-#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "log/log.h"
 
@@ -47,22 +44,6 @@ uint32_t CalculateHash(const T& input) {
 uint32_t CalculateHash(const char* str) {
   return CalculateHash(std::string_view(str));
 }
-
-// auto CalculateHash(const std::vector<uint8_t>& input) {
-//   Fnv1a hasher;
-//   for (const auto v : input) {
-//     hasher.appendByte(v);
-//   }
-//   return hasher.value();
-// }
-
-// auto CalculateHash(std::string_view str) {
-//   Fnv1a hasher;
-//   for (const auto c : str) {
-//     hasher.appendByte(static_cast<uint8_t>(c));
-//   }
-//   return hasher.value();
-// }
 
 TEST(Fnv1aTest, Empty) {
   Fnv1a hasher;
@@ -89,6 +70,10 @@ TEST(Fnv1aTest, FixedStrings) {
 }
 
 TEST(Fnv1aTest, LowCollisionCount) {
+  if (MCU_VLOG_IS_ON(4)) {
+    GTEST_SKIP() << "Too slow with lots of logging enabled.";
+  }
+
   // We expect to use this to generate the seed for a PRNG based on a sequence
   // of bytes produced by reading Timer/Counter 0 (8-bits) everytime the
   // Watchdog Timer (WDT) interrupt fires, for some number of interrupts (e.g. 6
@@ -289,8 +274,7 @@ std::vector<DetectsCorruptionParams> GenerateTestParams() {
   for (size_t num_data_bytes = 1; num_data_bytes <= 32; ++num_data_bytes) {
     // This is too many trials at larger numbers of bytes if Fnv1a logs a lot.
     int num_trials = static_cast<int>(num_data_bytes * 8);
-#if defined(MCU_ENABLE_DCHECK) || \
-    (defined(MCU_ENABLED_VLOG_LEVEL) && MCU_ENABLED_VLOG_LEVEL > 3)
+#if MCU_VLOG_IS_ON(MCUCORE_FNV1A_APPEND_BYTE_LOG_LEVEL)
     num_trials = kMinimumNumTrials;
 #endif
     for (int num_bits_to_flip = 1; num_bits_to_flip <= 4; ++num_bits_to_flip) {

@@ -16,6 +16,10 @@
 
 #include <stdint.h>
 
+#ifndef MCUCORE_FNV1A_APPEND_BYTE_LOG_LEVEL
+#define MCUCORE_FNV1A_APPEND_BYTE_LOG_LEVEL 6
+#endif
+
 namespace mcucore {
 
 class Fnv1a {

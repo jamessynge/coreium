@@ -22,13 +22,15 @@ void Fnv1a::appendByte(uint8_t v) {
 #endif
   uint32_t temp_value = value_ ^ v;
 
-  // Multiply by the 32 bit FNV magic prime, mod 2^32. The mod 2^32 is
-  // required by the C++ (and C?) standard. See:
-  //  https://en.cppreference.com/w/cpp/language/operator_arithmetic#Overflows
+  // Multiply by the 32 bit FNV magic prime, mod 2^32. The mod 2^32 is required
+  // by the C++ (and C?) standard. See:
+  //
+  //   https://en.cppreference.com/w/cpp/language/operator_arithmetic#Overflows
+  //
   // Here this means that while the intermediate result is (logically) a
   // uint64_t, it is converted to a uint32_t by retaining only the low 32 bits
-  // of that intermediate result, and thus loses the information in the high
-  // 32 bits.
+  // of that intermediate result, and thus loses the information in the high 32
+  // bits.
 
 #ifdef FNV1A_BIT_SHIFT_INSTEAD_OF_MULTIPLY
   // This could probably be further optimized for an 8-bit processor.
@@ -43,9 +45,9 @@ void Fnv1a::appendByte(uint8_t v) {
     temp_value = FNV1A_INITIAL_VALUE ^ v;
   }
 
-  MCU_VLOG(6) << MCU_PSD("Fnv1a::appendByte(") << (v + 0)
-              << MCU_PSD(") old value_=") << BaseHex << value_
-              << MCU_PSD(", new value_=") << BaseHex << temp_value;
+  MCU_VLOG(MCUCORE_FNV1A_APPEND_BYTE_LOG_LEVEL)
+      << MCU_PSD("Fnv1a::appendByte(") << (v + 0) << MCU_PSD(") old value_=")
+      << BaseHex << value_ << MCU_PSD(", new value_=") << BaseHex << temp_value;
 
   value_ = temp_value;
 }
