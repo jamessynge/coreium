@@ -27,8 +27,9 @@
 // representations of val1, val2, and val3 concatenated together, and terminated
 // by a newline.
 //
-// level must be one of 1, 2, 3, 4, 5, 6, 7, 8, or 9, and not a calculated value
-// nor a value in a base other than 10.
+// level must be one of 1, 2, 3, 4, 5, 6, 7, 8, or 9, or a preprocessor macro
+// that expands to one of those numbers; it must not a calculated value nor a
+// value in a base other than 10.
 //
 // If the level is greater than the value of MCU_ENABLED_VLOG_LEVEL, or if
 // MCU_ENABLED_VLOG_LEVEL is undefined, then no message is emitted, and if the
