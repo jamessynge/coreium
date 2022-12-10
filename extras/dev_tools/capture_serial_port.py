@@ -13,7 +13,8 @@ def main(argv: List[str]):
 
   parser = argparse.ArgumentParser()
   parser.add_argument(
-      '--port', metavar='PORT', type=str, help='Update generated sections.')
+      '--port', metavar='PORT', type=str, help='Update generated sections.'
+  )
 
   parsed_args = parser.parse_args(args)
   print('port:', parsed_args.port)

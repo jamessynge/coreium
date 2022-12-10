@@ -7,14 +7,17 @@ def OutputOneSize(keep_count: int, discard_count: int) -> None:
 
   var_names = [f'C{n}' for n in range(1, keep_count + 1)]
   template_params = ', '.join([f'char {v}' for v in var_names] + ['char... X'])
-  input_fragments = ', '.join([f'StringFragment<{v}>' for v in var_names] +
-                              ['StringFragment<X>...'])
+  input_fragments = ', '.join(
+      [f'StringFragment<{v}>' for v in var_names] + ['StringFragment<X>...']
+  )
   output_params = ', '.join(var_names)
 
-  print(f"""template <{template_params}>
+  print(
+      f"""template <{template_params}>
 auto KeepLiteral(DiscardCount<{discard_count}>, {input_fragments})
 -> StringFragment<{output_params}>;
-""")
+"""
+  )
 
 
 def main():
