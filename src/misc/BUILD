@@ -1,12 +1,17 @@
 # Miscellaneous libraries that don't fit into other categories.
 
-cc_library(
+load(
+    "//mcucore/extras/bazel:arduino_cc_library.bzl",
+    "arduino_cc_library",
+)
+
+arduino_cc_library(
     name = "progmem_ptr",
     hdrs = ["progmem_ptr.h"],
     deps = ["//mcucore/src:mcucore_platform"],
 )
 
-cc_library(
+arduino_cc_library(
     name = "to_unsigned",
     hdrs = ["to_unsigned.h"],
     deps = [
@@ -15,7 +20,7 @@ cc_library(
     ],
 )
 
-cc_library(
+arduino_cc_library(
     name = "uuid",
     srcs = ["uuid.cc"],
     hdrs = ["uuid.h"],
@@ -29,7 +34,7 @@ cc_library(
     ],
 )
 
-cc_library(
+arduino_cc_library(
     name = "preproc",
     hdrs = ["preproc.h"],
 )

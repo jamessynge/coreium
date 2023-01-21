@@ -1,7 +1,12 @@
 # Package with support for representing the status of operations
 # which might fail.
 
-cc_library(
+load(
+    "//mcucore/extras/bazel:arduino_cc_library.bzl",
+    "arduino_cc_library",
+)
+
+arduino_cc_library(
     name = "status",
     srcs = ["status.cc"],
     hdrs = ["status.h"],
@@ -19,7 +24,7 @@ cc_library(
     ],
 )
 
-cc_library(
+arduino_cc_library(
     name = "status_code",
     srcs = ["status_code.cc"],
     hdrs = ["status_code.h"],
@@ -32,7 +37,7 @@ cc_library(
     ],
 )
 
-cc_library(
+arduino_cc_library(
     name = "status_or",
     hdrs = ["status_or.h"],
     deps = [

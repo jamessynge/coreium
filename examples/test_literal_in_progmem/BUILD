@@ -1,13 +1,9 @@
 load(
-    "//mcucore/extras/dev_tools:build_config.bzl",
-    "build_config",
+    "//mcucore/extras/bazel:arduino_cc_sketch.bzl",
+    "arduino_cc_sketch",
 )
 
-package(
-    default_copts = build_config.default_copts,
-)
-
-cc_binary(
+arduino_cc_sketch(
     name = "test_literal_in_progmem",
     srcs = ["test_literal_in_progmem.ino.cc"],
     deps = [

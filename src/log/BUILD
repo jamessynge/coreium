@@ -1,6 +1,11 @@
 # Provides MCU_VLOG, MCU_CHECK, MCU_DCHECK, etc.
 
-cc_library(
+load(
+    "//mcucore/extras/bazel:arduino_cc_library.bzl",
+    "arduino_cc_library",
+)
+
+arduino_cc_library(
     name = "log",
     hdrs = ["log.h"],
     deps = [
@@ -13,7 +18,7 @@ cc_library(
     ],
 )
 
-cc_library(
+arduino_cc_library(
     name = "log_sink",
     srcs = ["log_sink.cc"],
     hdrs = ["log_sink.h"],

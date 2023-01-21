@@ -3,7 +3,12 @@
 # format, with a mechanism for constructing tags in such a way that different
 # subsystems have unique, non-colliding tags.
 
-cc_library(
+load(
+    "//mcucore/extras/bazel:arduino_cc_library.bzl",
+    "arduino_cc_library",
+)
+
+arduino_cc_library(
     name = "eeprom_io",
     srcs = ["eeprom_io.cc"],
     hdrs = ["eeprom_io.h"],
@@ -15,7 +20,7 @@ cc_library(
     ],
 )
 
-cc_library(
+arduino_cc_library(
     name = "eeprom_region",
     srcs = ["eeprom_region.cc"],
     hdrs = ["eeprom_region.h"],
@@ -31,7 +36,7 @@ cc_library(
     ],
 )
 
-cc_library(
+arduino_cc_library(
     name = "eeprom_tag",
     srcs = ["eeprom_tag.cc"],
     hdrs = ["eeprom_tag.h"],
@@ -42,7 +47,7 @@ cc_library(
     ],
 )
 
-cc_library(
+arduino_cc_library(
     name = "eeprom_tlv",
     srcs = ["eeprom_tlv.cc"],
     hdrs = ["eeprom_tlv.h"],

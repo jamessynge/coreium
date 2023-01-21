@@ -2,7 +2,12 @@
 # on top of Arduino's Print class, such as OPrintStream, PrintToBuffer, and
 # HexEscapedPrintable.
 
-cc_library(
+load(
+    "//mcucore/extras/bazel:arduino_cc_library.bzl",
+    "arduino_cc_library",
+)
+
+arduino_cc_library(
     name = "any_printable",
     srcs = ["any_printable.cc"],
     hdrs = ["any_printable.h"],
@@ -17,14 +22,14 @@ cc_library(
     ],
 )
 
-cc_library(
+arduino_cc_library(
     name = "counting_print",
     srcs = ["counting_print.cc"],
     hdrs = ["counting_print.h"],
     deps = ["//mcucore/src:mcucore_platform"],
 )
 
-cc_library(
+arduino_cc_library(
     name = "has_insert_into",
     hdrs = ["has_insert_into.h"],
     deps = [
@@ -33,7 +38,7 @@ cc_library(
     ],
 )
 
-cc_library(
+arduino_cc_library(
     name = "has_print_to",
     hdrs = ["has_print_to.h"],
     deps = [
@@ -42,7 +47,7 @@ cc_library(
     ],
 )
 
-cc_library(
+arduino_cc_library(
     name = "hex_dump",
     srcs = ["hex_dump.cc"],
     hdrs = ["hex_dump.h"],
@@ -55,7 +60,7 @@ cc_library(
     ],
 )
 
-cc_library(
+arduino_cc_library(
     name = "hex_escape",
     srcs = ["hex_escape.cc"],
     hdrs = ["hex_escape.h"],
@@ -69,7 +74,7 @@ cc_library(
     ],
 )
 
-cc_library(
+arduino_cc_library(
     name = "o_print_stream",
     hdrs = ["o_print_stream.h"],
     deps = [
@@ -85,7 +90,7 @@ cc_library(
     ],
 )
 
-cc_library(
+arduino_cc_library(
     name = "print_chunk_encoded",
     srcs = ["print_chunk_encoded.cc"],
     hdrs = ["print_chunk_encoded.h"],
@@ -95,7 +100,7 @@ cc_library(
     ],
 )
 
-cc_library(
+arduino_cc_library(
     name = "print_misc",
     srcs = ["print_misc.cc"],
     hdrs = ["print_misc.h"],
@@ -107,7 +112,7 @@ cc_library(
     ],
 )
 
-cc_library(
+arduino_cc_library(
     name = "print_to_buffer",
     srcs = ["print_to_buffer.cc"],
     hdrs = ["print_to_buffer.h"],
@@ -119,7 +124,7 @@ cc_library(
     ],
 )
 
-cc_library(
+arduino_cc_library(
     name = "printable_cat",
     srcs = ["printable_cat.cc"],
     hdrs = ["printable_cat.h"],
@@ -131,7 +136,7 @@ cc_library(
     ],
 )
 
-cc_library(
+arduino_cc_library(
     name = "stream_to_print",
     hdrs = ["stream_to_print.h"],
     deps = [

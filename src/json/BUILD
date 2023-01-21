@@ -1,7 +1,12 @@
 # Support for generating JSON in a streaming fashion, where there is no buffering of
 # the output JSON, making it suitable for a low memory environment.
 
-cc_library(
+load(
+    "//mcucore/extras/bazel:arduino_cc_library.bzl",
+    "arduino_cc_library",
+)
+
+arduino_cc_library(
     name = "json_encoder",
     srcs = ["json_encoder.cc"],
     hdrs = ["json_encoder.h"],
@@ -15,7 +20,7 @@ cc_library(
     ],
 )
 
-cc_library(
+arduino_cc_library(
     name = "json_encoder_helpers",
     srcs = ["json_encoder_helpers.cc"],
     hdrs = ["json_encoder_helpers.h"],

@@ -1,4 +1,9 @@
-cc_library(
+load(
+    "//mcucore/extras/bazel:arduino_cc_library.bzl",
+    "arduino_cc_library",
+)
+
+arduino_cc_library(
     name = "has_progmem_char_array",
     hdrs = ["has_progmem_char_array.h"],
     deps = [
@@ -7,7 +12,7 @@ cc_library(
     ],
 )
 
-cc_library(
+arduino_cc_library(
     name = "progmem_string",
     srcs = ["progmem_string.cc"],
     hdrs = ["progmem_string.h"],
@@ -18,7 +23,7 @@ cc_library(
     ],
 )
 
-cc_library(
+arduino_cc_library(
     name = "progmem_string_data",
     hdrs = ["progmem_string_data.h"],
     deps = [
@@ -27,7 +32,7 @@ cc_library(
     ],
 )
 
-cc_library(
+arduino_cc_library(
     name = "progmem_string_view",
     srcs = ["progmem_string_view.cc"],
     hdrs = ["progmem_string_view.h"],
@@ -43,7 +48,7 @@ cc_library(
     ],
 )
 
-cc_library(
+arduino_cc_library(
     name = "string_compare",
     srcs = ["string_compare.cc"],
     hdrs = ["string_compare.h"],
@@ -54,7 +59,7 @@ cc_library(
     ],
 )
 
-cc_library(
+arduino_cc_library(
     name = "string_view",
     srcs = ["string_view.cc"],
     hdrs = ["string_view.h"],
@@ -67,7 +72,7 @@ cc_library(
     ],
 )
 
-cc_library(
+arduino_cc_library(
     name = "tiny_string",
     hdrs = ["tiny_string.h"],
     deps = [

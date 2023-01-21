@@ -1,15 +1,11 @@
 # Libraries specifically targetting Microchip AVR microcontrollers.
 
 load(
-    "//mcucore/extras/dev_tools:build_config.bzl",
-    "build_config",
+    "//mcucore/extras/bazel:arduino_cc_library.bzl",
+    "arduino_cc_library",
 )
 
-package(
-    default_copts = build_config.default_copts,
-)
-
-cc_library(
+arduino_cc_library(
     name = "jitter_random",
     srcs = ["jitter_random.cc"],
     hdrs = ["jitter_random.h"],
@@ -25,7 +21,7 @@ cc_library(
     ],
 )
 
-cc_library(
+arduino_cc_library(
     name = "timer_counter",
     srcs = ["timer_counter.cc"],
     hdrs = ["timer_counter.h"],
@@ -43,7 +39,7 @@ cc_library(
     ],
 )
 
-cc_library(
+arduino_cc_library(
     name = "watchdog",
     srcs = ["watchdog.cc"],
     hdrs = ["watchdog.h"],

@@ -1,13 +1,9 @@
 load(
-    "//mcucore/extras/dev_tools:build_config.bzl",
-    "build_config",
+    "//mcucore/extras/bazel:arduino_cc_library.bzl",
+    "arduino_cc_library",
 )
 
-package(
-    default_copts = build_config.default_copts,
-)
-
-cc_library(
+arduino_cc_library(
     name = "McuCore",
     hdrs = ["McuCore.h"],
     deps = [
@@ -62,13 +58,13 @@ cc_library(
     ],
 )
 
-cc_library(
+arduino_cc_library(
     name = "mcucore_config",
     srcs = ["mcucore_config.cc"],
     hdrs = ["mcucore_config.h"],
 )
 
-cc_library(
+arduino_cc_library(
     name = "mcucore_platform",
     srcs = ["mcucore_platform.cc"],
     hdrs = ["mcucore_platform.h"],

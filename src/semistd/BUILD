@@ -3,15 +3,11 @@
 # avr-libc primarily has a C libraries.
 
 load(
-    "//mcucore/extras/dev_tools:build_config.bzl",
-    "build_config",
+    "//mcucore/extras/bazel:arduino_cc_library.bzl",
+    "arduino_cc_library",
 )
 
-package(
-    default_copts = build_config.default_copts,
-)
-
-cc_library(
+arduino_cc_library(
     name = "limits",
     hdrs = ["limits.h"],
     deps = [
@@ -20,13 +16,13 @@ cc_library(
     ],
 )
 
-cc_library(
+arduino_cc_library(
     name = "type_traits",
     hdrs = ["type_traits.h"],
     deps = ["//mcucore/src:mcucore_platform"],
 )
 
-cc_library(
+arduino_cc_library(
     name = "utility",
     hdrs = ["utility.h"],
     deps = [
