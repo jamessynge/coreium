@@ -1,6 +1,8 @@
 #include "extras/host/arduino/random.h"
 
+#include <cstdint>
 #include <memory>
+#include <random>
 
 #include "absl/random/random.h"
 #include "absl/random/uniform_int_distribution.h"
@@ -9,7 +11,7 @@
 
 namespace {
 std::unique_ptr<absl::BitGen> MakeBitGen() {
-  absl::StdSeedSeq time_based_seed({absl::ToUnixMicros(absl::Now())});
+  std::seed_seq time_based_seed({absl::ToUnixMicros(absl::Now())});
   return std::make_unique<absl::BitGen>(time_based_seed);
 }
 

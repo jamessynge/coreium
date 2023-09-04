@@ -33,6 +33,14 @@
 // EepromTlv::FindEntry) must not be used after any mutating method of EepromTlv
 // has been called, as it may no longer represent the location of that entry or
 // of a valid entry.
+//
+// OBSERVATION (IDEA FOR THE FUTURE)
+//
+// Storing the address of the Next-Entry-To-Write in the header block means that
+// there is a location that gets written more than any other. Given the way
+// EEPROMs work (and wear out), it would seem better to require searching
+// through the existing entries in order to find the end of the existing
+// entries.
 
 #include "eeprom/eeprom_region.h"
 #include "eeprom/eeprom_tag.h"
