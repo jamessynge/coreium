@@ -30,3 +30,9 @@ arduino_cc_library(
         "//mcucore/src:mcucore_platform",
     ],
 )
+
+arduino_cc_library(
+    name = "tuple",
+    hdrs = ["tuple.h"],
+    deps = ["//mcucore/src:mcucore_platform"],
+)

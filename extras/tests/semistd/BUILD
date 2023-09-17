@@ -30,3 +30,15 @@ cc_test(
         "//mcucore/src/semistd:utility",
     ],
 )
+
+cc_test(
+    name = "tuple_test",
+    srcs = ["tuple_test.cc"],
+    deps = [
+        "//googletest:gunit_main",
+        "//mcucore/extras/test_tools:print_to_std_string",
+        "//mcucore/extras/test_tools:sample_printable",
+        "//mcucore/src/semistd:tuple",
+        "//mcucore/src/semistd:type_traits",
+    ],
+)
