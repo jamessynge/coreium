@@ -43,6 +43,11 @@
 #error("Why is this file be used to target an Arduino!!")
 #endif
 
+// This file includes headers to emulate what happens in the "real" Arduino.h,
+// so we have includes that aren't used within this file.
+// NOLINTBEGIN(clangd-unused-includes)
+// IWYU pragma: begin_exports
+
 #include <math.h>     // IWYU pragma: export
 #include <stdbool.h>  // IWYU pragma: export
 #include <stdint.h>   // IWYU pragma: export
@@ -153,7 +158,7 @@ inline void yield() {}
 #define constrain(amt, low, high) \
   ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)))
 // #define round(x) ((x) >= 0 ? (ArduinoLong)((x) + 0.5) :
-//(ArduinoLong)((x)-0.5))
+// (ArduinoLong)((x)-0.5))
 #define radians(deg) ((deg) * DEG_TO_RAD)
 #define degrees(rad) ((rad) * RAD_TO_DEG)
 #define sq(x) ((x) * (x))
@@ -335,5 +340,8 @@ ArduinoLong map(ArduinoLong, ArduinoLong, ArduinoLong, ArduinoLong,
                 ArduinoLong);
 
 // #endif  // __cplusplus
+
+// IWYU pragma: end_exports
+// NOLINTEND(clangd-unused-includes)
 
 #endif  // MCUCORE_EXTRAS_HOST_ARDUINO_ARDUINO_H_
