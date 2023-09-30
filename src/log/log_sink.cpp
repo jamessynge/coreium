@@ -1,7 +1,9 @@
 #include "log/log_sink.h"
 
 #include "mcucore_platform.h"
+#include "print/o_print_stream.h"
 #include "strings/progmem_string.h"
+#include "strings/progmem_string_data.h"
 
 #ifdef ARDUINO_ARCH_AVR
 #include "platform/avr/watchdog.h"

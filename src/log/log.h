@@ -65,6 +65,11 @@
 // will endlessly loop producing an error message; on the host it will exit the
 // program.
 //
+//     TODO(jamessynge): Provide a hook by which the developer can specify a
+//     function that will be called once the message is logged, potentially
+//     enabling the device to reboot upon an internal error. This already exists
+//     for host testing, in the form of SetCheckSinkExitFn.
+//
 // If MCU_ENABLE_CHECK is not defined and the expression is false, it will be
 // treated as if true. This allows one to include code such as the following,
 // and know that InitializeHardware will always be called when that statement is
@@ -84,6 +89,13 @@
 // MCU_CHECK_NE, MCU_CHECK_EQ, etc. expand to a MCU_CHECK macro with the named
 // comparison.
 //
+// The primary purpose here is to prevent the program from continuing to run if
+// there is an internal error in the state of the program (e.g. the data
+// structures are corrupt), or the hardware is not working in the manner that
+// the program is designed for. It should not be used to verify that args
+// provided by external sources is valid; doing so has the effect allowing a
+// remote actor to crash the program.
+//
 ///////////////////////////////////////////////////////////////////////////////
 //
 // MCU_DCHECK Usage:
@@ -97,6 +109,12 @@
 //
 // MCU_DCHECK_NE, MCU_DCHECK_EQ, etc. expand to a MCU_DCHECK macro with the
 // named comparison.
+//
+// The primary purpose of MCU_DCHECK is to help the developer confirm that the
+// various parts of the program are following the expected invariants of the
+// internal APIs (e.g. methods are called in the right order). MCU_DCHECK should
+// not be used to verify that args provided by external sources is valid; doing
+// so has the effect allowing a remote actor to crash the program.
 //
 ///////////////////////////////////////////////////////////////////////////////
 //
