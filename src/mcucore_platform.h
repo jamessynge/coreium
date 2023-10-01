@@ -46,6 +46,14 @@ using ssize_t = int;  // avr-libc doesn't include a ssize_t definition.
 #include "extras/host/arduino/stream.h"  // IWYU pragma: export  // pragma: keep extras include
 #include "extras/host/eeprom/eeprom.h"  // IWYU pragma: export  // pragma: keep extras include
 
+// These are #included, and IWYU exported, in arduino.h, but apparently the
+// analysis by clangd isn't transitive.
+#include <math.h>  // IWYU pragma: export   // IWYU pragma: keep // pragma: keep extras include
+#include <stdbool.h>  // IWYU pragma: export   // IWYU pragma: keep // pragma: keep extras include
+#include <stdint.h>  // IWYU pragma: export   // IWYU pragma: keep // pragma: keep extras include
+#include <stdlib.h>  // IWYU pragma: export   // IWYU pragma: keep // pragma: keep extras include
+#include <string.h>  // IWYU pragma: export   // IWYU pragma: keep // pragma: keep extras include
+
 #define AVR_PROGMEM
 
 #endif  // ARDUINO

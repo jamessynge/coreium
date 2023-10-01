@@ -34,7 +34,6 @@ arduino_cc_library(
         "//mcucore/src/print:print_misc",
         "//mcucore/src/print:print_to_buffer",
         "//mcucore/src/print:stream_to_print",
-        "//mcucore/src/semistd:type_traits",
         "//mcucore/src/strings:progmem_string_data",
     ],
 )

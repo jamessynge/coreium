@@ -10,12 +10,12 @@
 
 #include "container/flash_string_table.h"
 #include "log/log.h"
+#include "mcucore_platform.h"
 #include "print/counting_print.h"
 #include "print/has_print_to.h"
 #include "print/print_misc.h"
 #include "print/print_to_buffer.h"
 #include "print/stream_to_print.h"
-#include "semistd/type_traits.h"
 #include "strings/progmem_string_data.h"
 
 namespace mcucore {
