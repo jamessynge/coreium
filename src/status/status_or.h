@@ -15,6 +15,7 @@
 
 #include "log/log.h"
 #include "mcucore_platform.h"  // IWYU pragma: keep
+#include "misc/preproc.h"
 #include "semistd/type_traits.h"
 #include "status/status.h"
 #include "status/status_code.h"

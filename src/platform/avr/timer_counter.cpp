@@ -5,7 +5,8 @@
 #include "platform/avr/timer_counter.h"
 
 #if MCU_HOST_TARGET
-#include <ostream>  // pragma: keep standard include
+#include <ostream>      // pragma: keep standard include
+#include <string_view>  // pragma: keep standard include
 #endif
 
 #include "container/flash_string_table.h"

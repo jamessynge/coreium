@@ -82,7 +82,7 @@ class Status {
 
   bool ok() const { return code_ == StatusCode::kOk; }
   StatusCode code() const { return code_; }
-  const ProgmemStringView message() const { return message_; }
+  const ProgmemStringView& message() const { return message_; }
   size_t printTo(Print& out) const;
 
  private:
@@ -151,7 +151,7 @@ inline const Status& GetStatus(const T& status_source) {
 
 }  // namespace mcucore
 
-// `MCU_RETURN_IF_ERROR(expr)` evaluates `expr`, whose type must be convertable
+// `MCU_RETURN_IF_ERROR(expr)` evaluates `expr`, whose type must be convertible
 // to Status, and returns the Status if it is not OK.
 #define MCU_RETURN_IF_ERROR(expr) \
   MCU_RETURN_IF_ERROR_IMPL_(MCU_PP_UNIQUE_NAME(_return_if_error_status_), expr)

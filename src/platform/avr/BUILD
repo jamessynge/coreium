@@ -12,7 +12,6 @@ arduino_cc_library(
     deps = [
         ":watchdog",
         "//mcucore/src:mcucore_platform",
-        "//mcucore/src/hash:crc32",
         "//mcucore/src/hash:fnv1a",
         "//mcucore/src/log",
         "//mcucore/src/print:o_print_stream",

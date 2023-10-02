@@ -45,6 +45,7 @@ arduino_cc_library(
         ":status_code",
         "//mcucore/src:mcucore_platform",
         "//mcucore/src/log",
+        "//mcucore/src/misc:preproc",
         "//mcucore/src/semistd:type_traits",
     ],
 )

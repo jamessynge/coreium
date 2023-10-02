@@ -4,7 +4,9 @@
 #include "print/counting_print.h"
 #include "print/hex_escape.h"
 #include "print/o_print_stream.h"
+#include "status/status_code.h"
 #include "strings/progmem_string_data.h"
+#include "strings/progmem_string_view.h"
 
 namespace mcucore {
 

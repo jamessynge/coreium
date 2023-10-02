@@ -3,9 +3,11 @@
 // (Mostly) GENERATED FILE. See make_enum_to_string.py
 
 #if MCU_HOST_TARGET
-#include <ostream>  // pragma: keep standard include
+#include <ostream>      // pragma: keep standard include
+#include <string_view>  // pragma: keep standard include
 #endif
 
+#include "mcucore_platform.h"
 #include "print/print_misc.h"
 #include "print/print_to_buffer.h"
 #include "strings/progmem_string_data.h"

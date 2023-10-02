@@ -28,9 +28,9 @@
 
 #include "platform/avr/jitter_random.h"
 
-#include "hash/crc32.h"
 #include "hash/fnv1a.h"
 #include "log/log.h"
+#include "mcucore_platform.h"
 #include "platform/avr/watchdog.h"
 #include "print/o_print_stream.h"
 #include "semistd/limits.h"
