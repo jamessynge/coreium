@@ -2,17 +2,19 @@
 
 // (Mostly) GENERATED FILE. See make_enum_to_string.py
 
+// BEGIN_SOURCE_GENERATED_BY_MAKE_ENUM_TO_STRING
+
+#include "mcucore_platform.h"
+
+// Must come after mcucore_platform.h so that MCU_HOST_TARGET is defined.
 #if MCU_HOST_TARGET
 #include <ostream>      // pragma: keep standard include
 #include <string_view>  // pragma: keep standard include
 #endif
 
-#include "mcucore_platform.h"
 #include "print/print_misc.h"
 #include "print/print_to_buffer.h"
 #include "strings/progmem_string_data.h"
-
-// BEGIN_SOURCE_GENERATED_BY_MAKE_ENUM_TO_STRING
 
 namespace mcucore {
 namespace {

@@ -4,6 +4,9 @@
 
 #include "platform/avr/timer_counter.h"
 
+#include "mcucore_platform.h"
+
+// Must come after mcucore_platform.h so that MCU_HOST_TARGET is defined.
 #if MCU_HOST_TARGET
 #include <ostream>      // pragma: keep standard include
 #include <string_view>  // pragma: keep standard include
@@ -11,7 +14,6 @@
 
 #include "container/flash_string_table.h"
 #include "log/log.h"
-#include "mcucore_platform.h"
 #include "print/counting_print.h"
 #include "print/has_print_to.h"
 #include "print/print_misc.h"

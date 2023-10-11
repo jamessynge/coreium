@@ -11,7 +11,7 @@
 // the platform.
 //
 // This file should only define macros (and possibly constants), and not include
-// (and hence export) anything else. And this file should not depend on any
+// (and hence export) anything else. And this file must not depend on any
 // symbols (e.g. macros) defined by mcucore_platform.h; this means we can not
 // check here whether MCU_EMBEDDED_TARGET or MCU_HOST_TARGET is defined.
 //

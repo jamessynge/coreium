@@ -4,7 +4,7 @@
 // Provides platform setup and exporting of platform specific header files.
 //
 // Why export all of these includes? Because otherwise lots of files have lots
-// of includes with conditional compliation guards around them, which is pretty
+// of includes with conditional compilation guards around them, which is pretty
 // messy.
 //
 // Author: james.synge@gmail.com
@@ -47,7 +47,7 @@ using ssize_t = int;  // avr-libc doesn't include a ssize_t definition.
 #include "extras/host/eeprom/eeprom.h"  // IWYU pragma: export  // pragma: keep extras include
 
 // These are #included, and IWYU exported, in arduino.h, but apparently the
-// analysis by clangd isn't transitive.
+// analysis by clangd of IWYU export pragmas isn't transitive.
 #include <math.h>  // IWYU pragma: export   // IWYU pragma: keep // pragma: keep extras include
 #include <stdbool.h>  // IWYU pragma: export   // IWYU pragma: keep // pragma: keep extras include
 #include <stdint.h>  // IWYU pragma: export   // IWYU pragma: keep // pragma: keep extras include
