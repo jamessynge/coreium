@@ -74,11 +74,30 @@ class VoidSink {
 // LogSinkVoidify is used to produce a void value in MCU_VLOG, etc. It is based
 // on https://github.com/google/asylo/blob/master/asylo/util/logging.h
 //
-// This class is used just to take a type used as a log sink (i.e. the LHS of
-// insert operators in log statements) and make it a void type to satisify the
-// ternary operator in MCU_VLOG, MCU_CHECK and MCU_DCHECK. `operand&&` is used
-// because it has precedence lower than `<<` but higher than the ternary
-// operator `:?`
+// In MCU_VLOG, MCU_VLOG_IF, etc., we use the conditional operator (aka the
+// ternary operator), yielding an expression such as:
+//
+//   do-not-log-bool-expression ? (void)0 : LogSink << logged << values
+//
+// However, that won't work as is because the type of the second and third
+// operands must be the same. Since we want void as the type of the whole
+// expression, thus preventing it from being treated as a value, we need some
+// way to make the type of the third operand be void. We do this by applying
+// an operator to it whose return type is void. In particular, we make our third
+// operand look like this:
+//
+//     LogSinkVoidify() && LogSink(args) << logged << values
+//
+// While LogSinkVoidify and LogSink aren't void, we define operator&& for
+// LogSinkVoidify on the LHS and LogSink (really OPrintStream) on the RHS, with
+// the return type of the operator being void. We use && rather than some other
+// operator because it has lower precedence than <<, and thus the third operand
+// is parsed as:
+//
+//     LogSinkVoidify() && (LogSink(args) << logged << values)
+//
+// i.e. the logged values are passed into the operator<< method defined by
+// OPrintStream. VoidLogSink is used  we use && as the operator,
 class LogSinkVoidify {
  public:
   // We use operator&& here because it has precedence lower than `<<` but higher
