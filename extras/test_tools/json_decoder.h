@@ -15,10 +15,12 @@
 #include <ostream>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <unordered_map>
 #include <variant>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "log/log.h"
 
@@ -190,7 +192,9 @@ bool operator==(const JsonValue& jv, const JsonArray& v);
 bool operator==(const JsonValue& jv, const JsonObject& v);
 bool operator==(const JsonValue& a, const JsonValue& b);
 
-template <typename T>
+template <typename T,
+          std::enable_if_t<std::is_same_v<std::remove_cvref_t<T>, JsonValue>,
+                           bool> = true>
 bool operator==(T a, const JsonValue& b) {
   return b == a;
 }
