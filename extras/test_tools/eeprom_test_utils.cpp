@@ -1,12 +1,14 @@
 #include "extras/test_tools/eeprom_test_utils.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <map>
 #include <string>
+#include <vector>
 
-#include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
+#include "extras/host/eeprom/eeprom.h"
 #include "gtest/gtest.h"
 
 namespace mcucore {

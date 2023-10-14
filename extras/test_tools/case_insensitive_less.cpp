@@ -1,6 +1,5 @@
 #include "extras/test_tools/case_insensitive_less.h"
 
-#include <string.h>
 #include <strings.h>
 
 #include <string>

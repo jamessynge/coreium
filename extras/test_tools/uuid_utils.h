@@ -5,7 +5,10 @@
 //
 // Author: james.synge@gmail.com
 
+#include <cstdint>
+
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 #include "misc/uuid.h"
 
 namespace mcucore {

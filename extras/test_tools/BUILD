@@ -78,6 +78,7 @@ cc_library(
     hdrs = ["json_decoder.h"],
     deps = [
         "//absl/log",
+        "//absl/log:check",
         "//absl/status",
         "//absl/status:statusor",
         "//absl/strings",
