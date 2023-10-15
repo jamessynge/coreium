@@ -13,7 +13,10 @@
 #include "mcucore_platform.h"
 #include "semistd/limits.h"
 #include "semistd/type_traits.h"
+#include "status/status.h"
+#include "status/status_code.h"
 #include "status/status_or.h"
+#include "strings/progmem_string_view.h"
 #include "strings/string_view.h"
 
 namespace mcucore {
@@ -36,8 +39,8 @@ class EepromRegionReader {
   // defined EEPROM instance; this makes testing is easier, and is NOT because
   // we expect to work with a device that has multiple EEPROMs! We allow the
   // length to be zero to allow for marking a region as unusable.
-  EepromRegionReader(EEPROMClass& eeprom, const EepromAddrT start_address,
-                     const EepromAddrT length);
+  EepromRegionReader(EEPROMClass& eeprom, EepromAddrT start_address,
+                     EepromAddrT length);
 
   // An empty, unusable region. Can be made usable be assignment.
   EepromRegionReader();
@@ -93,7 +96,7 @@ class EepromRegionReader {
   // the bytes starting at `ptr`, advances the cursor by `length` and returns
   // true, IFF there are at least `length` bytes available in the region
   // starting at the cursor; else returns false and does not advance the cursor.
-  bool ReadBytes(uint8_t* ptr, const EepromAddrT length);
+  bool ReadBytes(uint8_t* ptr, EepromAddrT length);
 
   // Fill the array `buf` with contiguous bytes from EEPROM. The size of buf is
   // known at compile time. Delegates to the ReadBytes implementation above.
@@ -104,9 +107,9 @@ class EepromRegionReader {
 
   // Reads `length` bytes from EEPROM into a char array. See ReadBytes for
   // behavior details.
-  bool ReadString(char* ptr, const EepromAddrT length);
+  bool ReadString(char* ptr, EepromAddrT length);
 
-  // Prints fields, in support of googletest using OPrintStream and
+  // Prints fields, in support of GoogleTest using OPrintStream and
   // PrintValueToStdString.
   void InsertInto(OPrintStream& strm) const;
 
@@ -152,7 +155,7 @@ class EepromRegion : public EepromRegionReader {
   // Writes the `length` bytes starting at ptr to EEPROM, advances the cursor by
   // `length` and returns true, IFF the value fits in the region; else returns
   // false and does not advance the cursor.
-  bool WriteBytes(const uint8_t* ptr, const EepromAddrT length);
+  bool WriteBytes(const uint8_t* ptr, EepromAddrT length);
 
   // Writes all the bytes in `buf` to the EEPROM, using the WriteBytes overload
   // above. The size of buf is known at compile time.
@@ -169,7 +172,7 @@ class EepromRegion : public EepromRegionReader {
   bool WriteString(const StringView& t);
 
   // As above, but the source string is in flash memory instead of RAM.
-  bool WriteString(const ProgmemStringView psv);
+  bool WriteString(ProgmemStringView psv);
 };
 
 }  // namespace mcucore

@@ -28,7 +28,7 @@ class PrintChunkEncoded : public PrintToBuffer {
   ~PrintChunkEncoded() override;
 
  private:
-  bool FlushData(const uint8_t* data, const size_t size) override;
+  bool FlushData(const uint8_t* data, size_t size) override;
 
   Print& out_;
 };

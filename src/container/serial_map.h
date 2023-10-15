@@ -17,6 +17,7 @@
 //
 // Author: james.synge@gmail.com
 
+#include <stddef.h>  // For size_t.
 #include <string.h>  // For memcpy, etc.
 
 #include "log/log.h"
@@ -125,7 +126,7 @@ class SerialMap {
     return Insert(key, value.size(), value.bytes());
   }
   template <typename T, enable_if_t<is_arithmetic<T>::value, bool> = true>
-  Status Insert(const KEY key, const T value) {
+  Status Insert(const KEY key, const T& value) {
     return Insert(key, sizeof(value), reinterpret_cast<const uint8_t*>(&value));
   }
 

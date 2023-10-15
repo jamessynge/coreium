@@ -81,11 +81,11 @@ class AbstractJsonEncoder {
 // JSON encoder for arrays.
 class JsonArrayEncoder : public AbstractJsonEncoder {
  public:
-  void AddIntElement(const int32_t value);
-  void AddUIntElement(const uint32_t value);
+  void AddIntElement(int32_t value);
+  void AddUIntElement(uint32_t value);
   void AddFloatElement(float value);
   void AddDoubleElement(double value);
-  void AddBooleanElement(const bool value);
+  void AddBooleanElement(bool value);
   void AddStringElement(const AnyPrintable& value);
   void AddStringElement(const Printable& value);
   void AddArrayElement(const JsonElementSource& source);
@@ -110,7 +110,7 @@ class JsonObjectEncoder : public AbstractJsonEncoder {
   void AddUIntProperty(const AnyPrintable& name, uint32_t value);
   void AddFloatProperty(const AnyPrintable& name, float value);
   void AddDoubleProperty(const AnyPrintable& name, double value);
-  void AddBooleanProperty(const AnyPrintable& name, const bool value);
+  void AddBooleanProperty(const AnyPrintable& name, bool value);
   void AddStringProperty(const AnyPrintable& name, const AnyPrintable& value);
   void AddStringProperty(const AnyPrintable& name, const Printable& value);
   void AddArrayProperty(const AnyPrintable& name,

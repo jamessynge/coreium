@@ -5,9 +5,9 @@
 //
 // Author: james.synge@gmail.com
 
+#include <cstddef>
 #include <string>
 #include <string_view>
-#include <utility>
 #include <vector>
 
 namespace mcucore {
@@ -19,15 +19,14 @@ std::vector<std::string> AllRegisteredMethodNames();
 
 // Split the string `full_request` every `n`-th character, returning a vector of
 // the parts.
-std::vector<std::string> SplitEveryN(const std::string& full_request,
-                                     const size_t n);
+std::vector<std::string> SplitEveryN(const std::string& full_request, size_t n);
 
 // Split `full_request` at many different spacings (e.g. every 1 character,
 // every 2 characters, etc.), in support testing the HTTP request decoder to
 // handle approximately any possible split point.
 std::vector<std::vector<std::string>> GenerateMultipleRequestPartitions(
-    const std::string& full_request, const size_t max_decode_buffer_size,
-    const size_t max_literal_match_size);
+    const std::string& full_request, size_t max_decode_buffer_size,
+    size_t max_literal_match_size);
 
 // Return `buffer` joined with all elements in `partition` starting with element
 // `ndx`.

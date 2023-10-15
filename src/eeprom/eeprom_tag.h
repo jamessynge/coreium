@@ -120,7 +120,7 @@ constexpr EepromDomain MakeEepromDomain(uint8_t value) {
 using EepromDomain = internal::EepromDomain;
 
 // Returns true if the domain is reserved (i.e. is domain 0 or 255).
-bool IsReservedDomain(const EepromDomain domain);
+bool IsReservedDomain(EepromDomain domain);
 
 struct EepromTag {
   // // There are reserved EepromDomains to indicate that an entry is unused.

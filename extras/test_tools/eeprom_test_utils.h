@@ -8,6 +8,7 @@
 //
 // Author: james.synge@gmail.com
 
+#include <cstddef>
 #include <cstdint>
 #include <unordered_map>
 #include <vector>
@@ -50,7 +51,7 @@ std::vector<uint8_t> ReadAllBytesAllWaysAndVerify(EEPROMClass& eeprom);
 // |d|, but stored in an unordered map such that we can write them to the EEPROM
 // in a different order (perhaps different every time, depending on the
 // implementation of the map).
-AddressToValueMap GenerateByteValues(double seed, const size_t byte_count);
+AddressToValueMap GenerateByteValues(double seed, size_t byte_count);
 
 // Use EEPROMClass::put to write the provided values to the EEPROM.
 void PutValues(const AddressToValueMap& values, EEPROMClass& eeprom);

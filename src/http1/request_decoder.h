@@ -165,27 +165,27 @@ class RequestDecoder : /*private*/ RequestDecoderImpl {
 namespace mcucore_http1_internal {
 
 // Match characters allowed BY THIS DECODER in a method name.
-bool IsMethodChar(const char c);
+bool IsMethodChar(char c);
 
 // Match characters allowed in a path segment.
-bool IsPChar(const char c);
-bool IsPCharExceptPercent(const char c);
+bool IsPChar(char c);
+bool IsPCharExceptPercent(char c);
 
 // Match characters allowed in a query string.
-bool IsQueryChar(const char c);
+bool IsQueryChar(char c);
 
 // Match characters allowed in the parameter name of a query string, excluding
 // percent and plus, which are handled separately.
-bool IsParamNameCharExceptPercentAndPlus(const char c);
+bool IsParamNameCharExceptPercentAndPlus(char c);
 
 // Match characters allowed in the parameter value of a query string.
-bool IsParamValueCharExceptPercentAndPlus(const char c);
+bool IsParamValueCharExceptPercentAndPlus(char c);
 
 // Match characters allowed in a token (e.g. a header name).
-bool IsTokenChar(const char c);
+bool IsTokenChar(char c);
 
 // Match characters allowed in a header value, per RFC7230, Section 3.2.6.
-bool IsFieldContent(const char c);
+bool IsFieldContent(char c);
 
 // Return the index of the first character that doesn't match the test function.
 // Returns StringView::kMaxSize if not found.

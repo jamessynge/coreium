@@ -30,8 +30,11 @@ arduino_cc_library(
         "//mcucore/src/log",
         "//mcucore/src/semistd:limits",
         "//mcucore/src/semistd:type_traits",
+        "//mcucore/src/status",
+        "//mcucore/src/status:status_code",
         "//mcucore/src/status:status_or",
         "//mcucore/src/strings:progmem_string_data",
+        "//mcucore/src/strings:progmem_string_view",
         "//mcucore/src/strings:string_view",
     ],
 )
