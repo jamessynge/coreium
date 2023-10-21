@@ -124,3 +124,20 @@ cc_library(
     name = "wstring",
     hdrs = ["wstring.h"],
 )
+
+cc_library(
+    name = "client",
+    hdrs = ["client.h"],
+    deps = [
+        ":ip_address",
+        "//mcucore/extras/host/arduino:stream",
+    ],
+)
+
+cc_library(
+    name = "ip_address",
+    hdrs = ["ip_address.h"],
+    deps = [
+        "//mcucore/extras/host/arduino:print",
+    ],
+)
