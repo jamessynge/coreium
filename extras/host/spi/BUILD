@@ -4,5 +4,6 @@
 
 cc_library(
     name = "spi",
+    srcs = ["spi.cc"],
     hdrs = ["spi.h"],
 )
