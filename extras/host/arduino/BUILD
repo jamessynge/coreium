@@ -114,6 +114,12 @@ cc_library(
 )
 
 cc_library(
+    name = "udp",
+    hdrs = ["udp.h"],
+    deps = [":stream"],
+)
+
+cc_library(
     name = "wcharacter",
     srcs = ["wcharacter.cc"],
     hdrs = ["wcharacter.h"],
