@@ -1,6 +1,10 @@
 # Host tools to aid development.
 
-load("//devtools/python/blaze:pytype.bzl", "pytype_strict_binary", "pytype_strict_library")
+load(
+    "//devtools/python/blaze:pytype.bzl",
+    "pytype_strict_binary",
+    "pytype_strict_library",
+)
 load("//tools/build_defs/testing:bzl_library.bzl", "bzl_library")
 
 bzl_library(

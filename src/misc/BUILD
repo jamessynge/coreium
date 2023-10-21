@@ -6,6 +6,11 @@ load(
 )
 
 arduino_cc_library(
+    name = "preproc",
+    hdrs = ["preproc.h"],
+)
+
+arduino_cc_library(
     name = "progmem_ptr",
     hdrs = ["progmem_ptr.h"],
     deps = ["//mcucore/src:mcucore_platform"],
@@ -32,9 +37,4 @@ arduino_cc_library(
         "//mcucore/src/print:hex_escape",
         "//mcucore/src/status",
     ],
-)
-
-arduino_cc_library(
-    name = "preproc",
-    hdrs = ["preproc.h"],
 )
