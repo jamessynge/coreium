@@ -116,7 +116,10 @@ cc_library(
 cc_library(
     name = "udp",
     hdrs = ["udp.h"],
-    deps = [":stream"],
+    deps = [
+        ":ip_address",
+        ":stream",
+    ],
 )
 
 cc_library(
