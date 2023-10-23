@@ -39,12 +39,22 @@ using ssize_t = int;  // avr-libc doesn't include a ssize_t definition.
 #define MCU_ENABLE_DEBUGGING 1
 #endif  // NDEBUG
 
-#include "absl/base/attributes.h"
 #include "extras/host/arduino/arduino.h"  // IWYU pragma: export  // pragma: keep extras include
 #include "extras/host/arduino/pgmspace.h"  // IWYU pragma: export  // pragma: keep extras include
 #include "extras/host/arduino/print.h"  // IWYU pragma: export  // pragma: keep extras include
 #include "extras/host/arduino/stream.h"  // IWYU pragma: export  // pragma: keep extras include
 #include "extras/host/eeprom/eeprom.h"  // IWYU pragma: export  // pragma: keep extras include
+
+// Abseil's attributes.h has started using some C++ 20 features, so disable the
+// warning for features introduced in C++ 14 or later.
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpre-c++14-compat"
+#endif  // __clang__
+#include "absl/base/attributes.h"
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif  // __clang__
 
 // These are #included, and IWYU exported, in arduino.h, but apparently the
 // analysis by clangd of IWYU export pragmas isn't transitive.
