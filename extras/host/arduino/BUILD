@@ -84,6 +84,7 @@ cc_library(
     srcs = ["print.cc"],
     hdrs = ["print.h"],
     deps = [
+        ":printable",
         ":wstring",
         "//absl/log:check",
     ],
@@ -149,4 +150,9 @@ cc_library(
     deps = [
         "//mcucore/extras/host/arduino:print",
     ],
+)
+
+cc_library(
+    name = "printable",
+    hdrs = ["printable.h"],
 )

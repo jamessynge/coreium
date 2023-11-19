@@ -9,15 +9,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "extras/host/arduino/printable.h"
 #include "extras/host/arduino/wstring.h"
-
-class Print;
-
-class Printable {
- public:
-  virtual ~Printable();
-  virtual size_t printTo(Print& p) const = 0;
-};
 
 #define DEC 10
 #define HEX 16

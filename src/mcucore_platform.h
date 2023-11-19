@@ -39,11 +39,12 @@ using ssize_t = int;  // avr-libc doesn't include a ssize_t definition.
 #define MCU_ENABLE_DEBUGGING 1
 #endif  // NDEBUG
 
-#include "extras/host/arduino/arduino.h"  // IWYU pragma: export  // pragma: keep extras include
+#include <Arduino.h>  // IWYU pragma: export  // pragma: keep extras include
+#include <EEPROM.h>   // IWYU pragma: export  // pragma: keep extras include
+#include <Print.h>    // IWYU pragma: export  // pragma: keep extras include
+#include <Stream.h>   // IWYU pragma: export  // pragma: keep extras include
+
 #include "extras/host/arduino/pgmspace.h"  // IWYU pragma: export  // pragma: keep extras include
-#include "extras/host/arduino/print.h"  // IWYU pragma: export  // pragma: keep extras include
-#include "extras/host/arduino/stream.h"  // IWYU pragma: export  // pragma: keep extras include
-#include "extras/host/eeprom/eeprom.h"  // IWYU pragma: export  // pragma: keep extras include
 
 // Abseil's attributes.h has started using some C++ 20 features, so disable the
 // warning for features introduced in C++ 14 or later.
