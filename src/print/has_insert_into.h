@@ -18,8 +18,9 @@ namespace has_insert_into_internal {
 
 // Matches a T that has a InsertInto(OPrintStream&) member function.
 template <class T>
-static auto test_insert_into(int) -> sfinae_true<
-    decltype(declval<T>().InsertInto(declval<::mcucore::OPrintStream&>()))>;
+static auto test_insert_into(int)
+    -> sfinae_true<
+        decltype(declval<T>().InsertInto(declval<::mcucore::OPrintStream&>()))>;
 
 // SFINAE fallback for the case where T does not have an InsertInto member
 // function with the required signature. This depends on the fact that type of

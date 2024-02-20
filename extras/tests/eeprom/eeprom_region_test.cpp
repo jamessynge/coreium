@@ -458,8 +458,8 @@ TEST_F(EepromRegionTest, SpaceUnavailable) {
 using EepromRegionDeathTest = EepromRegionTest;
 
 TEST_F(EepromRegionDeathTest, StartsBeyondEEPROM) {
-  EXPECT_DEATH_IF_SUPPORTED({ EepromRegion region(eeprom_, 65535, 2); },
-                            "Starts beyond EEPROM");
+  EXPECT_DEATH_IF_SUPPORTED(
+      { EepromRegion region(eeprom_, 65535, 2); }, "Starts beyond EEPROM");
 }
 
 TEST_F(EepromRegionDeathTest, ExtendsBeyondEEPROM) {

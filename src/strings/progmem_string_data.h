@@ -173,8 +173,8 @@ class StringLiteralIsTooLong;
 
 // Keep 1 character, discard 15 nulls.
 template <char C1, char... X>
-auto KeepLiteral(DiscardCount<15>, StringFragment<C1>, StringFragment<X>...)
-    -> StringFragment<C1>;
+auto KeepLiteral(DiscardCount<15>, StringFragment<C1>,
+                 StringFragment<X>...) -> StringFragment<C1>;
 
 // Keep 2 characters, discard 14 nulls.
 template <char C1, char C2, char... X>
@@ -184,14 +184,14 @@ auto KeepLiteral(DiscardCount<14>, StringFragment<C1>, StringFragment<C2>,
 // Keep 3 characters, discard 13 nulls.
 template <char C1, char C2, char C3, char... X>
 auto KeepLiteral(DiscardCount<13>, StringFragment<C1>, StringFragment<C2>,
-                 StringFragment<C3>, StringFragment<X>...)
-    -> StringFragment<C1, C2, C3>;
+                 StringFragment<C3>,
+                 StringFragment<X>...) -> StringFragment<C1, C2, C3>;
 
 // Keep 4 characters, discard 12 nulls.
 template <char C1, char C2, char C3, char C4, char... X>
 auto KeepLiteral(DiscardCount<12>, StringFragment<C1>, StringFragment<C2>,
-                 StringFragment<C3>, StringFragment<C4>, StringFragment<X>...)
-    -> StringFragment<C1, C2, C3, C4>;
+                 StringFragment<C3>, StringFragment<C4>,
+                 StringFragment<X>...) -> StringFragment<C1, C2, C3, C4>;
 
 // Keep 5 characters, discard 11 nulls.
 template <char C1, char C2, char C3, char C4, char C5, char... X>
@@ -326,22 +326,22 @@ auto DiscardAfterLiteral(
 
 // Concatenate (adjacent) string fragments.
 template <char... X, char... Y>
-auto Concat(StringFragment<X...>, StringFragment<Y...>)
-    -> StringFragment<X..., Y...>;
+auto Concat(StringFragment<X...>,
+            StringFragment<Y...>) -> StringFragment<X..., Y...>;
 
 // If the macro used (e.g. PSV_nnn) supports strings as long as that
 // provided, then ProvideStorage's return type will have a static array with
 // the string in it.
 template <char... C>
-auto ProvideStorage(LengthCheck<true>, StringFragment<C...>)
-    -> ProgmemStringData<C...>;
+auto ProvideStorage(LengthCheck<true>,
+                    StringFragment<C...>) -> ProgmemStringData<C...>;
 
 // Else if the literal is too long for the expension macro used, then
 // ProvideStorage's return type will be StringLiteralIsTooLong, an undefined
 // type whose name indicates what the problem is.
 template <char... C>
-auto ProvideStorage(LengthCheck<false>, StringFragment<C...>)
-    -> StringLiteralIsTooLong;
+auto ProvideStorage(LengthCheck<false>,
+                    StringFragment<C...>) -> StringLiteralIsTooLong;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Support for computing the basename of a file path, which mostly means
@@ -395,14 +395,14 @@ auto KeepBasename(StringFragment<C...>)
 // left-hand fragment determines whether the return type denotes a fragment in
 // which a slash was found.
 template <bool FoundSlash, char... X, char... Y>
-auto Concat(PathFragment<FoundSlash, X...>, PathFragment<false, Y...>)
-    -> PathFragment<FoundSlash, X..., Y...>;
+auto Concat(PathFragment<FoundSlash, X...>,
+            PathFragment<false, Y...>) -> PathFragment<FoundSlash, X..., Y...>;
 
 // Matches a pair of path fragments where the right-hand fragment had a slash in
 // it; as a result we don't need the left-hand fragment at all.
 template <bool FoundSlash, char... X, char... Y>
-auto Concat(PathFragment<FoundSlash, X...>, PathFragment<true, Y...>)
-    -> PathFragment<true, Y...>;
+auto Concat(PathFragment<FoundSlash, X...>,
+            PathFragment<true, Y...>) -> PathFragment<true, Y...>;
 
 // Another specialization of ProvideStorage, which transforms a PathFragment
 // back into a StringFragment and the uses the previously defined

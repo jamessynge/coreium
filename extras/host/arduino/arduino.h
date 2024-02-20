@@ -221,7 +221,7 @@ uint8_t shiftIn(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder);
 
 inline void attachInterrupt(uint8_t interruptNum, void (*userFunc)(void),
                             ArduinoInt mode) {}
-inline void detachInterrupt(uint8_t interruptNum) {}
+inline void detachInterrupt(uint8_t interruptNum){}
 
 // void setup();
 // void loop();
